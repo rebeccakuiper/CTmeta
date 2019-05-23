@@ -306,12 +306,12 @@ CTMA <- function(N, TypeMx, Phi, SigmaVAR, Gamma, DeltaTStar, DeltaT, Moderators
         if(Moderators == 1){
           Mod. <- Mod
         }
-      }else{ # if multivar, then we need to add an outcome variable and 'copy' the moderators and grouping variables
+      }else{ # if multivar, then we need to add an overallPhi variable and 'copy' the moderators and grouping variables
         sub = NULL
         for(i in 1:q){
           sub = c(sub, paste(i, 1:q, sep=""))
         }
-        outcome <- rep(sub, S)
+        overallPhi <- rep(sub, S)
         #
         #
         if(Moderators == 1){
@@ -337,18 +337,18 @@ CTMA <- function(N, TypeMx, Phi, SigmaVAR, Gamma, DeltaTStar, DeltaT, Moderators
         vecVecStandPhi <- as.vector(vecStandPhi) # vecStandPhi[q:q*q,1:S]
         if(FEorRE == 2){ # RE
           if(Moderators == 1){ # Moderators
-            metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ outcome + outcome:Mod. - 1, random = ~ outcome | RandomPart,
-                           struct = "UN", method = "ML")  # With struct="UN", the random effects are allowed to have different variances for each outcome and are allowed to be correlated.
+            metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ overallPhi + overallPhi:Mod. - 1, random = ~ overallPhi | RandomPart,
+                           struct = "UN", method = "ML")  # With struct="UN", the random effects are allowed to have different variances for each overallPhi and are allowed to be correlated.
           }else{ # No Moderators
-            metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ outcome - 1, random = ~ outcome | RandomPart,
-                             struct = "UN", method = "ML")  # With struct="UN", the random effects are allowed to have different variances for each outcome and are allowed to be correlated.
+            metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ overallPhi - 1, random = ~ overallPhi | RandomPart,
+                             struct = "UN", method = "ML")  # With struct="UN", the random effects are allowed to have different variances for each overallPhi and are allowed to be correlated.
           }
           tau2_metaan_MV <- metaan$tau2
         }else{# FE
           if(Moderators == 1){ # Moderators
-            metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ outcome - 1 + outcome:Mod., method = "FE")
+            metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ overallPhi - 1 + overallPhi:Mod., method = "FE")
           }else{ # No Moderators
-            metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ outcome - 1, method = "FE")
+            metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ overallPhi - 1, method = "FE")
           }
         }
         Phi_metaan_MV <- coef(metaan)[1:q^2]
@@ -402,34 +402,34 @@ CTMA <- function(N, TypeMx, Phi, SigmaVAR, Gamma, DeltaTStar, DeltaT, Moderators
         if(FEorRE == 2){ # RE
           if(G > 1){
             if(Moderators == 1){ # Moderators
-              metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ -1 + outcome:D. + outcome:Mod.,
-                               random = ~ outcome | RandomPart, struct = "UN", method = "ML")  # With struct="UN", the random effects are allowed to have different variances for each outcome and are allowed to be correlated.
+              metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ -1 + overallPhi:D. + overallPhi:Mod.,
+                               random = ~ overallPhi | RandomPart, struct = "UN", method = "ML")  # With struct="UN", the random effects are allowed to have different variances for each overallPhi and are allowed to be correlated.
             }else{ # No Moderators
-              metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ -1 + outcome:D.,
-                               random = ~ outcome | RandomPart, struct = "UN", method = "ML")  # With struct="UN", the random effects are allowed to have different variances for each outcome and are allowed to be correlated.
+              metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ -1 + overallPhi:D.,
+                               random = ~ overallPhi | RandomPart, struct = "UN", method = "ML")  # With struct="UN", the random effects are allowed to have different variances for each overallPhi and are allowed to be correlated.
             }
             tau2_metaan_MV <- metaan$tau2
           } else{ # G = 1, no use for dummies (only one group)
             if(Moderators == 1){ # Moderators
-              metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ outcome - 1 + outcome:Mod.,
-                               random = ~ outcome | RandomPart, struct = "UN", method = "ML")
+              metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ overallPhi - 1 + overallPhi:Mod.,
+                               random = ~ overallPhi | RandomPart, struct = "UN", method = "ML")
             }else{ # No Moderators
-              metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ outcome - 1,
-                               random = ~ outcome | RandomPart, struct = "UN", method = "ML")
+              metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ overallPhi - 1,
+                               random = ~ overallPhi | RandomPart, struct = "UN", method = "ML")
             }
           }
         }else{# FE
           if(G > 1){
             if(Moderators == 1){ # Moderators
-              metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ -1 + outcome:D. + outcome:Mod., method = "FE")
+              metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ -1 + overallPhi:D. + overallPhi:Mod., method = "FE")
             }else{ # No Moderators
-              metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ -1 + outcome:D., method = "FE")
+              metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ -1 + overallPhi:D., method = "FE")
             }
           } else{ # G = 1, no use for dummies (only one group)
             if(Moderators == 1){ # Moderators
-              metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ outcome - 1 + outcome:Mod., method = "FE")
+              metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ overallPhi - 1 + overallPhi:Mod., method = "FE")
             }else{ # No Moderators
-              metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ outcome - 1, method = "FE")
+              metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ overallPhi - 1, method = "FE")
             }
           }
         }

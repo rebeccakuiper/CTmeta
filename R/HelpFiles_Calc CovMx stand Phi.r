@@ -82,7 +82,8 @@ colnames(multiCI) <- sub
 
 ############################################################################################################
 
-final <- list(vecStandPhi_DeltaT = vecPhi, CovMx_vecStandPhi_DeltaT = CovMx, multiCI_vecStandPhi_DeltaT = multiCI)
+final <- list(vecStandPhi_DeltaT = vecPhi, CovMx_vecStandPhi_DeltaT = CovMx, multiCI_vecStandPhi_DeltaT = multiCI,
+              standSigmaVAR_DeltaT = SigmaVAR_s, standGamma = Gamma_s)
 
 return(final)
 }

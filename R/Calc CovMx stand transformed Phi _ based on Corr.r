@@ -111,7 +111,7 @@ calc.TransPhi_Corr <- function(DeltaTStar, DeltaT, N, corr_YXYX, alpha=0.05) {
     ############################################################################################################
 
     final <- list(vecStandPhi_DeltaTStar = vecPhi, CovMx_vecStandPhi_DeltaTStar = CovMx, multiCI_vecStandPhi_DeltaT = multiCI,
-                  SigmaVAR_DeltaTStar = SigmaVAR, Gamma = Gamma,
+                  standSigmaVAR_DeltaTStar = SigmaVAR, standGamma = Gamma,
                   warning = warning)
 
     return(final)

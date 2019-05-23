@@ -123,6 +123,7 @@ colnames(multiCI) <- sub
 ############################################################################################################
 
 final <- list(vecStandPhi_DeltaTStar = vecPhi, CovMx_vecStandPhi_DeltaTStar = CovMx, multiCI_vecStandPhi_DeltaTStar = multiCI,
+              standSigmaVAR_DeltaTStar = SigmaVAR_DeltaT_s, standGamma = Gamma_s,
               warning = warning, Warning = Warning)
 
 
