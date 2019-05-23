@@ -1,0 +1,11 @@
+Package: CTmeta
+Title: Continuous-time meta-analysis on lagged effects
+Version: 0.0.0.9000
+Imports: expm, fastDummies, metafor, stats
+Authors@R: person("Rebecca", "Kuiper", email = "r.m.kuiper@uu.nl", role = c("aut", "cre"))
+Description: This package conducts a (continuous-time) meta-analysis on standarized lagged effects taking into account the various time intervals used in the studies. This is based on an underlying continuous-time process. You can choose whether you want to conduct a RE of FE model. By default it performs a FE multivariate/GLS meta-analysis model (using the rma.mv function) on the transformed standardized lagged effect parameters. In case the standardized lagged effect parameters cannot be transformed, it will use the original ones and add dummy variables to the meta-analysis model to account for the time-interval dependency. When the covariance matrix of the standardized lagged effect parameters is not positive definite (comparable to a negative variance), it will conduct a univariate/WLS model (using the rma.uni function).
+Depends: R (>= 3.5.1)
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 6.1.1.9000
