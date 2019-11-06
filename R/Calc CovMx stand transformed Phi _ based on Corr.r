@@ -1,39 +1,88 @@
-#' Calculates the (vectorized) transformed standardized Phi, their covariance matrix, the corresponding elliptical 95 percent confidence interval from a correlation matrix with contemporaneous and lagged correlations, and covariance matrices input for CTmeta
+
+#' calc.TransPhi_Corr
 #'
-#' @param DeltaTStar The time interval to which the standardized lagged effects matrix should be transformed to.
-#' @param DeltaT The time interval used.
-#' @param N Number of persons (panel data) or measurement occasions - 1 (time series data). Used in determining the covariance matrix of the vectorized standardized lagged effects.
-#' @param corr_YXYX The correlation matrix of the variables and the lagged variables (of size 2q x 2q). The upper (q x q) is the correlation matrix between the (q) variables and the lower (q x q) matrix is the correlation matrix between the (q) lagged variables.
-#' @param alpha The alpha level in determining the (1-alpha)*100 percent confidence interval (CI). By default set to 0.05, resulting in a 95& CI
+#' Calculates the (vectorized) transformed standardized Phi, their covariance matrix, the corresponding elliptical 95\% confidence interval (CI) from a correlation matrix with contemporaneous and lagged correlations. There is also an interactive web application on my website: Standardizing and/or transforming lagged regression estimates (\url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}).
 #'
-#' @return vectorized transformed standardized lagged effects (i.e., for DeltaTStar), their covariance matrix, and the corresponding elliptical/multivariate 95 percent CI; SigmaVAR: residual covariance matrix for DeltaTStar which is needed in CTmeta; Gamma: stationary covariance matrix which is needed in CTmeta.
+#' @param DeltaTStar The time interval to which the standardized lagged effects matrix (Phi) should be transformed to.
+#' @param DeltaT The time interval used. Hence, Phi(DeltaT) will be transformed to Phi(DeltaTStar) and standardized. . By default, DeltaT = 1.
+#' @param N Number of persons (panel data) or number of measurement occasions - 1 (time series data). This is used in determining the covariance matrix of the vectorized standardized lagged effects.
+#' @param corr_YXYX The correlation matrix of the variables and the lagged variables (of size 2q x 2q). The upper q x q matrix is the correlation matrix between the (q) variables and the lower q x q matrix is the correlation matrix between the (q) lagged variables.
+#' @param alpha The alpha level in determining the (1-alpha)*100\% CI. By default, alpha = 0.05; resulting in a 95\% CI.
+#'
+#' @return This function returns the vectorized transformed standardized lagged effects (i.e., for DeltaTStar), their covariance matrix, and the corresponding elliptical/multivariate 95\% CI; SigmaVAR: residual covariance matrix for DeltaTStar; and Gamma: stationary covariance matrix.
 #' @export
 #' @examples
+#'
+#' # In the examples below, the following values are used:
+#' DeltaTStar <- 12
+#' DeltaT <- 24
+#' N <- 2235
 #'
 #' # Example with full correlation matrix
 #' corr_YXYX <- matrix(c(1.00, 0.40, 0.63, 0.34,
 #' 0.40, 1.00, 0.31, 0.63,
 #' 0.63, 0.31, 1.00, 0.41,
-#' 0.34, 0.63, 0.41, 1.00), byrow = T, ncol = 4)
-#' calc.TransPhi_Corr(12, 24, 2235, corr_YXYX)
+#' 0.34, 0.63, 0.41, 1.00), byrow = T, ncol = 2*2)
+#' # Run function
+#' calc.TransPhi_Corr(DeltaTStar, DeltaT, N, corr_YXYX)
 #'
 #' # Example with vector of lower triangular correlation matrix
 #' LT <- c(0.40, 0.63, 0.34, 0.31, 0.63, 0.41) # corr_YXYX[lower.tri(corr_YXYX,diag = F)]
+#' # Make full correlation matrix of size 2*q times 2*q, with q=2 and thus 2*q=4
 #' corr_YXYX <- diag(4) # As check: length(LT) = 4*(4-1)/2
 #' corr_YXYX[lower.tri(corr_YXYX,diag = F)] <- LT
 #' corr_YXYX[upper.tri(corr_YXYX,diag = F)] <- t(corr_YXYX)[upper.tri(t(corr_YXYX),diag = F)]
-#' calc.TransPhi_Corr(12, 24, 2235, corr_YXYX)
+#' # Run function
+#' calc.TransPhi_Corr(DeltaTStar, DeltaT, N, corr_YXYX)
 #'
 #' # Example with vector of lower triangular correlation matrix including diagonals
 #' LTD <- c(1.00, 0.40, 0.63, 0.34, 1.00, 0.31, 0.63, 1.00, 0.41, 1.00) # corr_YXYX[lower.tri(corr_YXYX,diag = T)]
+#' # Make full correlation matrix of size 2*q times 2*q, with q=2 and thus 2*q=4
 #' corr_YXYX <- matrix(NA, nrow=(4), ncol=(4))  # As check: length(LTD) = 4*(4+1)/2
 #' corr_YXYX[lower.tri(corr_YXYX,diag = T)] <- LTD
 #' corr_YXYX[upper.tri(corr_YXYX,diag = F)] <- t(corr_YXYX)[upper.tri(t(corr_YXYX),diag = F)]
-#' calc.TransPhi_Corr(12, 24, 2235, corr_YXYX)
+#' # Run function
+#' calc.TransPhi_Corr(DeltaTStar, DeltaT, N, corr_YXYX)
 #'
-#' # The output (vecStandPhi_DeltaTStar, SigmaVAR_DeltaTStar, and Gamma) can be used to make stacked matrices or arrays which serves as input for CTmeta (using the function CTMA).
+#' # The output (vecStandPhi_DeltaTStar, SigmaVAR_DeltaTStar, and Gamma) can be used to make stacked matrices or arrays which can serve as input for continuous-time meta-analysis CTmeta (using the function CTmeta).
+#'
 
-calc.TransPhi_Corr <- function(DeltaTStar, DeltaT, N, corr_YXYX, alpha=0.05) {
+calc.TransPhi_Corr <- function(DeltaTStar, DeltaT = 1, N, corr_YXYX, alpha=0.05) {
+
+  # Checks:
+  if(length(DeltaTStar) != 1){
+    print(paste("The argument DeltaTStar should be a scalar, that is, one number, that is, a vector with one element."))
+    stop()
+  }
+  if(length(DeltaT) != 1){
+    print(paste("The argument DeltaT should be a scalar, that is, one number, that is, a vector with one element."))
+    stop()
+  }
+  if(length(N) != 1){
+    print(paste("The argument N should be a scalar, that is, one number, that is, a vector with one element."))
+    stop()
+  }
+  #
+  # Check on corr_YXYX
+  if(is.null(dim(corr_YXYX))){
+    if(!is.null(length(corr_YXYX))){ # Should be matrix
+      print(paste("The argument corr_YXYX is not a matrix of size 2q times 2q."))
+      stop()
+    }else{
+      print(paste("The argument corr_YXYX is not found: The (lagged) correlation matrix corr_YXYX is unknown, but should be part of the input."))
+      stop()
+    }
+  }else{ # Should be square matrix
+    if(dim(corr_YXYX)[1] != dim(corr_YXYX)[2] | length(dim(corr_YXYX)) != 2){
+      print(paste("The argument corr_YXYX is not a matrix of size 2q times 2q."))
+      stop()
+    }
+    if((dim(corr_YXYX)[1] %% 2) != 0) { # 2q should be an even number
+      print(paste("The argument corr_YXYX is not a matrix of size 2q times 2q, since its dimension are not even (but an odd number)."))
+      stop()
+    }
+  }
+
 
     q <- dim(corr_YXYX)[1]/2
 

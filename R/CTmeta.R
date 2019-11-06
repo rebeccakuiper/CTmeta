@@ -1,19 +1,20 @@
-
-#' Transforms the lagged effect estimates for a given interval to the ones corresponding to a different time-interval
+#' Continuous-time meta-analysis on standarized lagged effects
 #'
-#' @param N Number of persons (panel data) or measurement occasions - 1 (time series data) used in the S studies. Matrix of size S times 1.
-#' @param TypeMx Indicator of type of matrix for Phi, SigmaVAR, and Gamma: 0) Stacked matrix of size S q times q; 2) Array with dimensions q times q times S; with S the number of studies in the meta-analysis and q the number of variables (leading to an q times q lagged effects matrix Phi).
-#' @param Phi Stacked matrix (TypeMx == 0) or array (TypeMx == 1) of (un)standardized lagged effects matrices for all S studies in the meta-analysis.
-#' @param SigmaVAR Stacked matrix (TypeMx == 0) or array (TypeMx == 1) of residual covariance matrices of the first-order discrete-time vector autoregressive (DT-VAR(1)) model.
-#' @param Gamma Stacked matrix (TypeMx == 0) or array (TypeMx == 1) of stationary covariance matrices, that is, the contemporaneous covariance matrices of the data sets.
+#' Continuous-time meta-analysis (CTmeta) on standarized lagged effects taking into account the various time-intervals used in the primary studies. There is also an interactive web application on my website to perform CTmeta: \url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}.
+#'
+#' @param N Number of persons (panel data) or number of measurement occasions - 1 (time series data) used in the S primary studies. Matrix of size S times 1.
+#' @param DeltaT The time intervals used in the S primary studies. Matrix of size S times 1.
 #' @param DeltaTStar The time interval (scalar) to which the standardized lagged effects matrix should be transformed to.
-#' @param DeltaT The time intervals used in the S studies. Matrix of size S times 1.
+#' @param Phi Stacked matrix of size S*q times q or array with dimensions q times q times S of (un)standardized lagged effects matrices for all S primary studies in the meta-analysis; with q the number of variables (leading to an q times q lagged effects matrix in a single primary study). Note: In case primary studies report (lagged) correlation matrices, one can use the function 'calc.TransPhi_Corr' to transform those to the corresponding standardized lagged effects matrices (see ?calc.TransPhi_Corr and examples below).
+#' @param SigmaVAR (optional: either SigmaVAR or Gamma). Stacked matrix of size S*q times q or array with dimensions q times q times S of residual covariance matrices of the first-order discrete-time vector autoregressive (DT-VAR(1)) model.
+#' Note that if Phi and SigmaVAR are known, Gamma can be calculated; hence, only SigmaVAR or Gamma is needed as input (if only Gamma, then use 'Gamma = Gamma' or set SigmaVAR to NULL, see examples below).
+#' @param Gamma (optional: either SigmaVAR or Gamma). Stacked matrix of size S*q times q or array with dimensions q times q times S of stationary covariance matrices, that is, the contemporaneous covariance matrices of the data sets. Note that if Phi and Gamma are known, SigmaVAR can be calculated; hence, only SigmaVAR or Gamma is needed as input (if only Gamma, then use 'Gamma = Gamma' or set SigmaVAR to NULL, see examples below).
 #' @param Moderators Indicator whether there are moderators to be included (1) or not (0; default).
 #' @param Mod Matrix of moderators to be included in the analysis when Moderators == 1. By default, Mod = NULL.
-#' @param FEorRE Indicator whether continuous-time meta-analysis (CTmeta) should use a fixed-effects model (1; default) or random-effects model (2).
-#' @param alpha The alpha level in determining the (1-alpha)*100 percent confidence interval (CI). By default, alpha is set to 0.05, resulting in a 95 percent CI.
+#' @param FEorRE Indicator whether continuous-time meta-analysis should use a fixed-effects model (1; default) or random-effects model (2).
+#' @param alpha The alpha level in determining the (1-alpha)*100\% confidence interval (CI). By default, alpha = 0.05; resulting in a 95\% CI.
 #'
-#' @return vectorized transformed standardized lagged effects, their covariance matrix, and the corresponding elleptical/multivariate 95 percent CI.
+#' @return The output comprises, among others, the overall vectorized transformed standardized lagged effects, their covariance matrix, and the corresponding elleptical/multivariate 95\% CI.
 #' @importFrom expm expm
 #' @importFrom fastDummies dummy_cols
 #' @importFrom metafor rma.mv
@@ -21,131 +22,122 @@
 #' @export
 #' @examples
 #'
-#' ###########################################################
-#' ### Input for examples ###
-#' q = 2 # Number of variables in the process/system
-#' S = 3 # Number of studies included in the meta-analysis
+#' ##################################################################################################
+#' # Input needed in examples below with q=2 variables and S=3 primary studies
+#' #
+#' N <- matrix(c(643, 651, 473))
+#' DeltaT <- matrix(c(2, 3, 1))
+#' DeltaTStar <- 1
+#' #
+#' # I will use the example matrices stored in the package:
+#' Phi <- myPhi
+#' SigmaVAR <- mySigmaVAR
+#' Gamma <- myGamma # Note: CTmeta does not need both SigmaVAR and Gamma, as denomstrated below.
+#' # These are all three stacked matrices of size S*q times q.
+#' # The CTmeta function will standardize these matrices (to make comparison of effects meaningful).
+#' #
+#' Moderators = 0 # By default set to 0. Hence, not per se needed, as denomstrated below.
+#' ##################################################################################################
 #'
-#' ## Phi as S q times q matrix (TypeMx == 0) ##
 #'
-#' # Based on discrete-time model #
-#' Phi <- matrix(c(0.25, 0.10,
-#'                 0.20, 0.36,
-#'                 0.35, 0.20,
-#'                 0.30, 0.46,
-#'                 0.15, 0.00,
-#'                 0.10, 0.26), byrow = T, ncol = q)
+#' ## Example without moderators ##
 #'
-#' # Based on correlation matrix #
+#' # Fixed effects model #
+#'
+#' # Run CTmeta with, for instance,
+#' CTmeta(N, DeltaT, DeltaTStar, Phi, Gamma = Gamma)
+#'
+#' # There are multiple options; use one of the following:
+#' CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR, Gamma, Moderators, Mod, 1)
+#' CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR, Gamma, Moderators, Mod)
+#' CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR, Gamma, Moderators)
+#' CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR, Gamma)
+#' CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR)
+#' CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR = SigmaVAR)
+#' CTmeta(N, DeltaT, DeltaTStar, Phi, Gamma = Gamma)
+#' CTmeta(N, DeltaT, DeltaTStar, Phi, NULL, Gamma)
+#'
+#' # Note: Do NOT use
+#' #CTmeta(N, DeltaT, DeltaTStar, Phi, Gamma)
+#' # Then, CTmeta incorrectly uses SigmaVAR = Gamma.
+#'
+#'
+#' # Random effects model #
+#'
+#' # Add "FEorRE = 2"; e.g.,
+#' CTmeta(N, DeltaT, DeltaTStar, Phi, Gamma = Gamma, FEorRE = 2)
+#'
+#'
+#' ## Example with moderators ##
+#'
+#' Mod <- matrix(c(64,65,47)) # 1 moderator
+#' #Mod <- matrix(cbind(c(64,65,47), c(78,89,34)), ncol = q); colnames(Mod) <- c("Mod1", "Mod2") # two moderators, in each column 1
+#' CTmeta(N, DeltaT, DeltaTStar, Phi, Gamma = Gamma, Moderators = 1, Mod = Mod) # fixed effects model
+#' #CTmeta(N, DeltaT, DeltaTStar, Phi, Gamma = Gamma, Moderators = 1, Mod = Mod, FEorRE = 2) # random effects model
+#'
+#'
+#'
+#' ## Make Phi-plot of resulting overall Phi ##
+#'
+#' # Note: The Phi-plot can be made using the function 'PhiPlot' (see below) or by using the interactive web app from my website (\url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}).
+#'
+#' # Extract the q times q overall Phi matrix
+#' out_CTmeta <- CTmeta(N, DeltaT, DeltaTStar, Phi, Gamma = Gamma)
+#' q <- sqrt(length(out_CTmeta$Overall_standPhi_DeltaTStar))
+#' overallPhi <- matrix(out_CTmeta$Overall_standPhi_DeltaTStar, byrow = T, ncol = q) # resulting overall Phi
+#' # Determine the q times q Drift matrix which is the continuous-time equivalent of the overall Phi matrix
+#' if (!require("expm")) install.packages("expm") # Use expm package for function logm()
+#' library(expm)
+#' overallDrift <- logm(overallPhi)/DeltaTStar
+#'
+#' # Make Phi-plot:
+#' PhiPlot(DeltaTStar, overallDrift, Min = 0, Max = 40, Step = 0.5)
+#'
+#'
+#'
+#' ## Evaluate dominance of cross-lagged effects ##
+#'
+#' # Extract the vectorized overall standardized Phi matrix and its covariance matrix
+#' out_CTmeta <- CTmeta(N, DeltaT, DeltaTStar, Phi, Gamma = Gamma)
+#' est <- out_CTmeta$Overall_standPhi_DeltaTStar
+#' VCOV <- out_CTmeta$CovMx_OverallPhi_DeltaTStar
+#' # Specify hypothesis
+#' H1 <- "overallPhi12 < overallPhi21"
+#' #H2 <- "overallPhi12 > overallPhi21"
+#' # Evaluate dominance of cross-lagged effects via AIC-type criterion called the GORICA (Altinisik, Nederhof, Hoijtink, Oldehinkel, Kuiper, unpublished).
+#' if (!require("restriktor")) install.packages("restriktor") # Use restriktor package for function goric() of Vanbrabant and Kuiper.
+#' library(restriktor)
+#' #goric(est, VCOV = VCOV, H1, H2, type = "gorica", comparison = "none") # authors of goric(): Vanbrabant and Kuiper
+#' # or equivalently:
+#' goric(est, VCOV = VCOV, H1, type = "gorica", comparison = "complement")
+#'
+#'
+#'
+#' ## What if primary studies report a (lagged) correlation matrix ##
+#'
+#' # Supose all S=3 primary studies reported the following lagged correlation matrix:
+#' q <- 2
 #' corr_YXYX <- matrix(c(1.00, 0.40, 0.63, 0.34,
 #'                       0.40, 1.00, 0.31, 0.63,
 #'                       0.63, 0.31, 1.00, 0.41,
 #'                       0.34, 0.63, 0.41, 1.00), byrow = T, ncol = 2*q)
-#' out <- calc.TransPhi_Corr(12, 24, 2235, corr_YXYX)
+#' # In the example below, the following values are used:
+#' #DeltaTStar <- 12
+#' #DeltaT <- 24
+#' #N <- 2235
+#' # Then, use the function 'calc.TransPhi_Corr' to calculate the corresponding standardized lagged effects matrix per primary study:
+#' out <- calc.TransPhi_Corr(12, 24, 2235, corr_YXYX) # TO DO
 #' Phi_1 <- matrix(out$vecStandPhi_DeltaTStar, byrow = T, ncol = q)
 #' Phi_2 <- matrix(out$vecStandPhi_DeltaTStar, byrow = T, ncol = q)
 #' Phi_3 <- matrix(out$vecStandPhi_DeltaTStar, byrow = T, ncol = q)
-#' Phi <- rbind(Phi_1, Phi_2, Phi_3)
+#' Phi <- rbind(Phi_1, Phi_2, Phi_3) # This, returns a stacked matrix of size S q times q.
+#' # For more details, see ?calc.TransPhi_Corr
 #'
+#' # The example CTmeta() code above can be run using this Phi; e.g.,
+#' CTmeta(N, DeltaT, DeltaTStar, Phi, Gamma = Gamma)
 #'
-#' ## SigmaVAR and Gamma as S q times q matrix (TypeMx == 0) ##
-#' # Based on discrete-time model, using SigmaVAR #
-#' SigmaVAR_s <- diag(q) # for ease
-#' SigmaVAR <- rbind(SigmaVAR_s, SigmaVAR_s, SigmaVAR_s)
-#' # If Phi and SigmaVAR are known, one can calculate Gamma:
-#' Gamma <- array(data=NA, dim=c(S*q,q))
-#' teller <- 1
-#' for(s in 1:S){
-#'   Gamma[teller:(teller+1),] <- calc.Gamma.fromVAR(Phi[teller:(teller+1),], SigmaVAR[teller:(teller+1),])
-#'   teller <- teller + q
-#' }
-#'
-#' # Based on discrete-time model, using Gamma #
-#' # Use Gamma from above
-#' # If Phi and SigmaVAR are known, one can calculate Gamma:
-#' SigmaVAR <- array(data=NA, dim=c(S*q,q))
-#' teller <- 1
-#' for(s in 1:S){
-#'   SigmaVAR[teller:(teller+1),] <- Gamma[teller:(teller+1),] - Phi[teller:(teller+1),] %*% Gamma[teller:(teller+1),] %*% t(Phi[teller:(teller+1),])
-#'   teller <- teller + q
-#' }
-#'
-#' # Based on correlation matrix #
-#' # Use 'out' from above. # out <- calc.TransPhi_Corr(12, 24, 2235, corr_YXYX)
-#' SigmaVAR_1 <- out$SigmaVAR_DeltaTStar
-#' Gamma_1 <- out$Gamma
-#' # Do this for each study to make a stacked matrix out of this
-#'
-#' ## Phi as array with dimensions q times q times S (TypeMx == 1) ##
-#'
-#' # Based on discrete-time model #
-#' # Use Phi from above
-#' Phi_studies <- array(data=NA, dim=c(q,q,S))
-#' teller = 0
-#' for(s in 1:S){
-#'   Phi_studies[1:q,1:q,s] <- matrix(t(Phi)[(teller+1):(teller+q*q)], byrow = T, ncol=q*q)
-#'   Phi_studies[1:q,1:q,s] <- t(Phi_studies[1:q,1:q,s])
-#'   teller = teller + q*q
-#' }
-#' #Phi <- Phi_studies
-#'
-#' # Use SigmaVAR from above
-#' SigmaVAR_studies <- array(data=NA, dim=c(q,q,S))
-#' teller = 0
-#' for(s in 1:S){
-#'   SigmaVAR_studies[1:q,1:q,s] <- SigmaVAR[(teller+1):(teller+q),1:q]
-#'   teller = teller + q
-#' }
-#' #SigmaVAR <- SigmaVAR_studies
-#' Gamma_studies <- array(data=NA, dim=c(q,q,S))
-#' for(s in 1:S){
-#'   Gamma_studies[,,s] <- calc.Gamma.fromVAR(Phi_studies[,,s], SigmaVAR_studies[,,s])
-#' }
-#' #Gamma <- CovMx_studies
-#'
-#' # Use Gamma from above
-#' Gamma_studies <- array(data=NA, dim=c(q,q,S))
-#' teller = 0
-#' for(s in 1:S){
-#'   Gamma_studies[1:q,1:q,s] <- Gamma[(teller+1):(teller+q),1:q]
-#'   teller = teller + q
-#' }
-#' #Gamma <- CovMx_studies
-#' SigmaVAR_studies <- array(data=NA, dim=c(q,q,S))
-#' for(s in 1:S){
-#'   SigmaVAR_studies[,,s] <- Gamma_studies[,,s] - Phi_studies[,,s] %*% Gamma_studies[,,s] %*% t(Phi_studies[,,s])
-#' }
-#' #SigmaVAR <- SigmaVAR_studies
-#'
-#'
-#' # The study-specific sampel size (N) and time interval (DeltaT)
-#' DeltaT <- matrix(c(2, 3, 1))
-#' N <- matrix(c(643, 651, 473))
-#' ###########################################################
-#'
-#'
-#' # Based on input above, one can run one of these two CTmeta analyses
-#' DeltaTStar <- 1
-#' CTMA(N, 1, Phi_studies, SigmaVAR_studies, Gamma_studies, DeltaTStar, DeltaT)
-#' CTMA(N, 0, Phi, SigmaVAR, Gamma, DeltaTStar, DeltaT)
-#'
-#'
-#' # In case of moderators
-#' Mod <- matrix(c(64,65,47)) # 1 moderator
-#' #Mod <- matrix(cbind(c(64,65,47), c(78,89,34)), ncol = q); colnames(Mod) <- c("Mod1", "Mod2") # two moderators, in each column 1
-#' CTMA(N, 1, Phi_studies, SigmaVAR_studies, Gamma_studies, DeltaTStar, DeltaT, Moderators = 1, Mod)
-#'
-#'
-#' # Afterwards: Make PhiPlot of overallPhi
-#' DeltaTStar <- 1
-#' out_CTmeta <- CTMA(N, 0, Phi, SigmaVAR, Gamma, DeltaTStar, DeltaT, Moderators = 0, Mod = NULL, FEorRE = 1, alpha=0.05)
-#' q <- sqrt(length(out_CTmeta$Overall_standPhi_DeltaTStar))
-#' overallPhi <- matrix(out_CTmeta$Overall_standPhi_DeltaTStar, byrow = T, ncol = q)
-#' overallDrift <- logm(overallPhi)/DeltaTStar # Use expm package
-#' PhiPlot(DeltaTStar, overallDrift, Min = 0, Max = 40, Step = 0.5)
 
-
-CTMA <- function(N, TypeMx, Phi, SigmaVAR, Gamma, DeltaTStar, DeltaT, Moderators = 0, Mod = NULL, FEorRE = 1, alpha=0.05) {
+CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Moderators = 0, Mod = NULL, FEorRE = 1, alpha=0.05) {
 
 #  #######################################################################################################################
 #  #if (!require("expm")) install.packages("expm")
@@ -156,46 +148,175 @@ CTMA <- function(N, TypeMx, Phi, SigmaVAR, Gamma, DeltaTStar, DeltaT, Moderators
 #  library(metafor)
 #  #######################################################################################################################
 
-
   S <- length(N) #dim(N)[1]
+  # Check
+  if(S != length(DeltaT)){
+    print(paste("The length of the arguments N and DeltaT are not the same, while they should both equate to S, the number of primary studies included in the meta-analysis."))
+    stop()
+  }
+
+  # Make sure N and DeltaT are matrices
+  N <- matrix(N, nrow = S, ncol = 1)
+  DeltaT <- matrix(DeltaT, nrow = S, ncol = 1)
+
+  # Check DeltaTStar
+  if(length(DeltaTStar) != 1){
+    print(paste("The argument DeltaTStar should be a scalar, that is, one number, that is, a vector with one element. If you want to inspect multiple DeltaTStar values, you should do the analysis for each value seperately."))
+    stop()
+  }
+
+  # Check on Phi
+  if(length(Phi) == 1){
+    print(paste("The argument Phi should not consist of one element: a meta-analysis on one single element is not meaningfull. It should be a stacked matrix of size S*q times q or array with dimensions q times q times S, with S = ", S, " the number of primary studies."))
+    stop()
+  }
+  #
+  if(is.null(dim(Phi))){
+    if(!is.null(length(Phi))){
+      print(paste("The argument Phi is not a stacked matrix of size S*q times q or array with dimensions q times q times S, with q = ", q, " and S = ", S, "."))
+      stop()
+    }else{
+      print(paste("The argument Phi is not found: The lagged effects matrix Phi is unknown, but should be part of the input."))
+      stop()
+    }
+  }
+
   q <- dim(Phi)[2]
 
-      if(TypeMx  == 0){
-        if(dim(Phi)[1] != S*q | dim(SigmaVAR)[1] != S*q | dim(Gamma)[1] != S*q){
-          print("When you state 'TypeMx  = 0', the dimensions of Phi, SigmaVAR, and Gamma should be S*q times q.")
-        }
-      }else{
-        if(dim(Phi)[3] != S | dim(SigmaVAR)[3] != S | dim(Gamma)[3] != S){
-          print("When you state 'TypeMx  = 1', the dimensions of Phi, SigmaVAR, and Gamma should be q times q times S.")
-        }
-      }
+  # Phi
+  if(length(dim(Phi))  == 2){
+    Phi_studies <- array(data=NA, dim=c(q,q,S))
+    teller <- 0
+    for(s in 1:S){
+      Phi_studies[1:q,1:q,s] <- matrix(t(Phi)[(teller+1):(teller+q*q)], byrow = T, ncol=q*q)
+      Phi_studies[1:q,1:q,s] <- t(Phi_studies[1:q,1:q,s])
+      teller <- teller + q*q
+    }
+    Phi <- Phi_studies
+  }else if(length(dim(Phi))  > 3){
+    print(paste("The lagged effects matrix Phi should be an S*q times q matrix or a q times q times S array, with S = ", S, " and q = ", q, "."))
+    stop()
+  }
 
-      if(TypeMx  == 0){
-        Phi_studies <- array(data=NA, dim=c(q,q,S))
-        teller <- 0
-        for(s in 1:S){
-          Phi_studies[1:q,1:q,s] <- matrix(t(Phi)[(teller+1):(teller+q*q)], byrow = T, ncol=q*q)
-          Phi_studies[1:q,1:q,s] <- t(Phi_studies[1:q,1:q,s])
-          teller <- teller + q*q
-        }
-        Phi <- Phi_studies
-        #
-        SigmaVAR_studies <- array(data=NA, dim=c(q,q,S))
-        teller <- 0
-        for(s in 1:S){
-          SigmaVAR_studies[1:q,1:q,s] <- SigmaVAR[(teller+1):(teller+q),1:q]
-          teller <- teller + q
-        }
-        SigmaVAR <- SigmaVAR_studies
-        #
-        Gamma_studies <- array(data=NA, dim=c(q,q,S))
-        teller <- 0
-        for(s in 1:S){
-          Gamma_studies[1:q,1:q,s] <- Gamma[(teller+1):(teller+q),1:q]
-          teller <- teller + q
-        }
-        Gamma <- Gamma_studies
+  if(is.null(SigmaVAR) & is.null(Gamma)){ # Both SigmaVAR and Gamma unknown
+    print(paste("The arguments SigmaVAR and Gamma are not found: Both SigmaVAR and Gamma are unknown; either one (or both) should be part of the input. In case of first matrix, specify 'SigmaVAR = SigmaVAR'."))
+    stop()
+  }else if(is.null(Gamma)){ # Gamma unknown, calculate Gamma from SigmaVAR and Phi
+
+    # Check on SigmaVAR
+    if(length(SigmaVAR) == 1){
+      print(paste("The argument SigmaVAR should not consist of one element. It should be a stacked matrix of size S*q times q or array with dimensions q times q times S, with q = ", q, " and S = ", S, "."))
+      stop()
+    }
+
+    # SigmaVAR
+    if(length(dim(SigmaVAR))  == 2){
+      SigmaVAR_studies <- array(data=NA, dim=c(q,q,S))
+      teller <- 0
+      for(s in 1:S){
+        SigmaVAR_studies[1:q,1:q,s] <- SigmaVAR[(teller+1):(teller+q),1:q]
+        teller <- teller + q
       }
+      SigmaVAR <- SigmaVAR_studies
+    }else if(length(dim(SigmaVAR))  > 3){
+      print(paste("The residual covariance matrix SigmaVAR should be an S*q times q matrix or a q times q times S array, with S = ", S, " and q = ", q, "."))
+      stop()
+    }
+
+    # Calculate Gamma
+    # If Phi and SigmaVAR are known, one can calculate Gamma:
+    #Gamma <- array(data=NA, dim=c(S*q,q))
+    #teller <- 1
+    #for(s in 1:S){
+    #  Gamma[teller:(teller+1),] <- calc.Gamma.fromVAR(Phi[teller:(teller+1),], SigmaVAR[teller:(teller+1),])
+    #  teller <- teller + q
+    #}
+    Gamma_studies <- array(data=NA, dim=c(q,q,S))
+    for(s in 1:S){
+      Gamma_studies[1:q,1:q,s] <- calc.Gamma.fromVAR(Phi[1:q,1:q,s], SigmaVAR[1:q,1:q,s])
+    }
+    Gamma <- Gamma_studies
+
+  }else if(is.null(SigmaVAR)){ # SigmaVAR unknown, calculate SigmaVAR from Gamma and Phi
+
+    # Check on Gamma
+    if(length(Gamma) == 1){
+      print(paste("The argument Gamma should not consist of one element. It should be a stacked matrix of size S*q times q or array with dimensions q times q times S, with q = ", q, " and S = ", S, "."))
+      stop()
+    }
+
+    # Gamma
+    if(length(dim(Gamma))  == 2){
+      Gamma_studies <- array(data=NA, dim=c(q,q,S))
+      teller <- 0
+      for(s in 1:S){
+        Gamma_studies[1:q,1:q,s] <- Gamma[(teller+1):(teller+q),1:q]
+        teller <- teller + q
+      }
+      Gamma <- Gamma_studies
+    }else if(length(dim(Gamma))  > 3){
+      print(paste("The covariance matrix Gamma should be an S*q times q matrix or a q times q times S array, with S = ", S, " and q = ", q, "."))
+      stop()
+    }
+
+    # Calculate SigmaVAR
+    # If Phi and SigmaVAR are known, one can calculate Gamma:
+    #SigmaVAR <- array(data=NA, dim=c(S*q,q))
+    #teller <- 1
+    #for(s in 1:S){
+    #  SigmaVAR[teller:(teller+1),] <- Gamma[teller:(teller+1),] - Phi[teller:(teller+1),] %*% Gamma[teller:(teller+1),] %*% t(Phi[teller:(teller+1),])
+    #  teller <- teller + q
+    #}
+    SigmaVAR_studies <- array(data=NA, dim=c(q,q,S))
+    for(s in 1:S){
+      Gam <- Gamma[1:q,1:q,s]
+      Ph <- Phi[1:q,1:q,s]
+      SigmaVAR_studies[1:q,1:q,s] <- Gam - Ph %*% Gam %*% t(Ph)
+    }
+    SigmaVAR <- SigmaVAR_studies
+
+  }else{ # Both SigmaVAR and Gamma known
+
+    # Check on SigmaVAR
+    if(length(SigmaVAR) == 1){
+      print(paste("The argument SigmaVAR should not consist of one element. It should be a stacked matrix of size S*q times q or array with dimensions q times q times S, with q = ", q, " and S = ", S, "."))
+      stop()
+    }
+    # Check on Gamma
+    if(length(Gamma) == 1){
+      print(paste("The argument Gamma should not consist of one element. It should be a stacked matrix of size S*q times q or array with dimensions q times q times S, with q = ", q, " and S = ", S, "."))
+      stop()
+    }
+
+    # SigmaVAR
+    if(length(dim(SigmaVAR))  == 2){
+      SigmaVAR_studies <- array(data=NA, dim=c(q,q,S))
+      teller <- 0
+      for(s in 1:S){
+        SigmaVAR_studies[1:q,1:q,s] <- SigmaVAR[(teller+1):(teller+q),1:q]
+        teller <- teller + q
+      }
+      SigmaVAR <- SigmaVAR_studies
+    }else if(length(dim(SigmaVAR))  > 3){
+      print(paste("The residual covariance matrix SigmaVAR should be an S*q times q matrix or a q times q times S array, with S = ", S, " and q = ", q, "."))
+      stop()
+    }
+
+    # Gamma
+    if(length(dim(Gamma))  == 2){
+      Gamma_studies <- array(data=NA, dim=c(q,q,S))
+      teller <- 0
+      for(s in 1:S){
+        Gamma_studies[1:q,1:q,s] <- Gamma[(teller+1):(teller+q),1:q]
+        teller <- teller + q
+      }
+      Gamma <- Gamma_studies
+    }else if(length(dim(Gamma))  > 3){
+      print(paste("The covariance matrix Gamma should be an S*q times q matrix or a q times q times S array, with S = ", S, " and q = ", q, "."))
+      stop()
+    }
+
+  }
 
 
       # Start with multivariate meta-an (GLS) on transformed variables
@@ -213,7 +334,7 @@ CTMA <- function(N, TypeMx, Phi, SigmaVAR, Gamma, DeltaTStar, DeltaT, Moderators
       #Warning <- array(data=NA, dim=c(S))
       #
       # Studies where Phi has complex eigenvalues or at least one negative eigenvalue
-      messageTrans <- "All eigenvalues are positive and real; hence, the Phi's are transformed to Phi(DeltaT*) to account for the time-interval dependency."
+      messageTrans <- "All eigenvalues are positive and real; hence, the Phi's are transformed to Phi(DeltaT*) to account for the time-interval dependency and standardized (to make comparison of effects meaningful)."
       for(s in 1:S){
         EV <- eigen(Phi[,,s])$values
         if(any(is.complex(EV))){ StudiesComplexEV <- c(StudiesComplexEV, s) }

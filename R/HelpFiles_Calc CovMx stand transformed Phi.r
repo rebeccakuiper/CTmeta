@@ -1,53 +1,187 @@
 
-#' Calculates the (vectorized) transformed standardized Phi, their covariance matrix and elliptical 95 percent confidence interval
+#' calc.CovMxStandTransPhi
 #'
-#' @param DeltaTStar The time interval to which the standardized lagged effects matrix should be transformed to.
-#' @param DeltaT The time interval used.
-#' @param N Number of persons (panel data) or measurement occasions - 1 (time series data). Used in determining the covariance matrix of the vectorized standardized lagged effects.
+#' This function calculates the (vectorized) transformed standardized Phi, their covariance matrix and elliptical 95\% confidence interval (CI). There is also an interactive web application on my website: Standardizing and/or transforming lagged regression estimates (\url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}).
+#'
+#' @param DeltaTStar The time interval to which the (un)standardized lagged effects matrix (Phi) should be transformed to.
+#' @param DeltaT The time interval used. Hence, Phi(DeltaT) will be transformed to Phi(DeltaTStar) and standardized. By default, DeltaT = 1.
+#' @param N Number of persons (panel data) or number measurement occasions - 1 (time series data). This is used in determining the covariance matrix of the vectorized standardized lagged effects.
 #' @param Phi (Un)standardized lagged effects matrix. If necessary, it is standardized, then it is transformed and for this vectorized Phi the covariance matrix is determined.
 #' @param Gamma Stationary covariance matrix, that is, the contemporaneous covariance matrix of the data.
-#' @param SigmaVAR Residual covariance matrix of the first-order discrete-time vector autoregressive (DT-VAR(1)) model
-#' @param alpha The alpha level in determining the (1-alpha)*100 percent confidence interval (CI). By default, alpha is set to 0.05, resulting in a 95& CI
+#' Note that if Phi and SigmaVAR are known, Gamma can be calculated; hence, only SigmaVAR or Gamma is needed as input (if only Gamma, then use 'Gamma = Gamma' or set SigmaVAR to NULL, see examples below).
+#' @param SigmaVAR Residual covariance matrix of the first-order discrete-time vector autoregressive (DT-VAR(1)) model.
+#' Note that if Phi and SigmaVAR are known, Gamma can be calculated; hence, only SigmaVAR or Gamma is needed as input (if only Gamma, then use 'Gamma = Gamma' or set SigmaVAR to NULL, see examples below).
+#' @param alpha The alpha level in determining the (1-alpha)*100\% CI. By default, alpha = 0.05; resulting in a 95\% CI
 #'
-#' @return vectorized transformed standardized lagged effects, their covariance matrix, and the corresponding elliptical/multivariate 95 percent CI.
+#' @return This function returns the vectorized transformed standardized lagged effects, their covariance matrix, and the corresponding elliptical/multivariate 95\% CI.
 #' @export
 #' @examples
 #'
-#' # Example where Phi and SigmaVAR are known
+#' # Input for examples below
+#' DeltaTStar <- 1
+#' DeltaT <- 2
 #' N <- 643
-#' q <- 2
-#' Phi <- matrix(c(0.25, 0.10,
-#'                 0.20, 0.36), byrow=T, ncol = q)
+#' # Phi(DeltaT)
+#' Phi <- myPhi[1:2,1:2]
+#' #Phi <- matrix(c(0.25, 0.10,
+#' #               0.20, 0.36), byrow=T, ncol = 2)
+#' # SigmaVAR(DeltaT)
 #' SigmaVAR <- diag(q) # for ease
-#' Gamma <- calc.Gamma.fromVAR(Phi, SigmaVAR)
-#' DeltaTStar <- 1
-#' DeltaT <- 2
-#' calc.CovMxStandTransPhi(DeltaTStar, DeltaT, N, Phi, Gamma, SigmaVAR)
+#' # Calculate the Gamma corresponding to Phi and SigmaVAR - used in the second example
+#' Gamma <- calc.Gamma.fromVAR(Phi, SigmaVAR) # ?calc.Gamma.fromVAR
 #'
-#' # Example where Phi and Gamma are known
-#' N <- 643
-#' q <- 2
-#' Phi <- matrix(c(0.25, 0.10,
-#'                 0.20, 0.36), byrow=T, ncol = q)
-#' # Use Gamma from above
-#' SigmaVAR <- Gamma - Phi %*% Gamma %*% t(Phi)
-#' DeltaTStar <- 1
-#' DeltaT <- 2
-#' calc.CovMxStandTransPhi(DeltaTStar, DeltaT, N, Phi, Gamma, SigmaVAR)
+#' #Example where only SigmaVAR is known and not Gamma
+#' calc.CovMxStandTransPhi(DeltaTStar, DeltaT, N, Phi, NULL, SigmaVAR)
+#' # or
+#' calc.CovMxStandTransPhi(DeltaTStar, DeltaT, N, Phi, SigmaVAR = SigmaVAR)
+#'
+#' #Example where only Gamma is known and not SigmaVAR
+#' calc.CovMxStandTransPhi(DeltaTStar, DeltaT, N, Phi, Gamma)
+#' # or
+#' calc.CovMxStandTransPhi(DeltaTStar, DeltaT, N, Phi, Gamma, NULL)
+#'
 
 
 
-calc.CovMxStandTransPhi <- function(DeltaTStar, DeltaT, N, Phi, Gamma, SigmaVAR, alpha=0.05) {
+calc.CovMxStandTransPhi <- function(DeltaTStar, DeltaT = 1, N, Phi, Gamma = NULL, SigmaVAR = NULL, alpha=0.05) {
 
-q <- dim(Phi)[1]
+  # Checks:
+  if(length(DeltaTStar) != 1){
+    print(paste("The argument DeltaTStar should be a scalar, that is, one number, that is, a vector with one element."))
+    stop()
+  }
+  if(length(DeltaT) != 1){
+    print(paste("The argument DeltaT should be a scalar, that is, one number, that is, a vector with one element."))
+    stop()
+  }
+  if(length(N) != 1){
+    print(paste("The argument N should be a scalar, that is, one number, that is, a vector with one element."))
+    stop()
+  }
+  #
+  # Check on Phi
+  if(length(Phi) != 1){
+    if(is.null(dim(Phi))){
+      if(!is.null(length(Phi))){
+        print(paste("The argument Phi is not a matrix of size q times q."))
+        stop()
+      }else{
+        print(paste("The argument Phi is not found: The lagged effects matrix Phi is unknown, but should be part of the input."))
+        stop()
+      }
+    }
+    q <- dim(Phi)[1]
+  } else{
+    q <- 1
+  }
+
+  # Check on SigmaVAR and Gamma
+  if(is.null(SigmaVAR) & is.null(Gamma)){ # Both SigmaVAR and Gamma unknown
+    print(paste("The arguments SigmaVAR and Gamma are not found: Both SigmaVAR and Gamma are unknown; either one (or both) should be part of the input. In case of first matrix, specify 'SigmaVAR = SigmaVAR'."))
+    stop()
+  }else if(is.null(Gamma)){ # Gamma unknown, calculate Gamma from SigmaVAR and Phi
+
+    # Checks on SigmaVAR
+    if(length(SigmaVAR) != 1){
+      if(dim(SigmaVAR)[1] != dim(SigmaVAR)[2]){
+        print(paste("The residual covariance matrix SigmaVAR should be a square matrix of size q times q, with q = ", q, "."))
+        stop()
+      }
+      if(dim(SigmaVAR)[1] != q){
+        print(paste("The residual covariance matrix SigmaVAR should, like Phi, be a matrix of size q times q, with q = ", q, "."))
+        stop()
+      }
+      if(length(dim(SigmaVAR)) > 2){
+        print(paste("The residual covariance matrix SigmaVAR should be an q times q matrix, with q = ", q, "."))
+        stop()
+      }
+    }else if(q != 1){
+      print(paste("The residual covariance matrix SigmaVAR should, like Phi, be a scalar."))
+      stop()
+    }
+
+    # Calculate Gamma
+    Gamma <- calc.Gamma.fromVAR(Phi, SigmaVAR)
+
+  }else if(is.null(SigmaVAR)){ # SigmaVAR unknown, calculate SigmaVAR from Gamma and Phi
+
+
+    # Checks on Gamma
+    if(length(Gamma) != 1){
+      if(dim(Gamma)[1] != dim(Gamma)[2]){
+        print(paste("The stationary covariance matrix Gamma should be a square matrix of size q times q, with q = ", q, "."))
+        stop()
+      }
+      if(dim(Gamma)[1] != q){
+        print(paste("The stationary covariance matrix Gamma should, like Phi, be a matrix of size q times q, with q = ", q, "."))
+        stop()
+      }
+      if(length(dim(Gamma)) > 2){
+        print(paste("The stationary covariance matrix Gamma should be an q times q matrix, with q = ", q, "."))
+        stop()
+      }
+    }else if(q != 1){
+      print(paste("The stationary covariance matrix Gamma should, like Phi, be a scalar."))
+      stop()
+    }
+
+    # Calculate SigmaVAR
+    SigmaVAR <- Gamma - Phi %*% Gamma %*% t(Phi)
+
+  }else{ # Both SigmaVAR and Gamma known
+
+    # Checks on SigmaVAR
+    if(length(SigmaVAR) != 1){
+      if(dim(SigmaVAR)[1] != dim(SigmaVAR)[2]){
+        print(paste("The residual covariance matrix SigmaVAR should be a square matrix of size q times q, with q = ", q, "."))
+        stop()
+      }
+      if(dim(SigmaVAR)[1] != q){
+        print(paste("The residual covariance matrix SigmaVAR should, like Phi, be a matrix of size q times q, with q = ", q, "."))
+        stop()
+      }
+      if(length(dim(SigmaVAR)) > 2){
+        print(paste("The residual covariance matrix SigmaVAR should be an q times q matrix, with q = ", q, "."))
+        stop()
+      }
+    }else if(q != 1){
+      print(paste("The residual covariance matrix SigmaVAR should, like Phi, be a scalar."))
+      stop()
+    }
+
+    # Checks on Gamma
+    if(length(Gamma) != 1){
+      if(dim(Gamma)[1] != dim(Gamma)[2]){
+        print(paste("The stationary covariance matrix Gamma should be a square matrix of size q times q, with q = ", q, "."))
+        stop()
+      }
+      if(dim(Gamma)[1] != q){
+        print(paste("The stationary covariance matrix Gamma should, like Phi, be a matrix of size q times q, with q = ", q, "."))
+        stop()
+      }
+      if(length(dim(Gamma)) > 2){
+        print(paste("The stationary covariance matrix Gamma should be an q times q matrix, with q = ", q, "."))
+        stop()
+      }
+    }else if(q != 1){
+      print(paste("The stationary covariance matrix Gamma should, like Phi, be a scalar."))
+      stop()
+    }
+
+  }
+
+
 
 ratioDeltaT <- DeltaTStar / DeltaT
 
-eigenPhi <- eigen(Phi)
-V <- eigenPhi$vectors
-D <- diag(eigenPhi$values)
-Phi_DeltaT <- V %*% D^ratioDeltaT %*% solve(V)
-
+if(q > 1){
+  eigenPhi <- eigen(Phi)
+  V <- eigenPhi$vectors
+  D <- diag(eigenPhi$values)
+  Phi_DeltaT <- V %*% D^ratioDeltaT %*% solve(V)
+} else{
+  Phi_DeltaT <- Phi^ratioDeltaT
+}
 
 warning <- "No warnings (since there are no complex eigenvalues)"
 Warning <- 0

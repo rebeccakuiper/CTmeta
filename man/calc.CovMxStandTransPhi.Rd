@@ -2,53 +2,64 @@
 % Please edit documentation in R/HelpFiles_Calc CovMx stand transformed Phi.r
 \name{calc.CovMxStandTransPhi}
 \alias{calc.CovMxStandTransPhi}
-\title{Calculates the (vectorized) transformed standardized Phi, their covariance matrix and elliptical 95 percent confidence interval}
+\title{calc.CovMxStandTransPhi}
 \usage{
-calc.CovMxStandTransPhi(DeltaTStar, DeltaT, N, Phi, Gamma, SigmaVAR,
-  alpha = 0.05)
+calc.CovMxStandTransPhi(
+  DeltaTStar,
+  DeltaT = 1,
+  N,
+  Phi,
+  Gamma = NULL,
+  SigmaVAR = NULL,
+  alpha = 0.05
+)
 }
 \arguments{
-\item{DeltaTStar}{The time interval to which the standardized lagged effects matrix should be transformed to.}
+\item{DeltaTStar}{The time interval to which the (un)standardized lagged effects matrix (Phi) should be transformed to.}
 
-\item{DeltaT}{The time interval used.}
+\item{DeltaT}{The time interval used. Hence, Phi(DeltaT) will be transformed to Phi(DeltaTStar) and standardized. By default, DeltaT = 1.}
 
-\item{N}{Number of persons (panel data) or measurement occasions - 1 (time series data). Used in determining the covariance matrix of the vectorized standardized lagged effects.}
+\item{N}{Number of persons (panel data) or number measurement occasions - 1 (time series data). This is used in determining the covariance matrix of the vectorized standardized lagged effects.}
 
 \item{Phi}{(Un)standardized lagged effects matrix. If necessary, it is standardized, then it is transformed and for this vectorized Phi the covariance matrix is determined.}
 
-\item{Gamma}{Stationary covariance matrix, that is, the contemporaneous covariance matrix of the data.}
+\item{Gamma}{Stationary covariance matrix, that is, the contemporaneous covariance matrix of the data.
+Note that if Phi and SigmaVAR are known, Gamma can be calculated; hence, only SigmaVAR or Gamma is needed as input (if only Gamma, then use 'Gamma = Gamma' or set SigmaVAR to NULL, see examples below).}
 
-\item{SigmaVAR}{Residual covariance matrix of the first-order discrete-time vector autoregressive (DT-VAR(1)) model}
+\item{SigmaVAR}{Residual covariance matrix of the first-order discrete-time vector autoregressive (DT-VAR(1)) model.
+Note that if Phi and SigmaVAR are known, Gamma can be calculated; hence, only SigmaVAR or Gamma is needed as input (if only Gamma, then use 'Gamma = Gamma' or set SigmaVAR to NULL, see examples below).}
 
-\item{alpha}{The alpha level in determining the (1-alpha)*100 percent confidence interval (CI). By default, alpha is set to 0.05, resulting in a 95& CI}
+\item{alpha}{The alpha level in determining the (1-alpha)*100\% CI. By default, alpha = 0.05; resulting in a 95\% CI}
 }
 \value{
-vectorized transformed standardized lagged effects, their covariance matrix, and the corresponding elliptical/multivariate 95 percent CI.
+This function returns the vectorized transformed standardized lagged effects, their covariance matrix, and the corresponding elliptical/multivariate 95\% CI.
 }
 \description{
-Calculates the (vectorized) transformed standardized Phi, their covariance matrix and elliptical 95 percent confidence interval
+This function calculates the (vectorized) transformed standardized Phi, their covariance matrix and elliptical 95\% confidence interval (CI). There is also an interactive web application on my website: Standardizing and/or transforming lagged regression estimates (\url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}).
 }
 \examples{
 
-# Example where Phi and SigmaVAR are known
+# Input for examples below
+DeltaTStar <- 1
+DeltaT <- 2
 N <- 643
-q <- 2
-Phi <- matrix(c(0.25, 0.10,
-                0.20, 0.36), byrow=T, ncol = q)
+# Phi(DeltaT)
+Phi <- myPhi[1:2,1:2]
+#Phi <- matrix(c(0.25, 0.10,
+#               0.20, 0.36), byrow=T, ncol = 2)
+# SigmaVAR(DeltaT)
 SigmaVAR <- diag(q) # for ease
-Gamma <- calc.Gamma.fromVAR(Phi, SigmaVAR)
-DeltaTStar <- 1
-DeltaT <- 2
-calc.CovMxStandTransPhi(DeltaTStar, DeltaT, N, Phi, Gamma, SigmaVAR)
+# Calculate the Gamma corresponding to Phi and SigmaVAR - used in the second example
+Gamma <- calc.Gamma.fromVAR(Phi, SigmaVAR) # ?calc.Gamma.fromVAR
 
-# Example where Phi and Gamma are known
-N <- 643
-q <- 2
-Phi <- matrix(c(0.25, 0.10,
-                0.20, 0.36), byrow=T, ncol = q)
-# Use Gamma from above
-SigmaVAR <- Gamma - Phi \%*\% Gamma \%*\% t(Phi)
-DeltaTStar <- 1
-DeltaT <- 2
-calc.CovMxStandTransPhi(DeltaTStar, DeltaT, N, Phi, Gamma, SigmaVAR)
+#Example where only SigmaVAR is known and not Gamma
+calc.CovMxStandTransPhi(DeltaTStar, DeltaT, N, Phi, NULL, SigmaVAR)
+# or
+calc.CovMxStandTransPhi(DeltaTStar, DeltaT, N, Phi, SigmaVAR = SigmaVAR)
+
+#Example where only Gamma is known and not SigmaVAR
+calc.CovMxStandTransPhi(DeltaTStar, DeltaT, N, Phi, Gamma)
+# or
+calc.CovMxStandTransPhi(DeltaTStar, DeltaT, N, Phi, Gamma, NULL)
+
 }

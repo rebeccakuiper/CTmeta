@@ -2,53 +2,42 @@
 % Please edit documentation in R/Phi-plot.R
 \name{PhiPlot}
 \alias{PhiPlot}
-\title{Makes Phi-plot of Phi based on its underling drift matrix}
+\title{Phi-plot of Phi based on its underling drift matrix}
 \usage{
-PhiPlot(DeltaT, Drift, Min = 0, Max = 100, Step = 0.5)
+PhiPlot(DeltaT = 1, Drift, Min = 0, Max = 100, Step = 0.5)
 }
 \arguments{
-\item{DeltaT}{The time interval used.}
+\item{DeltaT}{The time interval used. By default, DeltaT = 1.}
 
-\item{Drift}{Underling drift matrix of the Phi; e.g., the overall Phi obtained from CT meta-analysis.}
+\item{Drift}{Underling continuous-time lagged effects matrix (i.e., Drift matrix) of the discrete-time lagged effects matrix Phi(DeltaT).}
 
-\item{Min}{Minimum time interval used in the plot. By default, Min = 0.}
+\item{Min}{Minimum time interval used in the Phi-plot. By default, Min = 0.}
 
-\item{Max}{Maximum time interval used in the plot. By default, Max = 100.}
+\item{Max}{Maximum time interval used in the Phi-plot. By default, Max = 100.}
 
-\item{Step}{The step-size taking in the time intervals. By default, Step = 0.5. Hence, using the defaults, the values of Phi(DeltaT) are determined for 0, 0.5, 1, 1.5, ..., 100.}
+\item{Step}{The step-size taken in the time intervals. By default, Step = 0.5. Hence, using the defaults, the Phi-plots is based on the values of Phi(DeltaT) for DeltaT = 0, 0.5, 1, 1.5, ..., 100.}
 }
 \value{
-Phi-plot.
+This function returns a Phi-plot for a range of time intervals.
 }
 \description{
-Makes Phi-plot of Phi based on its underling drift matrix
+This function makes a Phi-plot of Phi(DeltaT) for a range of time intervals based on its underling drift matrix. There is also an interactive web application on my website to create a Phi-plot: Phi-and-Psi-Plots and Find DeltaT (\url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}).
 }
 \examples{
 
-# Make PhiPlot of overallPhi obtained from CTmeta (with the CTMA function)
-# Input for CTMA to obtain overallPhi
-Phi <- matrix(c(0.25, 0.10,
-                0.20, 0.36,
-                0.35, 0.20,
-                0.30, 0.46,
-                0.15, 0.00,
-                0.10, 0.26), byrow=T, ncol = q)
-SigmaVAR_s <- diag(q) # for ease
-SigmaVAR <- rbind(SigmaVAR_s, SigmaVAR_s, SigmaVAR_s)
-# If Phi and SigmaVAR are known, one can calculate Gamma:
-Gamma <- array(data=NA, dim=c(S*q,q))
-teller <- 1
-for(s in 1:S){
-  Gamma[teller:(teller+1),] <- calc.Gamma.fromVAR(Phi[teller:(teller+1),], SigmaVAR[teller:(teller+1),])
-  teller <- teller + q
-}
-DeltaT <- c(2, 3, 1)
-N <- c(643, 651, 473)
-DeltaTStar <- 1
-out_CTmeta <- CTMA(N, 0, Phi, SigmaVAR, Gamma, DeltaTStar, DeltaT, Moderators = 0, Mod = NULL, FEorRE = 1, alpha=0.05)
-overallPhi <- matrix(out_CTmeta$Overall_standPhi_DeltaTStar, byrow = T, ncol = q)
-overallDrift <- logm(overallPhi)/DeltaTStar # Use expm package
+## Make Phi-plot ##
 
-# Make plot of above obtained overallPhi
-PhiPlot(DeltaTStar, overallDrift, Min = 0, Max = 40, Step = 0.5)
+# Phi(DeltaT)
+DeltaT <- 1
+Phi <- myPhi[1:2,1:2]
+
+# Determine the continuous-time equivalent, that is, the drift matrix
+if (!require("expm")) install.packages("expm") # Use expm package for function logm()
+library(expm)
+Drift <- logm(Phi)/DeltaT
+
+# Make plot of Phi
+PhiPlot(DeltaT, Drift)
+PhiPlot(DeltaT, Drift, Min = 0, Max = 10, Step = 0.01)
+
 }

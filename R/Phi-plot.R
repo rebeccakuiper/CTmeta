@@ -1,48 +1,35 @@
-
-#' Makes Phi-plot of Phi based on its underling drift matrix
+#' Phi-plot of Phi based on its underling drift matrix
 #'
-#' @param DeltaT The time interval used.
-#' @param Drift Underling drift matrix of the Phi; e.g., the overall Phi obtained from CT meta-analysis.
-#' @param Min Minimum time interval used in the plot. By default, Min = 0.
-#' @param Max Maximum time interval used in the plot. By default, Max = 100.
-#' @param Step The step-size taking in the time intervals. By default, Step = 0.5. Hence, using the defaults, the values of Phi(DeltaT) are determined for 0, 0.5, 1, 1.5, ..., 100.
+#' This function makes a Phi-plot of Phi(DeltaT) for a range of time intervals based on its underling drift matrix. There is also an interactive web application on my website to create a Phi-plot: Phi-and-Psi-Plots and Find DeltaT (\url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}).
 #'
-#' @return Phi-plot.
+#' @param DeltaT The time interval used. By default, DeltaT = 1.
+#' @param Drift Underling continuous-time lagged effects matrix (i.e., Drift matrix) of the discrete-time lagged effects matrix Phi(DeltaT).
+#' @param Min Minimum time interval used in the Phi-plot. By default, Min = 0.
+#' @param Max Maximum time interval used in the Phi-plot. By default, Max = 100.
+#' @param Step The step-size taken in the time intervals. By default, Step = 0.5. Hence, using the defaults, the Phi-plots is based on the values of Phi(DeltaT) for DeltaT = 0, 0.5, 1, 1.5, ..., 100.
+#'
+#' @return This function returns a Phi-plot for a range of time intervals.
 #' @importFrom expm expm
 #' @export
 #' @examples
 #'
-#' # Make PhiPlot of overallPhi obtained from CTmeta (with the CTMA function)
-#' # Input for CTMA to obtain overallPhi
-#' Phi <- matrix(c(0.25, 0.10,
-#'                 0.20, 0.36,
-#'                 0.35, 0.20,
-#'                 0.30, 0.46,
-#'                 0.15, 0.00,
-#'                 0.10, 0.26), byrow=T, ncol = q)
-#' SigmaVAR_s <- diag(q) # for ease
-#' SigmaVAR <- rbind(SigmaVAR_s, SigmaVAR_s, SigmaVAR_s)
-#' # If Phi and SigmaVAR are known, one can calculate Gamma:
-#' Gamma <- array(data=NA, dim=c(S*q,q))
-#' teller <- 1
-#' for(s in 1:S){
-#'   Gamma[teller:(teller+1),] <- calc.Gamma.fromVAR(Phi[teller:(teller+1),], SigmaVAR[teller:(teller+1),])
-#'   teller <- teller + q
-#' }
-#' DeltaT <- c(2, 3, 1)
-#' N <- c(643, 651, 473)
-#' DeltaTStar <- 1
-#' out_CTmeta <- CTMA(N, 0, Phi, SigmaVAR, Gamma, DeltaTStar, DeltaT, Moderators = 0, Mod = NULL, FEorRE = 1, alpha=0.05)
-#' overallPhi <- matrix(out_CTmeta$Overall_standPhi_DeltaTStar, byrow = T, ncol = q)
-#' overallDrift <- logm(overallPhi)/DeltaTStar # Use expm package
+#' ## Make Phi-plot ##
 #'
-#' # Make plot of above obtained overallPhi
-#' PhiPlot(DeltaTStar, overallDrift, Min = 0, Max = 40, Step = 0.5)
+#' # Phi(DeltaT)
+#' DeltaT <- 1
+#' Phi <- myPhi[1:2,1:2]
+#'
+#' # Determine the continuous-time equivalent, that is, the drift matrix
+#' if (!require("expm")) install.packages("expm") # Use expm package for function logm()
+#' library(expm)
+#' Drift <- logm(Phi)/DeltaT
+#'
+#' # Make plot of Phi
+#' PhiPlot(DeltaT, Drift)
+#' PhiPlot(DeltaT, Drift, Min = 0, Max = 10, Step = 0.01)
+#'
 
-
-
-
-PhiPlot <- function(DeltaT, Drift, Min = 0, Max = 100, Step = 0.5) {
+PhiPlot <- function(DeltaT = 1, Drift, Min = 0, Max = 100, Step = 0.5) {
 
 #  #######################################################################################################################
 #
@@ -51,11 +38,50 @@ PhiPlot <- function(DeltaT, Drift, Min = 0, Max = 100, Step = 0.5) {
 #
 #  #######################################################################################################################
 
+  # Checks:
+  if(length(DeltaT) != 1){
+    print(paste("The argument DeltaT should be a scalar, that is, one number, that is, a vector with one element."))
+    stop()
+  }
+  if(length(Min) != 1){
+    print(paste("The argument Min should be a scalar, that is, one number, that is, a vector with one element."))
+    stop()
+  }
+  if(length(Max) != 1){
+    print(paste("The argument Max should be a scalar, that is, one number, that is, a vector with one element."))
+    stop()
+  }
+  if(length(Step) != 1){
+    print(paste("The argument Step should be a scalar, that is, one number, that is, a vector with one element."))
+    stop()
+  }
+  #
+  # Check on Drift
+  if(length(Drift) == 1){
+    q <- 1
+  }else{
+  #
+    if(is.null(dim(Drift))){
+      if(!is.null(length(Drift))){
+        print(paste("The argument Drift is not a matrix of size q times q."))
+        stop()
+      }else{
+        print(paste("The argument Drift is not found: The continuous-time lagged effects matrix Drift is unknown, but should be part of the input."))
+        stop()
+      }
+    }else{
+      if(dim(Drift)[1] != dim(Drift)[2] | length(dim(Drift)) != 2){
+        print(paste("The argument Drift is not a matrix of size q times q."))
+        stop()
+      }
+    q <- dim(Drift)[1]
+    }
+  }
 
   #def.par <- par(no.readonly = TRUE) # save default, for resetting...
   #par(def.par)  #- reset to default
 
-  q <- dim(Drift)[1]
+
 
   DeltaTs<-seq(Min,Max,by=Step)
 
@@ -72,8 +98,14 @@ PhiPlot <- function(DeltaT, Drift, Min = 0, Max = 100, Step = 0.5) {
 
 
   PhiDeltaTs<-array(data=NA,dim=c(q,q,length(DeltaTs)))
-  for(i in 1:length(DeltaTs)){
-    PhiDeltaTs[,,i]<-expm(Drift*DeltaTs[i])
+  if(length(Drift) == 1){
+    for(i in 1:length(DeltaTs)){
+      PhiDeltaTs[,,i]<-exp(Drift*DeltaTs[i])
+    }
+  }else{
+    for(i in 1:length(DeltaTs)){
+      PhiDeltaTs[,,i]<-expm(Drift*DeltaTs[i])
+    }
   }
   tellerCol = 0
   tellerLTY = 1
@@ -95,32 +127,34 @@ PhiPlot <- function(DeltaT, Drift, Min = 0, Max = 100, Step = 0.5) {
   Col[1,1] = (tellerCol+1)
   Lty[1,1] = tellerLTY
   #
-  for(i in 2:q){
-    teller = teller + 1
-    lines(y=PhiDeltaTs[j,i,],x=DeltaTs, col=(tellerCol+j), lwd=2, lty=(tellerLTY+teller))
-    lines(y=PhiDeltaTs[i,j,],x=DeltaTs, col=(tellerCol+i), lwd=2, lty=(tellerLTY+teller))
-    #
-    Col[j,i] = (tellerCol+j)
-    Lty[j,i] = (tellerLTY+teller)
-    Col[i,j] = (tellerCol+i)
-    Lty[i,j] = (tellerLTY+teller)
-  }
-  for(j in 2:q){
-    for(i in j:q){
-      if(i == j){
-        lines(y=PhiDeltaTs[j,i,],x=DeltaTs, col=(tellerCol+j), lwd=2, lty=tellerLTY)
-        #
-        Col[j,i] = (tellerCol+j)
-        Lty[j,i] = tellerLTY
-      } else{
-        teller = teller + 1
-        lines(y=PhiDeltaTs[j,i,],x=DeltaTs, col=(tellerCol+j), lwd=2, lty=(tellerLTY+teller))
-        lines(y=PhiDeltaTs[i,j,],x=DeltaTs, col=(tellerCol+i), lwd=2, lty=(tellerLTY+teller))
-        #
-        Col[j,i] = (tellerCol+j)
-        Lty[j,i] = (tellerLTY+teller)
-        Col[i,j] = (tellerCol+i)
-        Lty[i,j] = (tellerLTY+teller)
+  if(length(Drift) > 1){
+    for(i in 2:q){
+      teller = teller + 1
+      lines(y=PhiDeltaTs[j,i,],x=DeltaTs, col=(tellerCol+j), lwd=2, lty=(tellerLTY+teller))
+      lines(y=PhiDeltaTs[i,j,],x=DeltaTs, col=(tellerCol+i), lwd=2, lty=(tellerLTY+teller))
+      #
+      Col[j,i] = (tellerCol+j)
+      Lty[j,i] = (tellerLTY+teller)
+      Col[i,j] = (tellerCol+i)
+      Lty[i,j] = (tellerLTY+teller)
+    }
+    for(j in 2:q){
+      for(i in j:q){
+        if(i == j){
+          lines(y=PhiDeltaTs[j,i,],x=DeltaTs, col=(tellerCol+j), lwd=2, lty=tellerLTY)
+          #
+          Col[j,i] = (tellerCol+j)
+          Lty[j,i] = tellerLTY
+        } else{
+          teller = teller + 1
+          lines(y=PhiDeltaTs[j,i,],x=DeltaTs, col=(tellerCol+j), lwd=2, lty=(tellerLTY+teller))
+          lines(y=PhiDeltaTs[i,j,],x=DeltaTs, col=(tellerCol+i), lwd=2, lty=(tellerLTY+teller))
+          #
+          Col[j,i] = (tellerCol+j)
+          Lty[j,i] = (tellerLTY+teller)
+          Col[i,j] = (tellerCol+i)
+          Lty[i,j] = (tellerLTY+teller)
+        }
       }
     }
   }
