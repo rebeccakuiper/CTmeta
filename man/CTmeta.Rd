@@ -37,7 +37,7 @@ Note that if Phi and SigmaVAR are known, Gamma can be calculated; hence, only Si
 
 \item{FEorRE}{Indicator whether continuous-time meta-analysis should use a fixed-effects model (1; default) or random-effects model (2).}
 
-\item{alpha}{The alpha level in determining the (1-alpha)*100\% confidence interval (CI). By default, alpha is set to 0.05, resulting in a 95\% CI.}
+\item{alpha}{The alpha level in determining the (1-alpha)*100\% confidence interval (CI). By default, alpha = 0.05; resulting in a 95\% CI.}
 }
 \value{
 The output comprises, among others, the overall vectorized transformed standardized lagged effects, their covariance matrix, and the corresponding elleptical/multivariate 95\% CI.

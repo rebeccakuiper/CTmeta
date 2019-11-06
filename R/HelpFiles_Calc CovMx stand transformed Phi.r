@@ -71,6 +71,15 @@ calc.CovMxStandTransPhi <- function(DeltaTStar, DeltaT = 1, N, Phi, Gamma = NULL
       }
     }
     q <- dim(Phi)[1]
+    #
+    if(dim(Phi)[1] != dim(Phi)[2]){
+      print(paste("The lagged effects matrix Phi should be a square matrix of size q times q, with q = ", q, "."))
+      stop()
+    }
+    if(length(dim(Phi)) > 2){
+      print(paste("The lagged effects matrix Phi should be an q times q matrix, with q = ", q, "."))
+      stop()
+    }
   } else{
     q <- 1
   }
