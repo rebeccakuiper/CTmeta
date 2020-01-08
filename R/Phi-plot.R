@@ -4,6 +4,7 @@
 #'
 #' @param DeltaT The time interval used. By default, DeltaT = 1.
 #' @param Drift Underling continuous-time lagged effects matrix (i.e., Drift matrix) of the discrete-time lagged effects matrix Phi(DeltaT).
+#' It also takes a fitted object from the classes "varest" (from the VAR() function in vars package) and "ctsemFit" (from the ctFit() function in the ctsem package); see example below. From such an object, the Drift matrix is calculated/extracted.
 #' @param Min Minimum time interval used in the Phi-plot. By default, Min = 0.
 #' @param Max Maximum time interval used in the Phi-plot. By default, Max = 100.
 #' @param Step The step-size taken in the time intervals. By default, Step = 0.5. Hence, using the defaults, the Phi-plots is based on the values of Phi(DeltaT) for DeltaT = 0, 0.5, 1, 1.5, ..., 100.
@@ -12,22 +13,34 @@
 #' @importFrom expm expm
 #' @export
 #' @examples
+#' ### Make Phi-plot ###
 #'
-#' ## Make Phi-plot ##
-#'
+#' ## Example 1 ##
+#' #
 #' # Phi(DeltaT)
 #' DeltaT <- 1
 #' Phi <- myPhi[1:2,1:2]
-#'
+#' #
 #' # Determine the continuous-time equivalent, that is, the drift matrix
 #' if (!require("expm")) install.packages("expm") # Use expm package for function logm()
 #' library(expm)
 #' Drift <- logm(Phi)/DeltaT
-#'
+#' #
 #' # Make plot of Phi
 #' PhiPlot(DeltaT, Drift)
 #' PhiPlot(DeltaT, Drift, Min = 0, Max = 10, Step = 0.01)
 #'
+#'
+#' ## Example 2: input from fitted object of class "varest" ##
+#' #
+#' DeltaT <- 1
+#' data <- myData
+#' if (!require("vars")) install.packages("vars")
+#' library(vars)
+#' out_VAR <- VAR(data, p = 1)
+#' PhiPlot(DeltaT, out_VAR)
+#'
+
 
 PhiPlot <- function(DeltaT = 1, Drift, Min = 0, Max = 100, Step = 0.5) {
 
@@ -57,26 +70,36 @@ PhiPlot <- function(DeltaT = 1, Drift, Min = 0, Max = 100, Step = 0.5) {
   }
   #
   # Check on Drift
-  if(length(Drift) == 1){
-    q <- 1
-  }else{
-  #
-    if(is.null(dim(Drift))){
-      if(!is.null(length(Drift))){
-        print(paste("The argument Drift is not a matrix of size q times q."))
-        stop()
-      }else{
-        print(paste("The argument Drift is not found: The continuous-time lagged effects matrix Drift is unknown, but should be part of the input."))
-        stop()
-      }
-    }else{
-      if(dim(Drift)[1] != dim(Drift)[2] | length(dim(Drift)) != 2){
-        print(paste("The argument Drift is not a matrix of size q times q."))
-        stop()
-      }
+  if(class(Drift) == "varest"){
+    Phi_VARest <- Acoef(Drift)[[1]]
+    Drift <- logm(Phi_VARest)/DeltaT # Phi = expm(Drift * deltaT)
     q <- dim(Drift)[1]
+  } else if(class(Drift) == "ctsemFit"){
+    Drift <- summary(Drift)$DRIFT
+    q <- dim(Drift)[1]
+  } else{
+    if(length(Drift) == 1){
+      q <- 1
+    }else{
+      #
+      if(is.null(dim(Drift))){
+        if(!is.null(length(Drift))){
+          print(paste("The argument Drift is not a matrix of size q times q."))
+          stop()
+        }else{
+          print(paste("The argument Drift is not found: The continuous-time lagged effects matrix Drift is unknown, but should be part of the input."))
+          stop()
+        }
+      }else{
+        if(dim(Drift)[1] != dim(Drift)[2] | length(dim(Drift)) != 2){
+          print(paste("The argument Drift is not a matrix of size q times q."))
+          stop()
+        }
+        q <- dim(Drift)[1]
+      }
     }
   }
+
 
   #def.par <- par(no.readonly = TRUE) # save default, for resetting...
   #par(def.par)  #- reset to default

@@ -9,7 +9,8 @@ PhiPlot(DeltaT = 1, Drift, Min = 0, Max = 100, Step = 0.5)
 \arguments{
 \item{DeltaT}{The time interval used. By default, DeltaT = 1.}
 
-\item{Drift}{Underling continuous-time lagged effects matrix (i.e., Drift matrix) of the discrete-time lagged effects matrix Phi(DeltaT).}
+\item{Drift}{Underling continuous-time lagged effects matrix (i.e., Drift matrix) of the discrete-time lagged effects matrix Phi(DeltaT).
+It also takes a fitted object from the classes "varest" (from the VAR() function in vars package) and "ctsemFit" (from the ctFit() function in the ctsem package); see example below. From such an object, the Drift matrix is calculated/extracted.}
 
 \item{Min}{Minimum time interval used in the Phi-plot. By default, Min = 0.}
 
@@ -24,20 +25,31 @@ This function returns a Phi-plot for a range of time intervals.
 This function makes a Phi-plot of Phi(DeltaT) for a range of time intervals based on its underling drift matrix. There is also an interactive web application on my website to create a Phi-plot: Phi-and-Psi-Plots and Find DeltaT (\url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}).
 }
 \examples{
+### Make Phi-plot ###
 
-## Make Phi-plot ##
-
+## Example 1 ##
+#
 # Phi(DeltaT)
 DeltaT <- 1
 Phi <- myPhi[1:2,1:2]
-
+#
 # Determine the continuous-time equivalent, that is, the drift matrix
 if (!require("expm")) install.packages("expm") # Use expm package for function logm()
 library(expm)
 Drift <- logm(Phi)/DeltaT
-
+#
 # Make plot of Phi
 PhiPlot(DeltaT, Drift)
 PhiPlot(DeltaT, Drift, Min = 0, Max = 10, Step = 0.01)
+
+
+## Example 2: input from fitted object of class "varest" ##
+#
+DeltaT <- 1
+data <- myData
+if (!require("vars")) install.packages("vars")
+library(vars)
+out_VAR <- VAR(data, p = 1)
+PhiPlot(DeltaT, out_VAR)
 
 }

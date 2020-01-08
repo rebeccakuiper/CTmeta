@@ -21,7 +21,8 @@ calc.CovMxStandTransPhi(
 
 \item{N}{Number of persons (panel data) or number measurement occasions - 1 (time series data). This is used in determining the covariance matrix of the vectorized standardized lagged effects.}
 
-\item{Phi}{(Un)standardized lagged effects matrix. If necessary, it is standardized, then it is transformed and for this vectorized Phi the covariance matrix is determined.}
+\item{Phi}{(Un)standardized lagged effects matrix. If necessary, it is standardized, then it is transformed and for this vectorized Phi the covariance matrix is determined.
+It also takes a fitted object from the classes "varest" (from the VAR() function in vars package) and "ctsemFit" (from the ctFit() function in the ctsem package); see example below. From such an object, the Phi, SigmaVAR, and Gamma matrices are calculated/extracted.}
 
 \item{Gamma}{Stationary covariance matrix, that is, the contemporaneous covariance matrix of the data.
 Note that if Phi and SigmaVAR are known, Gamma can be calculated; hence, only SigmaVAR or Gamma is needed as input (if only Gamma, then use 'Gamma = Gamma' or set SigmaVAR to NULL, see examples below).}
@@ -38,6 +39,7 @@ This function returns the vectorized transformed standardized lagged effects, th
 This function calculates the (vectorized) transformed standardized Phi, their covariance matrix and elliptical 95\% confidence interval (CI). There is also an interactive web application on my website: Standardizing and/or transforming lagged regression estimates (\url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}).
 }
 \examples{
+## Example 1 ##
 
 # Input for examples below
 DeltaTStar <- 1
@@ -61,5 +63,17 @@ calc.CovMxStandTransPhi(DeltaTStar, DeltaT, N, Phi, SigmaVAR = SigmaVAR)
 calc.CovMxStandTransPhi(DeltaTStar, DeltaT, N, Phi, Gamma)
 # or
 calc.CovMxStandTransPhi(DeltaTStar, DeltaT, N, Phi, Gamma, NULL)
+
+
+## Example 2: input from fitted object of class "varest" ##
+#
+DeltaTStar <- 1
+DeltaT <- 2
+N <- 643
+data <- myData
+if (!require("vars")) install.packages("vars")
+library(vars)
+out_VAR <- VAR(data, p = 1)
+calc.CovMxStandTransPhi(DeltaTStar, DeltaT, N, out_VAR)
 
 }

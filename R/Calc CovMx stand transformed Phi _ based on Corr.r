@@ -47,6 +47,7 @@
 #' # The output (vecStandPhi_DeltaTStar, SigmaVAR_DeltaTStar, and Gamma) can be used to make stacked matrices or arrays which can serve as input for continuous-time meta-analysis CTmeta (using the function CTmeta).
 #'
 
+
 calc.TransPhi_Corr <- function(DeltaTStar, DeltaT = 1, N, corr_YXYX, alpha=0.05) {
 
   # Checks:

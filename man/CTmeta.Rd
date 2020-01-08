@@ -104,7 +104,7 @@ CTmeta(N, DeltaT, DeltaTStar, Phi, Gamma = Gamma, Moderators = 1, Mod = Mod) # f
 
 ## Make Phi-plot of resulting overall Phi ##
 
-# Note: The Phi-plot can be made using the function 'PhiPlot' (see below) or by using the interactive web app from my website (\\url{https://www.uu.nl/staff/RMKuiper/Websites\\\%20\\\%2F\\\%20Shiny\\\%20apps}).
+# Note: The Phi-plot can be made using the function 'PhiPlot' (see below) or by using the interactive web app from my website (\url{https://www.uu.nl/staff/RMKuiper/Websites\\%20\\%2F\\%20Shiny\\%20apps}).
 
 # Extract the q times q overall Phi matrix
 out_CTmeta <- CTmeta(N, DeltaT, DeltaTStar, Phi, Gamma = Gamma)

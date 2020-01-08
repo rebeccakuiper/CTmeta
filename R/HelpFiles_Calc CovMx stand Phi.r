@@ -5,6 +5,7 @@
 #'
 #' @param N Number of persons (panel data) or number of measurement occasions - 1 (time series data). This is used in determining the covariance matrix of the vectorized standardized lagged effects.
 #' @param Phi (Un)standardized lagged effects matrix. If necessary, it is standardized and for the standardized and vectorized Phi the covariance matrix is determined.
+#' It also takes a fitted object from the classes "varest" (from the VAR() function in vars package) and "ctsemFit" (from the ctFit() function in the ctsem package); see example below. From such an object, the Phi, SigmaVAR, and Gamma matrices are calculated/extracted.
 #' @param Gamma Stationary covariance matrix, that is, the contemporaneous covariance matrix of the data.
 #' Note that if Phi and SigmaVAR are known, Gamma can be calculated; hence, only SigmaVAR or Gamma is needed as input (if only Gamma, then use 'Gamma = Gamma' or set SigmaVAR to NULL, see examples below).
 #' @param SigmaVAR Residual covariance matrix of the first-order discrete-time vector autoregressive (DT-VAR(1)) model.
@@ -14,6 +15,7 @@
 #' @return This function returns the vectorized standardized lagged effects, their covariance matrix, and the corresponding elliptical/multivariate 95\% CI.
 #' @export
 #' @examples
+#' ## Example 1 ##
 #'
 #' # Input for examples below
 #' N <- 643
@@ -34,6 +36,16 @@
 #' # or
 #' calc.CovMxStandPhi(N, Phi, Gamma, NULL)
 #'
+#'
+#' ## Example 2: input from fitted object of class "varest" ##
+#' #
+#' N <- 643
+#' data <- myData
+#' if (!require("vars")) install.packages("vars")
+#' library(vars)
+#' out_VAR <- VAR(data, p = 1)
+#' calc.CovMxStandPhi(N, out_VAR)
+#'
 
 
 calc.CovMxStandPhi <- function(N, Phi, Gamma = NULL, SigmaVAR = NULL, alpha=0.05) {
@@ -45,28 +57,46 @@ calc.CovMxStandPhi <- function(N, Phi, Gamma = NULL, SigmaVAR = NULL, alpha=0.05
   }
   #
   # Check on Phi
-  if(length(Phi) != 1){
-    if(is.null(dim(Phi))){
-      if(!is.null(length(Phi))){
-        print(paste("The argument Phi is not a matrix of size q times q."))
-        stop()
-      }else{
-        print(paste("The argument Phi is not found: The lagged effects matrix Phi is unknown, but should be part of the input."))
+  if(class(Phi) == "varest"){
+    SigmaVAR <- cov(resid(Phi))
+    Phi <- Acoef(Phi)[[1]]
+    q <- dim(Phi)[1]
+  } else if(class(Phi) == "ctsemFit"){
+    B <- -1 * summary(Phi)$DRIFT
+    Sigma <- summary(Phi)$DIFFUSION
+    #Phi <- summary(Phi)$discreteDRIFT # Is no longer output in ctsem...
+    Phi <- expm(-B*DeltaT)
+    #source("HelpFiles_Calc VARparam from CTMparam.r") # werkt zo niet, moet er dan ws ook net als andere files package fie van maken
+    #VarEst <- calc.VARparam(DeltaT, B, Sigma)
+    #Phi <- VarEst$Phi
+    q <- dim(Phi)[1]
+    #SigmaVAR <- VarEst$SigmaVAR
+    kronsum <- kronecker(diag(q),B) + kronecker(B,diag(q))
+    SigmaVAR <- matrix((solve(kronsum) %*% (diag(q*q) - expm(-kronsum * DeltaT)) %*% as.vector(Sigma)), ncol=q, nrow=q)
+  } else{
+    if(length(Phi) != 1){
+      if(is.null(dim(Phi))){
+        if(!is.null(length(Phi))){
+          print(paste("The argument Phi is not a matrix of size q times q."))
+          stop()
+        }else{
+          print(paste("The argument Phi is not found: The lagged effects matrix Phi is unknown, but should be part of the input."))
+          stop()
+        }
+      }
+      q <- dim(Phi)[1]
+      #
+      if(dim(Phi)[1] != dim(Phi)[2]){
+        print(paste("The lagged effects matrix Phi should be a square matrix of size q times q, with q = ", q, "."))
         stop()
       }
+      if(length(dim(Phi)) > 2){
+        print(paste("The lagged effects matrix Phi should be an q times q matrix, with q = ", q, "."))
+        stop()
+      }
+    } else{
+      q <- 1
     }
-    q <- dim(Phi)[1]
-    #
-    if(dim(Phi)[1] != dim(Phi)[2]){
-      print(paste("The lagged effects matrix Phi should be a square matrix of size q times q, with q = ", q, "."))
-      stop()
-    }
-    if(length(dim(Phi)) > 2){
-      print(paste("The lagged effects matrix Phi should be an q times q matrix, with q = ", q, "."))
-      stop()
-    }
-  } else{
-    q <- 1
   }
 
   # Check on SigmaVAR and Gamma
