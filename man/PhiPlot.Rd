@@ -73,4 +73,19 @@ library(vars)
 out_VAR <- VAR(data, p = 1)
 PhiPlot(DeltaT, out_VAR)
 
+
+## Example 3: Change plot options ##
+# Note: use Drift from Example 1
+WhichElements <- matrix(1, ncol = q, nrow = q) # Now, all elements are 1
+diag(WhichElements) <- 0 # Now, the autoregressive parameters are excluded by setting the diagonals to 0.
+Lab <- c("12", "21")
+Labels <- NULL
+for(i in 1:length(Lab)){
+ e <- bquote(expression(Phi(Delta[t])[.(Lab[i])]))
+ Labels <- c(Labels, eval(e))
+}
+Col <- c(1,2)
+Lty <- c(1,2)
+PhiPlot(DeltaT = 1, Drift, Min = 0, Max = 10, Step = 0.5, WhichElements, Labels, Col, Lty)
+
 }

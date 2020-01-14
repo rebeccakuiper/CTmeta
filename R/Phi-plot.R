@@ -45,6 +45,21 @@
 #' out_VAR <- VAR(data, p = 1)
 #' PhiPlot(DeltaT, out_VAR)
 #'
+#'
+#' ## Example 3: Change plot options ##
+#' # Note: use Drift from Example 1
+#' WhichElements <- matrix(1, ncol = q, nrow = q) # Now, all elements are 1
+#' diag(WhichElements) <- 0 # Now, the autoregressive parameters are excluded by setting the diagonals to 0.
+#' Lab <- c("12", "21")
+#' Labels <- NULL
+#' for(i in 1:length(Lab)){
+#'  e <- bquote(expression(Phi(Delta[t])[.(Lab[i])]))
+#'  Labels <- c(Labels, eval(e))
+#' }
+#' Col <- c(1,2)
+#' Lty <- c(1,2)
+#' PhiPlot(DeltaT = 1, Drift, Min = 0, Max = 10, Step = 0.5, WhichElements, Labels, Col, Lty)
+#'
 
 
 PhiPlot <- function(DeltaT = 1, Drift, Min = 0, Max = 10, Step = 0.05, WhichElements = NULL, Labels = NULL, Col = NULL, Lty = NULL, Title = NULL) {
@@ -134,10 +149,10 @@ PhiPlot <- function(DeltaT = 1, Drift, Min = 0, Max = 10, Step = 0.05, WhichElem
       print(paste("The argument Labels should contain ", nrLines, " elements, that is, q*q or the number of 1s in WhichElements (or WhichElements is incorrectly specified)."))
       stop()
     }
-    if(any(!is.character(Labels))){
-      print(paste("The argument Labels should consist of solely characters."))
-      stop()
-    }
+    #if(any(!is.character(Labels))){ # TO DO could also be an expression
+    #  print(paste("The argument Labels should consist of solely characters."))
+    #  stop()
+    #}
   }
   if(!is.null(Col)){
     if(length(Col) != nrLines){
