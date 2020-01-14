@@ -20,7 +20,7 @@ CTmeta(
 \arguments{
 \item{N}{Number of persons (panel data) or number of measurement occasions - 1 (time series data) used in the S primary studies. Matrix of size S times 1.}
 
-\item{DeltaT}{The time intervals used in the S primary studies. Matrix of size S times 1.}
+\item{DeltaT}{The time intervals used in the S primary studies. Matrix of size S times 1. Note that all the time intervals should be on the same scale (e.g., two time-intervals of 60 minutes and 2 hours, should be either 60 and 120 or 1 and 2).}
 
 \item{DeltaTStar}{The time interval (scalar) to which the standardized lagged effects matrix should be transformed to.}
 

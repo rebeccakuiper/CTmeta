@@ -3,7 +3,7 @@
 #' Continuous-time meta-analysis (CTmeta) on standarized lagged effects taking into account the various time-intervals used in the primary studies. There is also an interactive web application on my website to perform CTmeta: \url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}.
 #'
 #' @param N Number of persons (panel data) or number of measurement occasions - 1 (time series data) used in the S primary studies. Matrix of size S times 1.
-#' @param DeltaT The time intervals used in the S primary studies. Matrix of size S times 1.
+#' @param DeltaT The time intervals used in the S primary studies. Matrix of size S times 1. Note that all the time intervals should be on the same scale (e.g., two time-intervals of 60 minutes and 2 hours, should be either 60 and 120 or 1 and 2).
 #' @param DeltaTStar The time interval (scalar) to which the standardized lagged effects matrix should be transformed to.
 #' @param Phi Stacked matrix of size S*q times q or array with dimensions q times q times S of (un)standardized lagged effects matrices for all S primary studies in the meta-analysis; with q the number of variables (leading to an q times q lagged effects matrix in a single primary study). Note: In case primary studies report (lagged) correlation matrices, one can use the function 'calc.TransPhi_Corr' to transform those to the corresponding standardized lagged effects matrices (see ?calc.TransPhi_Corr and examples below).
 #' @param SigmaVAR (optional: either SigmaVAR or Gamma). Stacked matrix of size S*q times q or array with dimensions q times q times S of residual covariance matrices of the first-order discrete-time vector autoregressive (DT-VAR(1)) model.
