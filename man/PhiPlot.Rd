@@ -4,19 +4,40 @@
 \alias{PhiPlot}
 \title{Phi-plot of Phi based on its underling drift matrix}
 \usage{
-PhiPlot(DeltaT = 1, Drift, Min = 0, Max = 100, Step = 0.5)
+PhiPlot(
+  DeltaT = 1,
+  Drift,
+  Min = 0,
+  Max = 10,
+  Step = 0.05,
+  WhichElements = NULL,
+  Labels = NULL,
+  Col = NULL,
+  Lty = NULL,
+  Title = NULL
+)
 }
 \arguments{
 \item{DeltaT}{The time interval used. By default, DeltaT = 1.}
 
-\item{Drift}{Underling continuous-time lagged effects matrix (i.e., Drift matrix) of the discrete-time lagged effects matrix Phi(DeltaT).
-It also takes a fitted object from the classes "varest" (from the VAR() function in vars package) and "ctsemFit" (from the ctFit() function in the ctsem package); see example below. From such an object, the Drift matrix is calculated/extracted.}
+\item{Drift}{Underling continuous-time lagged effects matrix (i.e., Drift matrix) of the discrete-time lagged effects matrix Phi(DeltaT). Note that the Drift (Phi) matrix should be standardized to make a fair comparison between cross-legged effects.
+It also takes a fitted object from the classes "varest" (from the VAR() function in vars package) and "ctsemFit" (from the ctFit() function in the ctsem package); see example below. From such an object, the (standardized) Drift matrix is calculated/extracted.}
 
 \item{Min}{Minimum time interval used in the Phi-plot. By default, Min = 0.}
 
-\item{Max}{Maximum time interval used in the Phi-plot. By default, Max = 100.}
+\item{Max}{Maximum time interval used in the Phi-plot. By default, Max = 10.}
 
-\item{Step}{The step-size taken in the time intervals. By default, Step = 0.5. Hence, using the defaults, the Phi-plots is based on the values of Phi(DeltaT) for DeltaT = 0, 0.5, 1, 1.5, ..., 100.}
+\item{Step}{The step-size taken in the time intervals. By default, Step = 0.05. Hence, using the defaults, the Phi-plots is based on the values of Phi(DeltaT) for DeltaT = 0, 0.05, 0.10, ..., 10. Note: Especially in case of complex eigenvalues, this step size should be very small (then, the oscillating behaviour can be seen best).}
+
+\item{WhichElements}{Optional. Matrix of same size as Drift denoting which element/line should be plotted (1) or not (0). By default, WhichElements = NULL. Note that even though not all lines have to be plotted, the full Drift matrix is needed to determine the selected lines.}
+
+\item{Labels}{Optional. Vector with (character) labels of the lines to be plotted. The length of this vector equals the number of 1s in WhichElements (or equals q*q). By default, Labels = NULL, which renders labels with Greek letter of Phi (as a function of the time-interval) together with the indices (of outcome and predictor variables).}
+
+\item{Col}{Optional. Vector with color values (integers) of the lines to be plotted. The length of this vector equals the number of 1s in WhichElements (or equals q*q). By default, Col = NULL, which renders the same color for effects that belong to the same outcome variable (i.e. a row in the Drift matrix).}
+
+\item{Lty}{Optional. Vector with line type values (integers) of the lines to be plotted. The length of this vector equals the number of 1s in WhichElements (or equals q*q). By default, Lty = NULL, which renders solid lines for the autoregressive effects and the same type of dashed line for reciprocal effects (i.e., same type for Phi_ij as for Phi_ji).}
+
+\item{Title}{Optional. A character or a list consisting of maximum 3 characters (or 'call' class objects, like from the paste() function) that together represent the title of the Phi-plot. By default, Title = NULL, then the following code will be used for the title: as.list(expression(paste(Phi(Delta[t]), " plot:"), "How do the lagged parameters vary", "as a function of the time-interval")))}
 }
 \value{
 This function returns a Phi-plot for a range of time intervals.
@@ -31,7 +52,7 @@ This function makes a Phi-plot of Phi(DeltaT) for a range of time intervals base
 #
 # Phi(DeltaT)
 DeltaT <- 1
-Phi <- myPhi[1:2,1:2]
+Phi <- myPhi[1:2,1:2] # For simplicity, it is assumed that this is a standardized Phi matrix.
 #
 # Determine the continuous-time equivalent, that is, the drift matrix
 if (!require("expm")) install.packages("expm") # Use expm package for function logm()
