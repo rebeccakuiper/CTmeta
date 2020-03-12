@@ -4,12 +4,12 @@
 \alias{calc.MaxDeltaT}
 \title{Time-interval (DeltaT) for which Phi_ij(DeltaT) reaches its minimum or maximum (together with that minimum or maximum)}
 \usage{
-calc.MaxDeltaT(B = NULL, Phi = NULL)
+calc.MaxDeltaT(Drift = NULL, Phi = NULL)
 }
 \arguments{
-\item{B}{Matrix of size q times q of (un)standardized continuous-time lagged effects, called drift matrix. Note that the input uses B for which Phi(DeltaT) = expm(-B*DeltaT), that is, B = -A (it will detect if A is used and continuous with a message).}
+\item{Drift}{Matrix of size q times q of (un)standardized continuous-time lagged effects, called drift matrix. Note that Phi(DeltaT) = expm(Drift*DeltaT).}
 
-\item{Phi}{Optional. Matrix of size q times q of (un)standardized lagged effects. By default, input for B is used; only when B = NULL, Phi will be used (and the corresponding B will be used).}
+\item{Phi}{Optional. Matrix of size q times q of (un)standardized lagged effects. By default, input for Drift is used; only when Drift = NULL, Phi will be used (to determine the corresponding Drift).}
 }
 \value{
 The output renders, per element (i,j), the time-interval for which Phi_ij reaches its minimum/maximum together with this minimum/maximum.
@@ -27,11 +27,18 @@ Phi <- myPhi[1:2, 1:2]
 
 calc.MaxDeltaT(Phi = Phi)
 
-# If you would use the drift matrix Drift as input (with Phi(DeltaT) = expm(-Drift*DeltaT)):
-#calc.MaxDeltaT(B = Drift)
+# If you would use the drift matrix Drift as input, then use:
+##if (!require("expm")) install.packages("expm") # Use expm package for function logm()
+##library(expm)
+##Drift <- logm(Phi)/DeltaT
+#calc.MaxDeltaT(Drift = Drift)
 #calc.MaxDeltaT(Drift)
 
 
 # Note that the function 'PhiPlot' can help to see (per element) whether a minimum or maximum is reached.
+##if (!require("expm")) install.packages("expm") # Use expm package for function logm()
+##library(expm)
+##Drift <- logm(Phi)/DeltaT
+#PhiPlot(DeltaT = 1, Drift)
 
 }

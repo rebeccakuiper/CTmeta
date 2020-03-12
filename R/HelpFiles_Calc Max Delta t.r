@@ -2,8 +2,8 @@
 #'
 #' Time-interval (DeltaT) for which Phi_ij(DeltaT) reaches its minimum or maximum (together with that minimum or maximum). The interactive web application 'Phi-and-Psi-Plots and Find DeltaT' also contains this functionality, you can find it on my website: \url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}.
 #'
-#' @param B Matrix of size q times q of (un)standardized continuous-time lagged effects, called drift matrix. Note that the input uses B for which Phi(DeltaT) = expm(-B*DeltaT), that is, B = -A (it will detect if A is used and continuous with a message).
-#' @param Phi Optional. Matrix of size q times q of (un)standardized lagged effects. By default, input for B is used; only when B = NULL, Phi will be used (and the corresponding B will be used).
+#' @param Drift Matrix of size q times q of (un)standardized continuous-time lagged effects, called drift matrix. Note that Phi(DeltaT) = expm(Drift*DeltaT).
+#' @param Phi Optional. Matrix of size q times q of (un)standardized lagged effects. By default, input for Drift is used; only when Drift = NULL, Phi will be used (to determine the corresponding Drift).
 #'
 #' @return The output renders, per element (i,j), the time-interval for which Phi_ij reaches its minimum/maximum together with this minimum/maximum.
 #' @importFrom expm expm
@@ -20,45 +20,56 @@
 #'
 #' calc.MaxDeltaT(Phi = Phi)
 #'
-#' # If you would use the drift matrix Drift as input (with Phi(DeltaT) = expm(-Drift*DeltaT)):
-#' #calc.MaxDeltaT(B = Drift)
+#' # If you would use the drift matrix Drift as input, then use:
+#' ##if (!require("expm")) install.packages("expm") # Use expm package for function logm()
+#' ##library(expm)
+#' ##Drift <- logm(Phi)/DeltaT
+#' #calc.MaxDeltaT(Drift = Drift)
 #' #calc.MaxDeltaT(Drift)
 #'
 #'
 #' # Note that the function 'PhiPlot' can help to see (per element) whether a minimum or maximum is reached.
+#' ##if (!require("expm")) install.packages("expm") # Use expm package for function logm()
+#' ##library(expm)
+#' ##Drift <- logm(Phi)/DeltaT
+#' #PhiPlot(DeltaT = 1, Drift)
 #'
 
-calc.MaxDeltaT <- function(B = NULL, Phi = NULL) {
+calc.MaxDeltaT <- function(Drift = NULL, Phi = NULL) {
 
   #if (!require("expm")) install.packages("expm")
   #library(expm)
   #if (!require("nleqslv")) install.packages("nleqslv")
   #library(nleqslv)
 
-
+  # Drift = A = -B
   # B is drift matrix that is pos def, so Phi(DeltaT) = expm(-B*DeltaT)
-  if(is.null(B)){
+
+    if(is.null(Drift)){
     if(!is.null(Phi)){
       B <- -logm(Phi)/1
     }else{ # is.null(Phi)
-      ("Either the drift matrix B or the autoregressive matrix Phi should be input to the function.")
-      ("Note that Phi(DeltaT) = expm(-B*DeltaT).")
+      ("Either the drift matrix Drift or the autoregressive matrix Phi should be input to the function.")
+      #("Note that Phi(DeltaT) = expm(-B*DeltaT).")
       stop()
     }
-  }else{ # !is.null(B)
+  }else{ # !is.null(Drift)
+    B <- -Drift
     if(all(eigen(B)$val < 0)){
-      ("All the eigenvalues of the drift matrix B are negative; therefore. I assume the input was A=-B instead of B. I will use -A=B in the calculation.")
-      ("Note that Phi(DeltaT) = expm(-B*DeltaT).")
+      #("All the eigenvalues of the drift matrix B are negative; therefore. I assume the input was A=-B instead of B. I will use -A=B in the calculation.")
+      #("Note that Phi(DeltaT) = expm(-B*DeltaT).")
+      ("All the eigenvalues of the drift matrix Drift are positive. Therefore. I assume the input was B=-A instead of A. I will use -B=A in the calculation.")
       B = -B
     }
   }
   # Check on B
   if(any(eigen(B)$val <= 0)){
-    ("The function stopped, since some of the eigenvalues of the drift matrix B are negative or zero.")
+    #("The function stopped, since some of the eigenvalues of the drift matrix B are negative or zero.")
+    ("The function stopped, since some of the eigenvalues of the drift matrix Drift are positive or zero.")
     stop()
   }
   if(dim(B)[1] != dim(B)[2]){
-    print(paste("The matrix (B or Phi) should be a square (q times q) matrix."))
+    print(paste("The matrix (Drift or Phi) should be a square (q times q) matrix."))
     stop()
   }
 
