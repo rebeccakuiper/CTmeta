@@ -4,7 +4,9 @@
 \name{myData}
 \alias{myData}
 \title{An example of data}
-\format{An object of class \code{matrix} with 1000 rows and 2 columns.}
+\format{
+An object of class \code{matrix} with 1000 rows and 2 columns.
+}
 \usage{
 data(myData)
 }

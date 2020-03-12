@@ -4,7 +4,9 @@
 \name{myGamma}
 \alias{myGamma}
 \title{An example of Gamma}
-\format{An object of class \code{matrix} with 6 rows and 2 columns.}
+\format{
+An object of class \code{matrix} with 6 rows and 2 columns.
+}
 \usage{
 data(myGamma)
 }

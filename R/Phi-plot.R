@@ -255,7 +255,7 @@ PhiPlot <- function(DeltaT = 1, Drift, Min = 0, Max = 10, Step = 0.05, WhichElem
     par(mar=c(par('mar')[1:3], 0)) # optional, removes extraneous right inner margin space
     plot.new()
     l <- legend(0, 0,
-           legend = legendT, cex=CEX,
+           legend = legendT, #cex=CEX,
            bty = "n",
            lty=Lty, # gives the legend appropriate symbols (lines)
            lwd=rep(2, q*q),
