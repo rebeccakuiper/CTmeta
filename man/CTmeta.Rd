@@ -116,7 +116,8 @@ library(expm)
 overallDrift <- logm(overallPhi)/DeltaTStar
 
 # Make Phi-plot:
-PhiPlot(DeltaTStar, overallDrift, Min = 0, Max = 40, Step = 0.5)
+Title <- as.list(expression(paste(Phi(Delta[t]), " plot:"), "How do the overall lagged parameters vary", "as a function of the time-interval"))
+PhiPlot(DeltaTStar, overallDrift, Min = 0, Max = 40, Step = 0.5, Title = Title)
 
 
 

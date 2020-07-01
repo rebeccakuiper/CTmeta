@@ -5,7 +5,7 @@
 \alias{myPhi}
 \title{An example of Phi}
 \format{
-An object of class \code{matrix} with 6 rows and 2 columns.
+An object of class \code{matrix} (inherits from \code{array}) with 6 rows and 2 columns.
 }
 \usage{
 data(myPhi)
