@@ -76,7 +76,11 @@ calc.MaxDeltaT <- function(Drift = NULL, Phi = NULL) {
 
   message = "There is a DeltaT such that the Phi(DeltaT) functions reach a minimum or maximum."
 
-  q <- dim(B)[1]
+  if(length(B) == 1){
+    q <- 1
+  }else{
+    q <- dim(B)[1]
+  }
 
 
   SolveForMaxDelta_ij_fie <- function(q, B, i, j) {

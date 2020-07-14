@@ -90,14 +90,22 @@ PhiPlot <- function(DeltaT = 1, Drift, Min = 0, Max = 10, Step = 0.05, WhichElem
   }
   #
   # Check on Drift
-  if(class(Drift) == "varest"){
+  if(any(class(Drift) == "varest")){
     Phi_VARest <- Acoef(Drift)[[1]]
     Drift <- logm(Phi_VARest)/DeltaT # Phi = expm(Drift * deltaT)
-    q <- dim(Drift)[1]
+    if(length(B) == 1){
+      q <- 1
+    }else{
+      q <- dim(B)[1]
+    }
     # TO DO bepaal standardized Phi en dus Drift!
-  } else if(class(Drift) == "ctsemFit"){
+  } else if(any(class(Drift) == "ctsemFit")){
     Drift <- summary(Drift)$DRIFT
-    q <- dim(Drift)[1]
+    if(length(B) == 1){
+      q <- 1
+    }else{
+      q <- dim(B)[1]
+    }
     # TO DO bepaal standardized Drift!
   } else{
     if(length(Drift) == 1){

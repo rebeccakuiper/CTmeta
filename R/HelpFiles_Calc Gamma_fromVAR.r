@@ -30,11 +30,15 @@
 
 calc.Gamma.fromVAR <- function(Phi, SigmaVAR) {
 
-  if(class(Phi) == "varest"){
+  if(any(class(Phi) == "varest")){
     SigmaVAR <- cov(resid(Phi))
     Phi <- Acoef(Phi)[[1]]
-    q <- dim(Phi)[1]
-  } else if(class(Phi) == "ctsemFit"){
+    if(length(Phi) == 1){
+      q <- 1
+    }else{
+      q <- dim(Phi)[1]
+    }
+  } else if(any(class(Phi) == "ctsemFit")){
     B <- -1 * summary(Phi)$DRIFT
     Sigma <- summary(Phi)$DIFFUSION
     #Phi <- summary(Phi)$discreteDRIFT # Is no longer output in ctsem...
@@ -42,7 +46,11 @@ calc.Gamma.fromVAR <- function(Phi, SigmaVAR) {
     #source("HelpFiles_Calc VARparam from CTMparam.r") # werkt zo niet, moet er dan ws ook net als andere files package fie van maken
     #VarEst <- calc.VARparam(DeltaT, B, Sigma)
     #Phi <- VarEst$Phi
-    q <- dim(Phi)[1]
+    if(length(Phi) == 1){
+      q <- 1
+    }else{
+      q <- dim(Phi)[1]
+    }
     #SigmaVAR <- VarEst$SigmaVAR
     kronsum <- kronecker(diag(q),B) + kronecker(B,diag(q))
     SigmaVAR <- matrix((solve(kronsum) %*% (diag(q*q) - expm(-kronsum * DeltaT)) %*% as.vector(Sigma)), ncol=q, nrow=q)

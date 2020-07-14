@@ -16,14 +16,22 @@ if (!require("expm")) install.packages("expm")
 library(expm)
 
 #######################################################################################################################
-  
-  
-  q <- dim(B)[1]
+
+  if(any(class(B) == "ctsemFit")){
+    B <- -1 * summary(B)$DRIFT
+    Sigma <- summary(B)$DIFFUSION
+  }
+
+  if(length(B) == 1){
+    q <- 1
+  }else{
+    q <- dim(B)[1]
+  }
 
 # Phi = exp{-B * DeltaT} = V exp{-Eigenvalues * DeltaT} V^-1 = V D_Phi V^-1
 ParamVAR <- expm(-B*DeltaT)
 #if(all(abs(Im(ParamVAR)) < 0.0001) == TRUE){ParamVAR <- Re(ParamVAR)}
-  
+
 kronsum <- kronecker(diag(q),B) + kronecker(B,diag(q))
 Sigma_VAR <- matrix((solve(kronsum) %*% (diag(q*q) - expm(-kronsum * DeltaT)) %*% as.vector(Sigma)), ncol=q, nrow=q)
 #if(all(abs(Im(Sigma_VAR)) < 0.0001) == TRUE){Sigma_VAR <- Re(Sigma_VAR)}

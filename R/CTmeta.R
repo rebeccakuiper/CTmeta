@@ -1,6 +1,6 @@
 #' Continuous-time meta-analysis on standarized lagged effects
 #'
-#' Continuous-time meta-analysis (CTmeta) on standarized lagged effects taking into account the various time-intervals used in the primary studies. There is also an interactive web application on my website to perform CTmeta: \url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}.
+#' Continuous-time meta-analysis (CTmeta) on standarized lagged effects (Phi) taking into account the various time-intervals used in the primary studies. There is also an interactive web application on my website to perform CTmeta: \url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}.
 #'
 #' @param N Number of persons (panel data) or number of measurement occasions - 1 (time series data) used in the S primary studies. Matrix of size S times 1.
 #' @param DeltaT The time intervals used in the S primary studies. Matrix of size S times 1. Note that all the time intervals should be on the same scale (e.g., two time-intervals of 60 minutes and 2 hours, should be either 60 and 120 or 1 and 2).
@@ -8,11 +8,12 @@
 #' @param Phi Stacked matrix of size S*q times q or array with dimensions q times q times S of (un)standardized lagged effects matrices for all S primary studies in the meta-analysis; with q the number of variables (leading to an q times q lagged effects matrix in a single primary study). Note: In case primary studies report (lagged) correlation matrices, one can use the function 'calc.TransPhi_Corr' to transform those to the corresponding standardized lagged effects matrices (see ?calc.TransPhi_Corr and examples below).
 #' @param SigmaVAR (optional: either SigmaVAR or Gamma). Stacked matrix of size S*q times q or array with dimensions q times q times S of residual covariance matrices of the first-order discrete-time vector autoregressive (DT-VAR(1)) model.
 #' Note that if Phi and SigmaVAR are known, Gamma can be calculated; hence, only SigmaVAR or Gamma is needed as input (if only Gamma, then use 'Gamma = Gamma' or set SigmaVAR to NULL, see examples below).
-#' @param Gamma (optional: either SigmaVAR or Gamma). Stacked matrix of size S*q times q or array with dimensions q times q times S of stationary covariance matrices, that is, the contemporaneous covariance matrices of the data sets. Note that if Phi and Gamma are known, SigmaVAR can be calculated; hence, only SigmaVAR or Gamma is needed as input (if only Gamma, then use 'Gamma = Gamma' or set SigmaVAR to NULL, see examples below).
-#' @param Moderators Indicator whether there are moderators to be included (1) or not (0; default).
-#' @param Mod Matrix of moderators to be included in the analysis when Moderators == 1. By default, Mod = NULL.
-#' @param FEorRE Indicator whether continuous-time meta-analysis should use a fixed-effects model (1; default) or random-effects model (2).
-#' @param alpha The alpha level in determining the (1-alpha)*100\% confidence interval (CI). By default, alpha = 0.05; resulting in a 95\% CI.
+#' @param Gamma Optional (either SigmaVAR or Gamma). Stacked matrix of size S*q times q or array with dimensions q times q times S of stationary covariance matrices, that is, the contemporaneous covariance matrices of the data sets. Note that if Phi and Gamma are known, SigmaVAR can be calculated; hence, only SigmaVAR or Gamma is needed as input (if only Gamma, then use 'Gamma = Gamma' or set SigmaVAR to NULL, see examples below).
+#' @param Moderators Optional. Indicator whether there are moderators to be included (1) or not (0; default).
+#' @param Mod Optional. Matrix of moderators to be included in the analysis when Moderators == 1. By default, Mod = NULL.
+#' @param FEorRE Optional. Indicator whether continuous-time meta-analysis should use a fixed-effects model (1; default) or random-effects model (2).
+#' @param alpha Optional. The alpha level in determining the (1-alpha)*100\% confidence interval (CI). By default, alpha = 0.05; resulting in a 95\% CI.
+#' @param Plot Optional. Indicator for rendering a Phi-plot (TRUE) or not (FALSE). By default, Plot = FALSE.
 #'
 #' @return The output comprises, among others, the overall vectorized transformed standardized lagged effects, their covariance matrix, and the corresponding elleptical/multivariate 95\% CI.
 #' @importFrom expm expm
@@ -77,9 +78,9 @@
 #'
 #'
 #'
-#' ## Make Phi-plot of resulting overall Phi ##
+#' ## Make customized Phi-plot of resulting overall Phi ##
 #'
-#' # Note: The Phi-plot can be made using the function 'PhiPlot' (see below) or by using the interactive web app from my website (\url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}).
+#' # Note: The customized Phi-plot can be made using the function 'PhiPlot' (see below) or by using the interactive web app from my website (\url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}).
 #'
 #' # Extract the q times q overall Phi matrix
 #' out_CTmeta <- CTmeta(N, DeltaT, DeltaTStar, Phi, Gamma = Gamma)
@@ -138,7 +139,7 @@
 #' CTmeta(N, DeltaT, DeltaTStar, Phi, Gamma = Gamma)
 #'
 
-CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Moderators = 0, Mod = NULL, FEorRE = 1, alpha=0.05) {
+CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Moderators = 0, Mod = NULL, FEorRE = 1, alpha=0.05, Plot = FALSE) {
 
 #  #######################################################################################################################
 #  #if (!require("expm")) install.packages("expm")
@@ -182,10 +183,14 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
     }
   }
 
-  q <- dim(Phi)[2]
+  if(length(Phi) == S){
+    q <- 1
+  }else{
+    q <- dim(Phi)[2]
+  }
 
   # Phi
-  if(length(dim(Phi))  == 2){
+  if(length(dim(Phi)) == 2){
     Phi_studies <- array(data=NA, dim=c(q,q,S))
     teller <- 0
     for(s in 1:S){
@@ -517,6 +522,7 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
           }
           colnames(multiCI) <- sub
         #}
+          vecPhi <- Phi_metaan_MV
       #
       # Multivar and Dummies
       }else if(Multivar == 1 & Trans == 0){
@@ -594,6 +600,7 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
           minPhi[i,] <- apply(rbind(LB_vecPhi, UB_vecPhi), 2, min)
           maxPhi[i,] <- apply(rbind(LB_vecPhi, UB_vecPhi), 2, max)
         }
+        vecPhi <- Phi_metaan_MV
       #
       # Univar and Trans
       }else if(Multivar == 0 & Trans == 1){
@@ -632,6 +639,7 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
             QMp_metaan[j,k] <- metaan$QMp
           }
         }
+        vecPhi <- Phi_metaan
       #
       # Univar and Dummies
       }else if(Multivar == 0 & Trans == 0){
@@ -695,11 +703,33 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
             QMp_metaan[j,k] <- metaan_g$QMp
           }
         }
+        vecPhi <- Phi_metaan_dum
       }
       #
       #
       #
       # Output
+      #
+      # Plot
+      if(Plot == TRUE){
+        # Extract the q times q overall Phi matrix
+        q <- sqrt(length(vecPhi))
+        overallPhi <- matrix(vecPhi, byrow = T, ncol = q) # resulting overall Phi
+        # Determine the q times q Drift matrix which is the continuous-time equivalent of the overall Phi matrix
+        # if (!require("expm")) install.packages("expm") # Use expm package for function logm()
+        # library(expm)
+        overallDrift <- logm(overallPhi)/DeltaTStar
+        #
+        # Make Phi-plot:
+        Title <- as.list(expression(paste(Phi(Delta[t]), " plot:"), "How do the overall lagged parameters vary", "as a function of the time-interval"))
+        min <- min(DeltaT)
+        max <- max(DeltaT)
+        step <- (max - min + 1)/10
+        PhiPlot(DeltaTStar, overallDrift, Min = min, Max = max, Step = step, Title = Title)
+      }
+      #
+      #
+      # Other output
       dT <- unique(DeltaT)[order(unique(DeltaT))]
       #names(dT) <- "Unique DeltaT values used in the studies"
       dT_star <- DeltaTStar
@@ -749,7 +779,7 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
                         summaryMetaAnalysis = summary(metaan))
         } else{ # RE
           final <- list(UniqueTimeIntervals = dT,
-                        Overall_standPhi_PerUniqueTimeInterval = Phi_metaan_MV_dum,
+                        Overall_standPhi_PerUniqueTimeInterval = Phi_metaan_MV,
                         LB_elliptical_CI = minPhi,
                         UB_elliptical_CI = maxPhi,
                         alpha_CI = alpha,
