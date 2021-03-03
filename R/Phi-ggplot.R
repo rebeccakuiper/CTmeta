@@ -17,9 +17,9 @@
 #'
 #' @return This function returns a Phi-plot for a range of time intervals.
 #' @importFrom expm expm
-#' @import plyr
-#' @import tidyverse
-#' @import ggpubr
+#' @importFrom purrr map
+#' @importFrom ggplot2 ggplot
+#' @import dplyr
 #' @export
 #' @examples
 #' ### Make Phi-plot ###
@@ -53,6 +53,7 @@
 #'
 #' ## Example 3: Change plot options ##
 #' # Note: use Phi or Drift from Example 1
+#' q <- dim(Phi)[1]
 #' WhichElements <- matrix(1, ncol = q, nrow = q) # Now, all elements are 1
 #' diag(WhichElements) <- 0 # Now, the autoregressive parameters are excluded by setting the diagonals to 0.
 #' Lab <- c("12", "21")
@@ -63,11 +64,21 @@
 #' }
 #' Col <- c(1,2)
 #' Lty <- c(1,2)
-#' ggPhiPlot(DeltaT = 1, Phi, Min = 0, Max = 10, Step = 0.5, WhichElements, Labels, Col, Lty)
+#' ggPhiPlot(DeltaT = 1, Phi, Drift = NULL, Min = 0, Max = 10, Step = 0.05, WhichElements, Labels, Col, Lty)
+#' # or
+#' ggPhiPlot(DeltaT = 1, Phi, Min = 0, Max = 10, Step = 0.05, WhichElements = WhichElements, Labels = Labels, Col = Col, Lty = Lty)
 #'
 
 
 ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Min = 0, Max = 10, Step = 0.05, WhichElements = NULL, Labels = NULL, Col = NULL, Lty = NULL, Title = NULL) {
+#Min = 0; Max = 10; Step = 0.05; WhichElements = NULL; Labels = NULL; Col = NULL; Lty = NULL; Title = NULL
+# library(expm); library(purrr); library(ggplot2); library(dplyr)
+# library(tidyverse)
+
+  # Note needed:
+  #@import tidyverse
+  #@import ggpubr
+
 
   #  #######################################################################################################################
   #
@@ -257,15 +268,22 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Min = 0, Max = 10, S
   if(is.null(Title)){
     gg_title <- as.list(expression(paste(Phi(Delta[t]), " plot:"), "How do the lagged parameters vary as a function of the time-interval"))
   }else{
-    if(length(Title) == 1){
-      if(is.list(Title)){gg_title <- Title[[1]]}
-      else {gg_title <- list(Title, " ")}
-    }
-    if(length(Title) == 2){
-      title1 <- Title[[1]]
-      title2 <- Title[[2]]
-      gg_title <- list(title1, title2)
-    }
+    gg_title <- Title
+    #if(length(Title) == 1){
+    #  if(is.list(Title)){gg_title <- Title[[1]]}
+    #  else {gg_title <- list(Title, " ")}
+    #}
+    #if(length(Title) == 2){
+    #  title1 <- Title[[1]]
+    #  title2 <- Title[[2]]
+    #  gg_title <- list(title1, title2)
+    #}
+    #if(length(Title) == 3){
+    #  title1 <- Title[[1]]
+    #  title2 <- Title[[2]]
+    #  title3 <- Title[[3]]
+    #  gg_title <- list(title1, title2, title3)
+    #}
   }
   if(is.null(Title)){
     #Title <- as.list(expression(paste(Phi(Delta[t]), " plot:"), "How do the overall lagged parameters vary", "as a function of the time-interval"))
@@ -353,7 +371,8 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Min = 0, Max = 10, S
 
   plot_list <- list(phi_plot + theme(legend.position = "none"))
 
-  show(phi_plot)
+  #show(phi_plot)
+
   #wd <- getwd()
   #dev.copy(png, filename = paste0(wd, "/www/PhiPlot.png"))
   teller <- 1

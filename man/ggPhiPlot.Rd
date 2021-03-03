@@ -80,6 +80,7 @@ ggPhiPlot(DeltaT, out_VAR)
 
 ## Example 3: Change plot options ##
 # Note: use Phi or Drift from Example 1
+q <- dim(Phi)[1]
 WhichElements <- matrix(1, ncol = q, nrow = q) # Now, all elements are 1
 diag(WhichElements) <- 0 # Now, the autoregressive parameters are excluded by setting the diagonals to 0.
 Lab <- c("12", "21")
@@ -90,6 +91,8 @@ for(i in 1:length(Lab)){
 }
 Col <- c(1,2)
 Lty <- c(1,2)
-ggPhiPlot(DeltaT = 1, Phi, Min = 0, Max = 10, Step = 0.5, WhichElements, Labels, Col, Lty)
+ggPhiPlot(DeltaT = 1, Phi, Drift = NULL, Min = 0, Max = 10, Step = 0.05, WhichElements, Labels, Col, Lty)
+# or
+ggPhiPlot(DeltaT = 1, Phi, Min = 0, Max = 10, Step = 0.05, WhichElements = WhichElements, Labels = Labels, Col = Col, Lty = Lty)
 
 }

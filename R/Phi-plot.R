@@ -68,6 +68,7 @@
 
 
 PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Min = 0, Max = 10, Step = 0.05, WhichElements = NULL, Labels = NULL, Col = NULL, Lty = NULL, Title = NULL) {
+#Min = 0; Max = 10; Step = 0.05; WhichElements = NULL; Labels = NULL; Col = NULL; Lty = NULL; Title = NULL
 
 #  #######################################################################################################################
 #
