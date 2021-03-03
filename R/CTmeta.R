@@ -5,10 +5,10 @@
 #' @param N Number of persons (panel data) or number of measurement occasions - 1 (time series data) used in the S primary studies. Matrix of size S times 1.
 #' @param DeltaT The time intervals used in the S primary studies. Matrix of size S times 1. Note that all the time intervals should be on the same scale (e.g., two time-intervals of 60 minutes and 2 hours, should be either 60 and 120 or 1 and 2).
 #' @param DeltaTStar The time interval (scalar) to which the standardized lagged effects matrix should be transformed to.
-#' @param Phi Stacked matrix of size S*q times q or array with dimensions q times q times S of (un)standardized lagged effects matrices for all S primary studies in the meta-analysis; with q the number of variables (leading to an q times q lagged effects matrix in a single primary study). Note: In case primary studies report (lagged) correlation matrices, one can use the function 'calc.TransPhi_Corr' to transform those to the corresponding standardized lagged effects matrices (see ?calc.TransPhi_Corr and examples below).
-#' @param SigmaVAR (optional: either SigmaVAR or Gamma). Stacked matrix of size S*q times q or array with dimensions q times q times S of residual covariance matrices of the first-order discrete-time vector autoregressive (DT-VAR(1)) model.
-#' Note that if Phi and SigmaVAR are known, Gamma can be calculated; hence, only SigmaVAR or Gamma is needed as input (if only Gamma, then use 'Gamma = Gamma' or set SigmaVAR to NULL, see examples below).
-#' @param Gamma Optional (either SigmaVAR or Gamma). Stacked matrix of size S*q times q or array with dimensions q times q times S of stationary covariance matrices, that is, the contemporaneous covariance matrices of the data sets. Note that if Phi and Gamma are known, SigmaVAR can be calculated; hence, only SigmaVAR or Gamma is needed as input (if only Gamma, then use 'Gamma = Gamma' or set SigmaVAR to NULL, see examples below).
+#' @param Phi Stacked matrix of size S*q times q or array with dimensions q times q times S of (un)standardized lagged effects matrices for all S primary studies in the meta-analysis; with q the number of variables (leading to an q times q lagged effects matrix in a single primary study). Note: In case primary studies report (lagged) correlation matrices, one can use the function 'TransPhi_Corr' to transform those to the corresponding standardized lagged effects matrices (see ?TransPhi_Corr and examples below).
+#' @param SigmaVAR Stacked matrix of size S*q times q or array with dimensions q times q times S of residual covariance matrices of the first-order discrete-time vector autoregressive (DT-VAR(1)) model.
+#' @param Gamma Optional (either SigmaVAR or Gamma). Stacked matrix of size S*q times q or array with dimensions q times q times S of stationary covariance matrices, that is, the contemporaneous covariance matrices of the data sets.
+#' Note that if Phi and Gamma are known, SigmaVAR can be calculated; hence, only SigmaVAR or Gamma is needed as input (if only Gamma, then use 'Gamma = Gamma' or set SigmaVAR to NULL, see examples below).
 #' @param Moderators Optional. Indicator whether there are moderators to be included (1) or not (0; default).
 #' @param Mod Optional. Matrix of moderators to be included in the analysis when Moderators == 1. By default, Mod = NULL.
 #' @param FEorRE Optional. Indicator whether continuous-time meta-analysis should use a fixed-effects model (1; default) or random-effects model (2).
@@ -81,19 +81,17 @@
 #' ## Make customized Phi-plot of resulting overall Phi ##
 #'
 #' # Note: The customized Phi-plot can be made using the function 'PhiPlot' (see below) or by using the interactive web app from my website (\url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}).
+#' # Alternatively, one can use the function 'ggPhiPlot' instead of 'PhiPlot'.
 #'
 #' # Extract the q times q overall Phi matrix
 #' out_CTmeta <- CTmeta(N, DeltaT, DeltaTStar, Phi, Gamma = Gamma)
 #' q <- sqrt(length(out_CTmeta$Overall_standPhi_DeltaTStar))
 #' overallPhi <- matrix(out_CTmeta$Overall_standPhi_DeltaTStar, byrow = T, ncol = q) # resulting overall Phi
-#' # Determine the q times q Drift matrix which is the continuous-time equivalent of the overall Phi matrix
-#' if (!require("expm")) install.packages("expm") # Use expm package for function logm()
-#' library(expm)
-#' overallDrift <- logm(overallPhi)/DeltaTStar
+#'
 #'
 #' # Make Phi-plot:
 #' Title <- as.list(expression(paste(Phi(Delta[t]), " plot:"), "How do the overall lagged parameters vary", "as a function of the time-interval"))
-#' PhiPlot(DeltaTStar, overallDrift, Min = 0, Max = 40, Step = 0.5, Title = Title)
+#' PhiPlot(DeltaTStar, overallPhi, Min = 0, Max = 40, Step = 0.5, Title = Title)
 #'
 #'
 #'
@@ -127,13 +125,13 @@
 #' #DeltaTStar <- 12
 #' #DeltaT <- 24
 #' #N <- 2235
-#' # Then, use the function 'calc.TransPhi_Corr' to calculate the corresponding standardized lagged effects matrix per primary study:
-#' out <- calc.TransPhi_Corr(12, 24, 2235, corr_YXYX) # TO DO
+#' # Then, use the function 'TransPhi_Corr' to calculate the corresponding standardized lagged effects matrix per primary study:
+#' out <- TransPhi_Corr(12, 24, 2235, corr_YXYX) # TO DO
 #' Phi_1 <- matrix(out$vecStandPhi_DeltaTStar, byrow = T, ncol = q)
 #' Phi_2 <- matrix(out$vecStandPhi_DeltaTStar, byrow = T, ncol = q)
 #' Phi_3 <- matrix(out$vecStandPhi_DeltaTStar, byrow = T, ncol = q)
 #' Phi <- rbind(Phi_1, Phi_2, Phi_3) # This, returns a stacked matrix of size S q times q.
-#' # For more details, see ?calc.TransPhi_Corr
+#' # For more details, see ?TransPhi_Corr
 #'
 #' # The example CTmeta() code above can be run using this Phi; e.g.,
 #' CTmeta(N, DeltaT, DeltaTStar, Phi, Gamma = Gamma)
@@ -234,12 +232,12 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
     #Gamma <- array(data=NA, dim=c(S*q,q))
     #teller <- 1
     #for(s in 1:S){
-    #  Gamma[teller:(teller+1),] <- calc.Gamma.fromVAR(Phi[teller:(teller+1),], SigmaVAR[teller:(teller+1),])
+    #  Gamma[teller:(teller+1),] <- Gamma.fromVAR(Phi[teller:(teller+1),], SigmaVAR[teller:(teller+1),])
     #  teller <- teller + q
     #}
     Gamma_studies <- array(data=NA, dim=c(q,q,S))
     for(s in 1:S){
-      Gamma_studies[1:q,1:q,s] <- calc.Gamma.fromVAR(Phi[1:q,1:q,s], SigmaVAR[1:q,1:q,s])
+      Gamma_studies[1:q,1:q,s] <- Gamma.fromVAR(Phi[1:q,1:q,s], SigmaVAR[1:q,1:q,s])
     }
     Gamma <- Gamma_studies
 
@@ -374,7 +372,7 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
         #while(s < S & Trans == 1){ # go through all, unless a warning of not unique solution (which I already cover above...)
         #  s = s +1
         for(s in 1:S){
-          out <- calc.CovMxStandTransPhi(DeltaTStar, DeltaT[s], N[s], Phi[,,s], Gamma[,,s], SigmaVAR[,,s])
+          out <- StandTransPhi(DeltaTStar, DeltaT[s], N[s], Phi[,,s], Gamma[,,s], SigmaVAR[,,s])
           vecStandPhi[,s] <- out$vecStandPhi_DeltaTStar
           CovMxPhi[,,s] <- out$CovMx_vecStandPhi_DeltaTStar
           #Warning[s] <- out$warning
@@ -394,7 +392,7 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
       if(Trans == 0){ # then we cannot transform all the Phi's (uniquely), so use dummy methode
         # Calculate standardized Phi
         for(s in 1:S){
-          out <- calc.CovMxStandPhi(N[s], Phi[,,s], Gamma[,,s], SigmaVAR[,,s])
+          out <- StandPhi(N[s], Phi[,,s], Gamma[,,s], SigmaVAR[,,s])
           vecStandPhi[,s] <- out$vecStandPhi_DeltaT
           CovMxPhi[,,s] <- out$CovMx_vecStandPhi_DeltaT
           #

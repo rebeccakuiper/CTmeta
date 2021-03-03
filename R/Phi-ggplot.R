@@ -17,6 +17,9 @@
 #'
 #' @return This function returns a Phi-plot for a range of time intervals.
 #' @importFrom expm expm
+#' @import plyr
+#' @import tidyverse
+#' @import ggpubr
 #' @export
 #' @examples
 #' ### Make Phi-plot ###
@@ -33,9 +36,9 @@
 #' Drift <- logm(Phi)/DeltaT
 #' #
 #' # Make plot of Phi
-#' PhiPlot(DeltaT, Phi)
-#' PhiPlot(DeltaT, Phi, Min = 0, Max = 10, Step = 0.01)
-#' PhiPlot(DeltaT, Drift = Drift, Min = 0, Max = 10, Step = 0.01)
+#' ggPhiPlot(DeltaT, Phi)
+#' ggPhiPlot(DeltaT, Phi, Min = 0, Max = 10, Step = 0.01)
+#' ggPhiPlot(DeltaT, Drift = Drift, Min = 0, Max = 10, Step = 0.01)
 #'
 #'
 #' ## Example 2: input from fitted object of class "varest" ##
@@ -45,12 +48,11 @@
 #' if (!require("vars")) install.packages("vars")
 #' library(vars)
 #' out_VAR <- VAR(data, p = 1)
-#' PhiPlot(DeltaT, out_VAR)
+#' ggPhiPlot(DeltaT, out_VAR)
 #'
 #'
 #' ## Example 3: Change plot options ##
 #' # Note: use Phi or Drift from Example 1
-#' q <- dim(Phi)[1]
 #' WhichElements <- matrix(1, ncol = q, nrow = q) # Now, all elements are 1
 #' diag(WhichElements) <- 0 # Now, the autoregressive parameters are excluded by setting the diagonals to 0.
 #' Lab <- c("12", "21")
@@ -61,20 +63,18 @@
 #' }
 #' Col <- c(1,2)
 #' Lty <- c(1,2)
-#' PhiPlot(DeltaT = 1, Phi, Drift = NULL, Min = 0, Max = 10, Step = 0.05, WhichElements, Labels, Col, Lty)
-#' # or
-#' PhiPlot(DeltaT = 1, Phi, Min = 0, Max = 10, Step = 0.05, WhichElements = WhichElements, Labels = Labels, Col = Col, Lty = Lty)
+#' ggPhiPlot(DeltaT = 1, Phi, Min = 0, Max = 10, Step = 0.5, WhichElements, Labels, Col, Lty)
 #'
 
 
-PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Min = 0, Max = 10, Step = 0.05, WhichElements = NULL, Labels = NULL, Col = NULL, Lty = NULL, Title = NULL) {
+ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Min = 0, Max = 10, Step = 0.05, WhichElements = NULL, Labels = NULL, Col = NULL, Lty = NULL, Title = NULL) {
 
-#  #######################################################################################################################
-#
-#  #if (!require("expm")) install.packages("expm")
-#  library(expm)
-#
-#  #######################################################################################################################
+  #  #######################################################################################################################
+  #
+  #  #if (!require("expm")) install.packages("expm")
+  #  library(expm)
+  #
+  #  #######################################################################################################################
 
   # Checks:
   if(length(DeltaT) != 1){
@@ -214,7 +214,7 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Min = 0, Max = 10, Ste
       print(paste("The argument (list) Title should at max contain 3 items. Currently, it consists of ", length(Title), " items."))
       stop()
     }
-  # TO DO check of elk element in list een "call" of een 'character' is...
+    # TO DO check of elk element in list een "call" of een 'character' is...
   }
 
   # TO DO bepaal standardized Drift! Dus dan voor een VAR(1) de Sigma gebruiken of Gamma!
@@ -255,6 +255,19 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Min = 0, Max = 10, Ste
   }
 
   if(is.null(Title)){
+    gg_title <- as.list(expression(paste(Phi(Delta[t]), " plot:"), "How do the lagged parameters vary as a function of the time-interval"))
+  }else{
+    if(length(Title) == 1){
+      if(is.list(Title)){gg_title <- Title[[1]]}
+      else {gg_title <- list(Title, " ")}
+    }
+    if(length(Title) == 2){
+      title1 <- Title[[1]]
+      title2 <- Title[[2]]
+      gg_title <- list(title1, title2)
+    }
+  }
+  if(is.null(Title)){
     #Title <- as.list(expression(paste(Phi(Delta[t]), " plot:"), "How do the overall lagged parameters vary", "as a function of the time-interval"))
     Title <- as.list(expression(paste(Phi(Delta[t]), " plot:"), "How do the lagged parameters vary", "as a function of the time-interval"))
   }else{
@@ -286,11 +299,11 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Min = 0, Max = 10, Ste
     par(mar=c(par('mar')[1:3], 0)) # optional, removes extraneous right inner margin space
     plot.new()
     l <- legend(0, 0,
-           legend = legendT, #cex=CEX,
-           bty = "n",
-           lty=Lty, # gives the legend appropriate symbols (lines)
-           lwd=rep(2, q*q),
-           col=Col # gives the legend lines the correct color and width
+                legend = legendT, #cex=CEX,
+                bty = "n",
+                lty=Lty, # gives the legend appropriate symbols (lines)
+                lwd=rep(2, q*q),
+                col=Col # gives the legend lines the correct color and width
     )
     # calculate right margin width in ndc
     w <- 1.5 *( grconvertX(l$rect$w, to='ndc') - grconvertX(0, to='ndc') )
@@ -312,7 +325,35 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Min = 0, Max = 10, Ste
     }
   }
 
+  PhiDeltaTsDF <- map(DeltaTs, function(x) {
+    if(length(Drift) == 1) {exp(Drift * x)}
+    else {expm(Drift * x)}
+  }) %>%
+    map(function(x) data.frame(Values = as.vector(t(x)))) %>%
+    bind_rows %>%
+    bind_cols(WhichElements = rep(as.vector(WhichElements), length(DeltaTs))) %>%
+    filter(WhichElements == 1) %>%
+    bind_cols(DeltaTs = rep(DeltaTs, each = sum(WhichElements)),
+              Color = rep(as.character(Col), length(DeltaTs)),
+              LineType = rep(as.character(Lty), length(DeltaTs)),
+              Labels = rep(as.character(legendT), length(DeltaTs)))
 
+  phi_plot <- ggplot(PhiDeltaTsDF, aes(DeltaTs, Values, color = Labels, linetype = Labels)) +
+    geom_line(lwd = 0.75) +
+    geom_abline(intercept = 0, slope = 0, alpha = .5) +
+    scale_linetype_manual(name = " ", values = Lty, labels = legendT) +
+    scale_color_manual(name = " ", values = Col, labels = legendT) +
+    ylab(expression(paste(Phi(Delta[t]), " values"))) +
+    xlab(expression(paste("Time-interval (", Delta[t], ")", sep = ""))) +
+    labs(title = as.expression(gg_title[1]),
+         subtitle = as.expression(gg_title[-1])) +
+    theme_classic() +
+    theme(plot.title = element_text(margin = margin(t = 20))) +
+    ylim(0,1)
+
+  plot_list <- list(phi_plot + theme(legend.position = "none"))
+
+  show(phi_plot)
   #wd <- getwd()
   #dev.copy(png, filename = paste0(wd, "/www/PhiPlot.png"))
   teller <- 1
@@ -324,7 +365,8 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Min = 0, Max = 10, Ste
        main=mtext(do.call(expression, Title), side=3, line = c(2,1,0), cex = 1 )
        #"Effect lag curve: \n How do the VAR(1) parameters Phi vary \n as a function of the time-interval"
   )
-  #
+
+
   teller <- 0
   for(j in 1:q){
     for(i in 1:q){
@@ -334,7 +376,6 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Min = 0, Max = 10, Ste
       }
     }
   }
-
 
   if(complex == FALSE){
     if(q<4){CEX = 1}else{CEX = (1.4-q/10)} # Check for optimal values!
@@ -349,14 +390,15 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Min = 0, Max = 10, Ste
     )
   }
 
-
-
-
   if(is.complex(eigen(Drift)$val)){
     # Multiple solutions and add 3 plots (2 for 2 different solutions and one scatter plot)
     EigenDrift <- eigen(Drift)
     V <- EigenDrift$vector
     title_N <- as.list(expression(paste(Phi(Delta[t]), " plot"), "using an 'aliasing' matrix", "(i.e., another solution for A)"))
+    gg_title_N <- as.list(expression(paste(Phi(Delta[t]), " plot"), "\nusing an 'aliasing' matrix \n(i.e., another solution for A)"))
+
+    PhiDeltaTsDF_L <- list(NULL)
+
     for(N in 1:2){ # Note: last plot is scatter plot
       im <- complex(real = 0, imaginary = 1)
       diagN <- matrix(0, ncol = q, nrow = q)
@@ -380,6 +422,20 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Min = 0, Max = 10, Ste
       for(i in 1:length(DeltaTs)){
         PhiDeltaTs_N[,,i]<-expm(Drift_N*DeltaTs[i])
       }
+
+      PhiDeltaTsDF_N <- map(DeltaTs, function(x) {
+        expm(Drift_N * x)
+        }) %>%
+        map(function(x) data.frame(Values = as.vector(t(x)))) %>%
+        bind_rows %>%
+        bind_cols(WhichElements = rep(as.vector(WhichElements), length(DeltaTs))) %>%
+        filter(WhichElements == 1) %>%
+        bind_cols(DeltaTs = rep(DeltaTs, each = sum(WhichElements)),
+                  Color = rep(as.character(Col), length(DeltaTs)),
+                  LineType = rep(as.character(Lty), length(DeltaTs)),
+                  Labels = rep(as.character(legendT), length(DeltaTs)))
+
+      PhiDeltaTsDF_L[[N]] <- PhiDeltaTsDF_N
       #
       plot(y=rep(0, length(DeltaTs)), x=DeltaTs, type="l", ylim=c(min(PhiDeltaTs_N), max(PhiDeltaTs_N)),
            ylab = expression(paste(Phi(Delta[t]), " values")), xlab = expression(paste("Time-interval (", Delta[t], ")", sep="")),
@@ -407,6 +463,18 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Min = 0, Max = 10, Ste
     for(i in 1:length(DeltaTs)){
       PhiDeltaTs_N[,,i]<-expm(Drift_N*DeltaTs[i])
     }
+
+    PhiDeltaTsDF_4 <- map(DeltaTs, function(x) {
+      expm(Drift_N * x)
+    }) %>%
+      map(function(x) data.frame(Values = as.vector(t(x)))) %>%
+      bind_rows %>%
+      bind_cols(WhichElements = rep(as.vector(WhichElements), length(DeltaTs))) %>%
+      filter(WhichElements == 1) %>%
+      bind_cols(DeltaTs = rep(DeltaTs, each = sum(WhichElements)),
+                Color = rep(as.character(Col), length(DeltaTs)),
+                LineType = rep(as.character(Lty), length(DeltaTs)),
+                Labels = rep(as.character(legendT), length(DeltaTs)))
     #
     title_N <- as.list(
       expression(paste(Phi(Delta[t]), " scatter plot for multiples of ", Delta ["t"]),
@@ -414,6 +482,13 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Min = 0, Max = 10, Ste
                  paste(Phi(Delta[t]), " is unique)")
       )
     )
+    gg_title_N2 <- as.list(
+      expression(paste(Phi(Delta[t]), " scatter plot for multiples of ", Delta ["t"]),
+                 paste("\n(Note: For multiples of ", Delta ["t"], ", "),
+                 paste(Phi(Delta[t]), " is unique)")
+      )
+    )
+
     plot(y=rep(0, length(DeltaTs)), x=DeltaTs, type="l", ylim=c(min(PhiDeltaTs_N), max(PhiDeltaTs_N)),
          ylab = expression(paste(Phi(Delta[t]), " values")), xlab = expression(paste("Time-interval (", Delta[t], ")", sep="")),
          col=1000, lwd=2, lty=1,
@@ -430,8 +505,42 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Min = 0, Max = 10, Ste
         }
       }
     }
-  } # end if complex
 
+  for (i in 1:2) {
+    plot_list[[length(plot_list) + 1]] <- ggplot(PhiDeltaTsDF_L[[i]], aes(DeltaTs, Values, color = Labels, linetype = Labels)) +
+      geom_line(lwd = 0.75) +
+      geom_abline(intercept = 0, slope = 0, alpha = .5) +
+      scale_linetype_manual(name = " ", values = Lty, labels = legendT) +
+      scale_color_manual(name = " ", values = Col, labels = legendT) +
+      ylab(expression(paste(Phi(Delta[t]), " values"))) +
+      xlab(expression(paste("Time-interval (", Delta[t], ")", sep = ""))) +
+      labs(title = as.expression(gg_title_N[1]),
+           subtitle = as.expression(gg_title_N[-1])) +
+      theme_classic() +
+      theme(plot.title = element_text(margin = margin(t = 20))) +
+      ylim(0,1)
+
+    if (i == 2) {
+      plot_list[[length(plot_list)]] <- plot_list[[length(plot_list)]] + theme(legend.position = "none")
+    }
+  }
+
+  plot_list[[length(plot_list) + 1]] <- ggplot(PhiDeltaTsDF_4, aes(DeltaTs, Values, color = Labels, shape = Labels)) +
+    geom_point(show.legend = ) +
+    geom_abline(intercept = 0, slope = 0, alpha = .5) +
+    scale_shape_manual(name = " ", values = Lty, labels = legendT) +
+    scale_color_manual(name = " ", values = Col, labels = legendT) +
+    ylab(expression(paste(Phi(Delta[t]), " values"))) +
+    xlab(expression(paste("Time-interval (", Delta[t], ")", sep = ""))) +
+    labs(title = as.expression(gg_title_N2[1]),
+         subtitle = as.expression(gg_title_N2[-1])) +
+    theme_classic() +
+    theme(plot.title = element_text(margin = margin(t = 20))) +
+    ylim(0,1)
+
+  ggarrange(plotlist = plot_list, ncol = 2, nrow = 2,
+            widths = c(3,4)) %>% show
+  }
 
   if(complex == TRUE){
     if(q<4){CEX = 1}else{CEX = (1.4-q/10)} # Check for optimal values!
@@ -457,9 +566,6 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Min = 0, Max = 10, Ste
   #dev.off()
 
   par(op)
-
-
-
 
 
   ############################################################################################################

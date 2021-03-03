@@ -1,0 +1,309 @@
+#' Continuous-time estimates from discrete-time estimates
+#'
+#' The continuous-time lagged-effects model matrices correspoding to the discrete-time ones. The interactive web application 'Phi-and-Psi-Plots and Find DeltaT' also contains this functionality, you can find it on my website: \url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}.
+#'
+#' @param DeltaT Optional. The time interval used. By default, DeltaT = 1.
+#' @param Phi (Un)standardized lagged effects matrix. If necessary, it is standardized and for the standardized and vectorized Phi the covariance matrix is determined.
+#' It also takes a fitted object from the class "varest" (from the VAR() function in vars package); see example below. From such an object, the Phi and SigmaVAR matrices are extracted.
+#' @param SigmaVAR Residual covariance matrix of the first-order discrete-time vector autoregressive (DT-VAR(1)) model.
+#' @param Gamma Optional (either SigmaVAR or Gamma). Stationary covariance matrix, that is, the contemporaneous covariance matrix of the data.
+#' Note that if Phi and SigmaVAR are known, Gamma can be calculated; hence, either SigmaVAR or Gamma is needed as input.
+#'
+#' @return The output renders the continuous-time equivalent matrices of the discrete-times ones.
+#' @importFrom expm expm
+#' @export
+#' @examples
+#'## Example 1 ##
+#'
+#' ##################################################################################################
+#' # Input needed in examples below with q=2 variables.
+#' # I will use the example matrices stored in the package:
+#' Phi <- myPhi[1:2, 1:2]
+#' #
+#' SigmaVAR <- diag(2) # for ease
+#' #
+#' Gamma <- Gamma.fromVAR(Phi, SigmaVAR)
+#' ##################################################################################################
+#'
+#' DeltaT <- 1
+#' CTMparam(DeltaT, Phi, SigmaVAR)
+#' # or
+#' CTMparam(DeltaT, Phi, Gamma = Gamma)
+#'
+#'
+#' ## Example 2: input from fitted object of class "varest" ##
+#' #
+#' DeltaT <- 1
+#' data <- myData
+#' if (!require("vars")) install.packages("vars")
+#' library(vars)
+#' out_VAR <- VAR(data, p = 1)
+#' CTMparam(DeltaT, out_VAR)
+#'
+
+
+CTMparam <- function(DeltaT, Phi, SigmaVAR = NULL, Gamma = NULL) {
+# DeltaT = time interval (although in VAR itself 1 is used!)
+# q = Number of dimensions, that is, number of dependent variables
+# Phi = matrix of size qxq with autoregressive and cross-lagged effects, matrix with lagged coefficients
+# SigmaVAR = covariance matrix of size qxq, covariance matrix of innovations
+
+  #  #######################################################################################################################
+  #
+  #  #if (!require("expm")) install.packages("expm")
+  #  library(expm)
+  #
+  #  #######################################################################################################################
+
+  # Checks:
+  if(length(DeltaT) != 1){
+    print(paste("The argument DeltaT should be a scalar, that is, one number, that is, a vector with one element."))
+    stop()
+  }
+  #
+  # Check on Phi
+  if(any(class(Phi) == "varest")){
+    SigmaVAR <- cov(resid(Phi))
+    Phi <- Acoef(Phi)[[1]]
+    if(length(Phi) == 1){
+      q <- 1
+    }else{
+      q <- dim(Phi)[1]
+    }
+  } else if(any(class(Phi) == "ctsemFit")){
+    B <- -1 * summary(Phi)$DRIFT
+    Sigma <- summary(Phi)$DIFFUSION
+    #Phi <- summary(Phi)$discreteDRIFT # Is no longer output in ctsem...
+    Phi <- expm(-B*DeltaT)
+    #source("Calc VARparam from CTMparam.r") # werkt zo niet, moet er dan ws ook net als andere files package fie van maken
+    #VarEst <- VARparam(DeltaT, B, Sigma)
+    #Phi <- VarEst$Phi
+    if(length(Phi) == 1){
+      q <- 1
+    }else{
+      q <- dim(Phi)[1]
+    }
+    #SigmaVAR <- VarEst$SigmaVAR
+    kronsum <- kronecker(diag(q),B) + kronecker(B,diag(q))
+    SigmaVAR <- matrix((solve(kronsum) %*% (diag(q*q) - expm(-kronsum * DeltaT)) %*% as.vector(Sigma)), ncol=q, nrow=q)
+  } else{
+    if(length(Phi) != 1){
+      if(is.null(dim(Phi))){
+        if(!is.null(length(Phi))){
+          print(paste("The argument Phi is not a matrix of size q times q."))
+          stop()
+        }else{
+          print(paste("The argument Phi is not found: The lagged effects matrix Phi is unknown, but should be part of the input."))
+          stop()
+        }
+      }
+      q <- dim(Phi)[1]
+      #
+      if(dim(Phi)[1] != dim(Phi)[2]){
+        print(paste("The lagged effects matrix Phi should be a square matrix of size q times q, with q = ", q, "."))
+        stop()
+      }
+      if(length(dim(Phi)) > 2){
+        print(paste("The lagged effects matrix Phi should be an q times q matrix, with q = ", q, "."))
+        stop()
+      }
+    } else{
+      q <- 1
+    }
+  }
+
+  # Check on SigmaVAR and Gamma
+  if(is.null(SigmaVAR) & is.null(Gamma)){ # Both SigmaVAR and Gamma unknown
+    print(paste("The arguments SigmaVAR and Gamma are not found: Both SigmaVAR and Gamma are unknown; either one (or both) should be part of the input. In case of first matrix, specify 'SigmaVAR = SigmaVAR'."))
+    stop()
+  }else if(is.null(Gamma)){ # Gamma unknown, calculate Gamma from SigmaVAR and Phi
+
+    # Checks on SigmaVAR
+    if(length(SigmaVAR) != 1){
+      if(dim(SigmaVAR)[1] != dim(SigmaVAR)[2]){
+        print(paste("The residual covariance matrix SigmaVAR should be a square matrix of size q times q, with q = ", q, "."))
+        stop()
+      }
+      if(dim(SigmaVAR)[1] != q){
+        print(paste("The residual covariance matrix SigmaVAR should, like Phi, be a matrix of size q times q, with q = ", q, "."))
+        stop()
+      }
+      if(length(dim(SigmaVAR)) > 2){
+        print(paste("The residual covariance matrix SigmaVAR should be an q times q matrix, with q = ", q, "."))
+        stop()
+      }
+    }else if(q != 1){
+      print(paste("The residual covariance matrix SigmaVAR should, like Phi, be a scalar."))
+      stop()
+    }
+
+    # Calculate Gamma
+    Gamma <- Gamma.fromVAR(Phi, SigmaVAR)
+
+  }else if(is.null(SigmaVAR)){ # SigmaVAR unknown, calculate SigmaVAR from Gamma and Phi
+
+
+    # Checks on Gamma
+    if(length(Gamma) != 1){
+      if(dim(Gamma)[1] != dim(Gamma)[2]){
+        print(paste("The stationary covariance matrix Gamma should be a square matrix of size q times q, with q = ", q, "."))
+        stop()
+      }
+      if(dim(Gamma)[1] != q){
+        print(paste("The stationary covariance matrix Gamma should, like Phi, be a matrix of size q times q, with q = ", q, "."))
+        stop()
+      }
+      if(length(dim(Gamma)) > 2){
+        print(paste("The stationary covariance matrix Gamma should be an q times q matrix, with q = ", q, "."))
+        stop()
+      }
+    }else if(q != 1){
+      print(paste("The stationary covariance matrix Gamma should, like Phi, be a scalar."))
+      stop()
+    }
+
+    # Calculate SigmaVAR
+    SigmaVAR <- Gamma - Phi %*% Gamma %*% t(Phi)
+
+  }else{ # Both SigmaVAR and Gamma known
+
+    # Checks on SigmaVAR
+    if(length(SigmaVAR) != 1){
+      if(dim(SigmaVAR)[1] != dim(SigmaVAR)[2]){
+        print(paste("The residual covariance matrix SigmaVAR should be a square matrix of size q times q, with q = ", q, "."))
+        stop()
+      }
+      if(dim(SigmaVAR)[1] != q){
+        print(paste("The residual covariance matrix SigmaVAR should, like Phi, be a matrix of size q times q, with q = ", q, "."))
+        stop()
+      }
+      if(length(dim(SigmaVAR)) > 2){
+        print(paste("The residual covariance matrix SigmaVAR should be an q times q matrix, with q = ", q, "."))
+        stop()
+      }
+    }else if(q != 1){
+      print(paste("The residual covariance matrix SigmaVAR should, like Phi, be a scalar."))
+      stop()
+    }
+
+    # Checks on Gamma
+    if(length(Gamma) != 1){
+      if(dim(Gamma)[1] != dim(Gamma)[2]){
+        print(paste("The stationary covariance matrix Gamma should be a square matrix of size q times q, with q = ", q, "."))
+        stop()
+      }
+      if(dim(Gamma)[1] != q){
+        print(paste("The stationary covariance matrix Gamma should, like Phi, be a matrix of size q times q, with q = ", q, "."))
+        stop()
+      }
+      if(length(dim(Gamma)) > 2){
+        print(paste("The stationary covariance matrix Gamma should be an q times q matrix, with q = ", q, "."))
+        stop()
+      }
+    }else if(q != 1){
+      print(paste("The stationary covariance matrix Gamma should, like Phi, be a scalar."))
+      stop()
+    }
+
+  }
+
+
+Decomp_ParamVAR <- eigen(Phi, symmetric=F)
+Eigen_ParamVAR <- Decomp_ParamVAR$val
+#
+#if (any(is.na(logm(Phi)) == TRUE)){ # In that case, there does not exist a solution A=-B for Phi # TO DO logm(Phi) can exist when an EV < 0...
+if (any(is.na(log(Eigen_ParamVAR)))){ # In that case, there does not exist a solution A=-B for Phi
+  WarningPhi = "'Phi' does not have a CTM-equivalent drift matrix; so, no positive autocorrelation (like CTM models). For example, one or more real eigenvalues is negative."
+  final <- list(WarningPhi = WarningPhi)
+  return(final)
+  stop(WarningPhi)
+}
+# I at first wanted to filter out those where the real part of the eigenvalue of Phi is negative, but I don't think that is correct in all complex cases, so I decided to do the check above.
+#if (any(Re(Eigen_Phi) <= 0)){ #
+#  WarningPhi = "At least one of the eigenvalues of 'Phi' is (has a real part)  smaller than or equal to 0; so, no positive autocorrelation (like CTM models)."
+#  final <- list(WarningPhi = WarningPhi, warningPhi = 1)
+#  return(final)
+#  stop(WarningPhi)
+#}
+
+
+# B = - log(Phi) / DeltaT = V log(-Eigenvalues / DeltaT) V^-1
+Est_ParamOU <- -logm(Phi)/DeltaT
+#if(all(abs(Im(Est_ParamOU)) < 0.0001) == TRUE){Est_ParamOU <- Re(Est_ParamOU)}
+
+if(is.null(SigmaVAR)){
+  Sigma_OU = "Input for SigmaVAR(DeltaT) or Gamma is required to calculate the corresponding Sigma."
+  Gamma <- "Input for SigmaVAR(DeltaT) or Gamma is required to calculate the corresponding Gamma."
+  Gamma_s <- "Input for SigmaVAR(DeltaT) or Gamma is required to calculate the corresponding standGamma."
+  A_s <- "Input for SigmaVAR(DeltaT) or Gamma is required to calculate the corresponding standA."
+  Sigma_s <- "Input for SigmaVAR(DeltaT) or Gamma is required to calculate the corresponding standSigma."
+}else{
+  kronprod <- kronecker(Phi,Phi)
+  Sigma_OU <- (-1/DeltaT) * matrix((solve(diag(q*q) - kronprod) %*% logm(kronprod) %*% as.vector(SigmaVAR)), ncol=q, nrow=q)
+  #if(all(abs(Im(Sigma_OU)) < 0.0001) == TRUE){Sigma_OU <- Re(Sigma_OU)}
+
+  Gamma <- Gamma.fromVAR(Phi, SigmaVAR)
+  Sxy <- sqrt(diag(diag(Gamma)))
+  Gamma_s <- solve(Sxy) %*% Gamma %*% solve(Sxy)
+  A_s <- solve(Sxy) %*% (-Est_ParamOU) %*% Sxy
+  Sigma_s <- solve(Sxy) %*% Sigma_OU %*% solve(Sxy)
+
+} # end 'else' belonging to Svar not NULL
+
+
+
+Eigen_ParamCTM <- diag(eigen(Est_ParamOU)$val) # = -log(Eigen_ParamVAR) / DeltaT
+
+StableProcess = FALSE
+if(all(Re(Eigen_ParamCTM) > 0)){
+  if(all(abs(Eigen_ParamVAR) < 1)){
+    StableProcess = TRUE
+  }
+}
+
+UniqueSolution = "FALSE: The resulting drift matrix A is NOT unique, there exist multiple solutions (nl complex eigenvalues)."
+if(all(Im(Eigen_ParamCTM) == 0)){
+  UniqueSolution = "TRUE: The resulting drift matrix A is unique (nl real eigenvalues)."
+}
+#if(all(Im(Eigen_ParamCTM) > -base::pi/DeltaT)){
+#  if(all(Im(Eigen_ParamCTM) < base::pi/DeltaT)){
+if(all(abs(Im(Eigen_ParamCTM)) < base::pi/DeltaT)){
+    UniqueSolution = "TRUE for your sampling frequency: The resulting drift matrix A is unique for your used DeltaT (nl imaginary part of the complex eigenvalues of A lie in (-pi/DeltaT, pi/DeltaT)); i.e., you measured frequently enough to know that it is this drift matrix and not another solution (which do exist, as can be seen from the plots)."
+}
+ #  }
+#}
+
+##Multiple solutions - only if q=2!
+#N = 1
+#for(N in 1:3){
+#  im <- complex(real = 0, imaginary = 1)
+#  diagN <- diag(2)
+#  diagN[1,1] <- -1
+#  diagN <- N * diagN
+#  A_N = (-Est_ParamOU) + (2 * base::pi * im / DeltaT) * V_ParamVAR_1 %*% diagN %*% solve(V_ParamVAR_1)
+#  A_N
+#  print(A_N)
+#}
+#all(abs((2 * base::pi * im / DeltaT) * V_ParamVAR_1 %*% diagN %*% solve(V_ParamVAR_1)) == 0)
+
+
+
+
+############################################################################################################
+
+final <- list(eigenvalueDrift = -Eigen_ParamCTM,
+              eigenvaluePhi_DeltaT = Eigen_ParamVAR,
+              StableProcess = StableProcess,
+              #UniqueSolution = UniqueSolution,
+              Drift = -Est_ParamOU,
+              Sigma = Sigma_OU,
+              Gamma = Gamma,
+              standDrift = A_s,
+              standSigma = Sigma_s,
+              standGamma = Gamma_s)
+
+return(final)
+
+
+
+}
