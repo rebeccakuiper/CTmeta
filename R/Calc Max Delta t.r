@@ -93,7 +93,7 @@ MaxDeltaT <- function(DeltaT = 1, Phi = NULL, Drift = NULL) {
     # B is drift matrix that is pos def, so Phi(DeltaT) = expm(-B*DeltaT)
     if(is.null(Drift)){
       if(!is.null(Phi)){
-        B <- -logm(Phi)/1
+        B <- -logm(Phi)/DeltaT
       }else{ # is.null(Phi)
         ("Either the drift matrix Drift or the autoregressive matrix Phi should be input to the function.")
         #("Note that Phi(DeltaT) = expm(-B*DeltaT).")

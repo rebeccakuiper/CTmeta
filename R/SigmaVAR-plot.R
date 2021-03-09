@@ -134,7 +134,7 @@ SigmaVARPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, SigmaVAR = NULL, 
 
     if(is.null(Drift)){
       if(!is.null(Phi)){
-        Drift <- logm(Phi)/1
+        Drift <- logm(Phi)/DeltaT
       }else{ # is.null(Phi)
         ("Either the drift matrix Drift or the autoregressive matrix Phi should be input to the function.")
         ("Note that Phi(DeltaT) = expm(-B*DeltaT).")

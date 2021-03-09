@@ -117,7 +117,7 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Min = 0, Max = 10, Ste
 
     if(is.null(Drift)){
       if(!is.null(Phi)){
-        Drift <- logm(Phi)/1
+        Drift <- logm(Phi)/DeltaT
       }else{ # is.null(Phi)
         ("Either the drift matrix Drift or the autoregressive matrix Phi should be input to the function.")
         ("Note that Phi(DeltaT) = expm(-B*DeltaT).")
@@ -373,7 +373,7 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Min = 0, Max = 10, Ste
         # Note if nr of complex pairs > 1: 'diagN' should always be x and -x within a conjugate pair, but over the complex pairs x does not have to be the same...
       }
       diagN <- N * diagN
-      A_N = Drift + (2 * base::pi * im / 1) * V %*% diagN %*% solve(V) # Here DeltaT=1, because A is input and thus DeltaT does not effect this
+      A_N = Drift + (2 * base::pi * im / DeltaT) * V %*% diagN %*% solve(V)
       #A_N
       #print(A_N)
       Drift_N <- Re(A_N)
