@@ -98,7 +98,7 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Min = 0, Max = 10, Ste
   # Check on Phi
   if(any(class(Phi) == "varest")){
     Phi_VARest <- Acoef(Phi)[[1]]
-    Drift <- logm(Phi_VARest)/DeltaT # Phi = expm(Drift * deltaT)
+    Drift <- logm(Phi_VARest)/DeltaT # Phi = expm(Drift * DeltaT)
     if(length(Drift) == 1){
       q <- 1
     }else{
@@ -120,13 +120,13 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Min = 0, Max = 10, Ste
         Drift <- logm(Phi)/DeltaT
       }else{ # is.null(Phi)
         ("Either the drift matrix Drift or the autoregressive matrix Phi should be input to the function.")
-        ("Note that Phi(DeltaT) = expm(-B*DeltaT).")
+        ("Note that Phi(DeltaT) = expm(Drift*DeltaT).")
         stop()
       }
     }else{ # !is.null(Drift)
       if(all(eigen(Drift)$val > 0)){
         ("All the eigenvalues of the drift matrix Drift are positive; therefore. I assume the input was B=-A instead of A. I will use -Drift in the calculation.")
-        ("Note that Phi(DeltaT) = expm(-B*DeltaT) = expm(A*DeltaT).")
+        ("Note that Phi(DeltaT) = expm(-B*DeltaT) = expm(A*DeltaT) = expm(Drift*DeltaT).")
         Drift = -Drift
       }
     }
@@ -379,7 +379,7 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Min = 0, Max = 10, Ste
       Drift_N <- Re(A_N)
       PhiDeltaTs_N<-array(data=NA,dim=c(q,q,length(DeltaTs)))
       for(i in 1:length(DeltaTs)){
-        PhiDeltaTs_N[,,i]<-expm(Drift_N*DeltaTs[i])
+        PhiDeltaTs_N[,,i] <- expm(Drift_N*DeltaTs[i])
       }
       #
       plot(y=rep(0, length(DeltaTs)), x=DeltaTs, type="l", ylim=c(min(PhiDeltaTs_N), max(PhiDeltaTs_N)),

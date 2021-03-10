@@ -4,16 +4,16 @@
 \alias{ChecksCTM}
 \title{Checks on CT estimates}
 \usage{
-ChecksCTM(B, Sigma = NULL, Gamma = NULL)
+ChecksCTM(Drift, Sigma = NULL, Gamma = NULL)
 }
 \arguments{
+\item{Drift}{Matrix of size q times q of (un)standardized continuous-time lagged effects, called drift matrix. Note that Phi(DeltaT) = expm(Drift*DeltaT). By default, input for Phi is used; only when Phi = NULL, Drift will be used.
+It also takes a fitted object from the class "ctsemFit" (from the ctFit() function in the ctsem package); see example below. From such an object, the (standardized) Drift matrix is extracted.}
+
 \item{Sigma}{Residual covariance matrix of the first-order continuous-time (CT-VAR(1)) model, that is, the diffusion matrix. By default, input for SigmaVAR is used; only when SigmaVAR = NULL, Sigma will be used.}
 
 \item{Gamma}{Optional (either Sigma or Gamma). Stationary covariance matrix, that is, the contemporaneous covariance matrix of the data. By default, input for SigmaVAR is used; only when SigmaVAR = NULL, Gamma will be used.
 Note that if Drift and Sigma are known, Gamma can be calculated; hence, only one out of SigmaVAR, Sigma, and Gamma is needed as input.}
-
-\item{Drift}{Matrix of size q times q of (un)standardized continuous-time lagged effects, called drift matrix. Note that Phi(DeltaT) = expm(Drift*DeltaT). By default, input for Phi is used; only when Phi = NULL, Drift will be used.
-It also takes a fitted object from the class "ctsemFit" (from the ctFit() function in the ctsem package); see example below. From such an object, the (standardized) Drift matrix is extracted.}
 }
 \value{
 The output renders the conclusions from the checks on the continuous-time lagged-effects model matrices.

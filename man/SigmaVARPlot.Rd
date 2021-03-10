@@ -76,7 +76,7 @@ SigmaVAR <- diag(2) # for ease
 if (!require("expm")) install.packages("expm") # Use expm package for function logm()
 library(expm)
 Drift <- logm(Phi)/DeltaT
-Sigma <- diag(2) # for ease. Note that the process now changes. This is not the CT-equivalent of SigmaVAR.
+Sigma <- diag(2) # for ease. Note that this is not the CT-equivalent of SigmaVAR.
 #
 #
 # Make plot of SigmaVAR

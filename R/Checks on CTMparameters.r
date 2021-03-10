@@ -42,7 +42,7 @@
 #'
 
 
-ChecksCTM <- function(B, Sigma = NULL, Gamma = NULL) {
+ChecksCTM <- function(Drift, Sigma = NULL, Gamma = NULL) {
 
   #  #######################################################################################################################
   #
@@ -113,7 +113,7 @@ ChecksCTM <- function(B, Sigma = NULL, Gamma = NULL) {
       }
 
       # Calculate Gamma
-      Gamma <- Gamma.fromCTM(Drift, Sigma)
+      Gamma <- Gamma.fromCTM(-B, Sigma)
 
     }
 
@@ -200,7 +200,7 @@ if(q == 1){
   # Sigma = B %*% Gamma + Gamma %*% t(B) = 2 * beta * gamma, dus gamma = sigma / (2 * beta)
   Gamma <- Sigma / (2 * B)
 }else if(q > 1){
-Gamma <- Gamma.fromCTM(B, Sigma)
+Gamma <- Gamma.fromCTM(-B, Sigma)
 }
 #
 #if(q > 3){

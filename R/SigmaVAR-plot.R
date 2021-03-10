@@ -38,7 +38,7 @@
 #' if (!require("expm")) install.packages("expm") # Use expm package for function logm()
 #' library(expm)
 #' Drift <- logm(Phi)/DeltaT
-#' Sigma <- diag(2) # for ease. Note that the process now changes. This is not the CT-equivalent of SigmaVAR.
+#' Sigma <- diag(2) # for ease. Note that this is not the CT-equivalent of SigmaVAR.
 #' #
 #' #
 #' # Make plot of SigmaVAR
@@ -111,7 +111,7 @@ SigmaVARPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, SigmaVAR = NULL, 
   # Check on Phi
   if(any(class(Phi) == "varest")){
     Phi_VARest <- Acoef(Phi)[[1]]
-    Drift <- logm(Phi_VARest)/DeltaT # Phi = expm(Drift * deltaT)
+    Drift <- logm(Phi_VARest)/DeltaT # Phi = expm(Drift * DeltaT)
     SigmaVAR_VARest <- cov(resid(Phi))
     Gamma <- Gamma.fromVAR(Phi_VARest, SigmaVAR_VARest)
     if(length(Drift) == 1){
@@ -123,7 +123,7 @@ SigmaVARPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, SigmaVAR = NULL, 
   } else if(any(class(Phi) == "ctsemFit")){
     Drift <- summary(Phi)$DRIFT
     Sigma_ctsem <- summary(Phi)$DIFFUSION
-    Gamma <- Gamma.fromVAR(Drift, Sigma_ctsem)
+    Gamma <- Gamma.fromCTM(Drift, Sigma_ctsem)
     if(length(Drift) == 1){
       q <- 1
     }else{
@@ -137,14 +137,14 @@ SigmaVARPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, SigmaVAR = NULL, 
         Drift <- logm(Phi)/DeltaT
       }else{ # is.null(Phi)
         ("Either the drift matrix Drift or the autoregressive matrix Phi should be input to the function.")
-        ("Note that Phi(DeltaT) = expm(-B*DeltaT).")
+        ("Note that Phi(DeltaT) = expm(Drift*DeltaT).")
         stop()
       }
     }else{ # !is.null(Drift)
       Phi <- expm(Drift*DeltaT)
       if(all(eigen(Drift)$val > 0)){
         ("All the eigenvalues of the drift matrix Drift are positive; therefore. I assume the input was B=-A instead of A. I will use -Drift in the calculation.")
-        ("Note that Phi(DeltaT) = expm(-B*DeltaT) = expm(A*DeltaT).")
+        ("Note that Phi(DeltaT) = expm(-B*DeltaT) = expm(A*DeltaT) = expm(Drift*DeltaT).")
         Drift = -Drift
       }
     }

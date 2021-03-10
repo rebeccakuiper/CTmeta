@@ -32,7 +32,7 @@
 #' MaxDeltaT(DeltaT, Phi)
 #'
 #' # Note that the DeltaT for which Phi_ij reaches its maximum or minimum ('DeltaT_MinOrMaxPhi') differs per Phi_ij.
-#' # Therefore, the matrix 'MinOrMaxPhi' is not a Phi-matrix, but each elemant should be inspected seperately.
+#' # Therefore, the matrix 'MinOrMaxPhi' is not a Phi-matrix, but each element should be inspected seperately.
 #' # To obtain the full Phi-matrix for a specific DeltaT one can use:
 #' DeltaT_MinOrMaxPhi <- MaxDeltaT(DeltaT, Phi)$DeltaT_MinOrMaxPhi
 #' StandTransPhi(DeltaTStar = DeltaT_MinOrMaxPhi[1,2], DeltaT, N = NULL, Phi, SigmaVAR = NULL, Gamma = NULL)
