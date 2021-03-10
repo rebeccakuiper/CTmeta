@@ -1,5 +1,6 @@
 Package: CTmeta
 Title: Continuous-time meta-analysis (CTmeta) on standarized lagged effects taking into account the various time-intervals used in the primary studies
+Date: 2021
 Version: 0.0.0.9000
 Authors@R: 
     person(given = "Rebecca M.",
