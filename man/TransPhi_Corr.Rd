@@ -57,6 +57,6 @@ corr_YXYX[upper.tri(corr_YXYX,diag = F)] <- t(corr_YXYX)[upper.tri(t(corr_YXYX),
 # Run function
 TransPhi_Corr(DeltaTStar, DeltaT, N, corr_YXYX)
 
-# The output (vecStandPhi_DeltaTStar, SigmaVAR_DeltaTStar, and Gamma) can be used to make stacked matrices or arrays which can serve as input for continuous-time meta-analysis CTmeta (using the function CTmeta; see ?CTmeta).
+# The output (standPhi_DeltaTStar, standSigmaVAR_DeltaTStar, and standGamma) can be used to make stacked matrices or arrays which can serve as input for continuous-time meta-analysis CTmeta (using the function CTmeta; see ?CTmeta).
 
 }

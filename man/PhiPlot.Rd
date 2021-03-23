@@ -2,12 +2,16 @@
 % Please edit documentation in R/Phi-plot.R
 \name{PhiPlot}
 \alias{PhiPlot}
-\title{Phi-plot of Phi based on its underling drift matrix}
+\title{Phi-plot of Phi based on its underlying drift matrix}
 \usage{
 PhiPlot(
   DeltaT = 1,
   Phi = NULL,
   Drift = NULL,
+  Stand = 0,
+  SigmaVAR = NULL,
+  Sigma = NULL,
+  Gamma = NULL,
   Min = 0,
   Max = 10,
   Step = 0.05,
@@ -24,7 +28,15 @@ PhiPlot(
 \item{Phi}{Matrix of size q times q of (un)standardized lagged effects. Note that the Phi (or Drift) matrix should be standardized to make a fair comparison between cross-lagged effects.
 It also takes a fitted object from the classes "varest" (from the VAR() function in vars package) and "ctsemFit" (from the ctFit() function in the ctsem package); see example below. From such an object, the (standardized) Drift matrix is calculated/extracted.}
 
-\item{Drift}{Optional (either Phi or Drift). Underling continuous-time lagged effects matrix (i.e., Drift matrix) of the discrete-time lagged effects matrix Phi(DeltaT). By default, input for Phi is used; only when Phi = NULL, Drift will be used.}
+\item{Drift}{Optional (either Phi or Drift). Underlying continuous-time lagged effects matrix (i.e., Drift matrix) of the discrete-time lagged effects matrix Phi(DeltaT). By default, input for Phi is used; only when Phi = NULL, Drift will be used.}
+
+\item{Stand}{Optional. Indicator for whether Phi (or Drift) should be standardized (1) or not (0). In case Stand = 1, one of the following matrices should be input as well: SigmaVAR, Sigma, or Gamma  (or it is substracted from a varest or ctsemFit object). By default, Stand = 0.}
+
+\item{SigmaVAR}{Optional (if Stand = 1, then either SigmaVAR, Sigma, or Gamma needed). Residual covariance matrix of the first-order discrete-time vector autoregressive (DT-VAR(1)) model.}
+
+\item{Sigma}{Optional (if Stand = 1, then either SigmaVAR, Sigma, or Gamma needed). Residual covariance matrix of the first-order continuous-time (CT-VAR(1)) model, that is, the diffusion matrix.}
+
+\item{Gamma}{Optional (either SigmaVAR, Sigma or Gamma). Stationary covariance matrix, that is, the contemporaneous covariance matrix of the data.}
 
 \item{Min}{Optional. Minimum time interval used in the Phi-plot. By default, Min = 0.}
 
@@ -46,21 +58,23 @@ It also takes a fitted object from the classes "varest" (from the VAR() function
 This function returns a Phi-plot for a range of time intervals.
 }
 \description{
-This function makes a Phi-plot of Phi(DeltaT) for a range of time intervals based on its underling drift matrix. There is also an interactive web application on my website to create a Phi-plot: Phi-and-Psi-Plots and Find DeltaT (\url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}).
+This function makes a Phi-plot of Phi(DeltaT) for a range of time intervals based on its underlying drift matrix. There is also an interactive web application on my website to create a Phi-plot: Phi-and-Psi-Plots and Find DeltaT (\url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}).
 }
 \examples{
 ### Make Phi-plot ###
 
 ## Example 1 ##
-#
+
 # Phi(DeltaT)
 DeltaT <- 1
-Phi <- myPhi[1:2,1:2] # For simplicity, it is assumed that this is a standardized Phi matrix.
+Phi <- myPhi[1:2,1:2]
 #
 # Determine the continuous-time equivalent, that is, the drift matrix
 if (!require("expm")) install.packages("expm") # Use expm package for function logm()
 library(expm)
 Drift <- logm(Phi)/DeltaT
+
+# Example 1.1: unstandardized Phi #
 #
 # Make plot of Phi
 PhiPlot(DeltaT, Phi)
@@ -68,14 +82,24 @@ PhiPlot(DeltaT, Phi, Min = 0, Max = 10, Step = 0.01)
 PhiPlot(DeltaT, Drift = Drift, Min = 0, Max = 10, Step = 0.01)
 
 
+# Example 1.2: standardized Phi #
+SigmaVAR <- diag(2) # for ease
+PhiPlot(DeltaT, Phi, Stand = 1, SigmaVAR = SigmaVAR)
+
+
 ## Example 2: input from fitted object of class "varest" ##
-#
+
 DeltaT <- 1
 data <- myData
 if (!require("vars")) install.packages("vars")
 library(vars)
 out_VAR <- VAR(data, p = 1)
+
+# Example 2.1: unstandardized Phi #
 PhiPlot(DeltaT, out_VAR)
+
+# Example 2.2: standardized Phi #
+PhiPlot(DeltaT, out_VAR, Stand = 1)
 
 
 ## Example 3: Change plot options ##
@@ -91,8 +115,7 @@ for(i in 1:length(Lab)){
 }
 Col <- c(1,2)
 Lty <- c(1,2)
-PhiPlot(DeltaT = 1, Phi, Drift = NULL, Min = 0, Max = 10, Step = 0.05, WhichElements, Labels, Col, Lty)
-# or
-PhiPlot(DeltaT = 1, Phi, Min = 0, Max = 10, Step = 0.05, WhichElements = WhichElements, Labels = Labels, Col = Col, Lty = Lty)
+# Standardized Phi
+PhiPlot(DeltaT = 1, Phi, Stand = 1, SigmaVAR = SigmaVAR, Min = 0, Max = 10, Step = 0.05, WhichElements = WhichElements, Labels = Labels, Col = Col, Lty = Lty)
 
 }

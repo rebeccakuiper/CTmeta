@@ -228,8 +228,8 @@ if(!is.null(N)){
   eigenCovMx <- eigen(CovMx_Phi)
   lambda <- eigenCovMx$val
   E <- eigenCovMx$vec
-  #df1F <- q*q*qf(p=alpha, df1=q*q, df2=(N-q*q), lower.tail=FALSE) # geeft bij mij 25 getallen?! TO DO
-  Chi2 <- qchisq(p=alpha, df=(q*q), lower.tail=FALSE) # for large N df1F goes to Chi2
+  #df1F <- q*q*qf(p=alpha, df1=q*q, df2=(N-q*q), lower.tail=FALSE)
+  Chi2 <- qchisq(p=alpha, df=(q*q), lower.tail=FALSE) # for large N, df1F goes to Chi2
   LB_vecPhi <- matrix(NA, nrow=q*q, ncol =q*q)
   UB_vecPhi <- matrix(NA, nrow=q*q, ncol =q*q)
   LL <- matrix(NA, nrow=q*q, ncol=2)

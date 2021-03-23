@@ -44,7 +44,7 @@
 #' # Run function
 #' TransPhi_Corr(DeltaTStar, DeltaT, N, corr_YXYX)
 #'
-#' # The output (vecStandPhi_DeltaTStar, SigmaVAR_DeltaTStar, and Gamma) can be used to make stacked matrices or arrays which can serve as input for continuous-time meta-analysis CTmeta (using the function CTmeta; see ?CTmeta).
+#' # The output (standPhi_DeltaTStar, standSigmaVAR_DeltaTStar, and standGamma) can be used to make stacked matrices or arrays which can serve as input for continuous-time meta-analysis CTmeta (using the function CTmeta; see ?CTmeta).
 #'
 
 
@@ -132,8 +132,8 @@ TransPhi_Corr <- function(DeltaTStar, DeltaT = 1, N = NULL, corr_YXYX, alpha=0.0
       eigenCovMx <- eigen(CovMx_Phi)
       lambda <- eigenCovMx$val
       E <- eigenCovMx$vec
-      #df1F <- q*q*qf(p=alpha, df1=q*q, df2=(N-q*q), lower.tail=FALSE) # geeft bij mij 25 getallen?! TO DO
-      Chi2 <- qchisq(p=alpha, df=(q*q), lower.tail=FALSE) # for large N df1F goes to Chi2
+      #df1F <- q*q*qf(p=alpha, df1=q*q, df2=(N-q*q), lower.tail=FALSE)
+      Chi2 <- qchisq(p=alpha, df=(q*q), lower.tail=FALSE) # for large N, df1F goes to Chi2
       LB_vecPhi <- matrix(NA, nrow=q*q, ncol =q*q)
       UB_vecPhi <- matrix(NA, nrow=q*q, ncol =q*q)
       LL <- matrix(NA, nrow=q*q, ncol=2)
@@ -164,11 +164,12 @@ TransPhi_Corr <- function(DeltaTStar, DeltaT = 1, N = NULL, corr_YXYX, alpha=0.0
     ############################################################################################################
 
     if(!is.null(N)){
-      final <- list(vecStandPhi_DeltaTStar = vecPhi, CovMx_vecStandPhi_DeltaTStar = CovMx, multiCI_vecStandPhi_DeltaT = multiCI,
+      final <- list(standPhi_DeltaTStar = TransPhi,
+                    vecStandPhi_DeltaTStar = vecPhi, CovMx_vecStandPhi_DeltaTStar = CovMx, multiCI_vecStandPhi_DeltaT = multiCI,
                     standSigmaVAR_DeltaTStar = SigmaVAR, standGamma = Gamma,
                     warning = warning)
     }else{
-      final <- list(StandPhi_DeltaTStar = TransPhi,
+      final <- list(standPhi_DeltaTStar = TransPhi,
                     standSigmaVAR_DeltaTStar = SigmaVAR, standGamma = Gamma,
                     warning = warning)
     }

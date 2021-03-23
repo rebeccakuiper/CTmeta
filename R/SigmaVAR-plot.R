@@ -1,17 +1,18 @@
 #' Psi-Plot: Plot of Psi / SigmaVAR
 #'
-#' This function makes a plot of Psi(DeltaT) / SigmaVAR(DeltaT), the residual covariance matrix of the discrete-time model, for a range of time intervals based on its underling drift matrix. There is also an interactive web application on my website to create a Phi-plot: Phi-and-Psi-Plots and Find DeltaT (\url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}).
+#' This function makes a plot of Psi(DeltaT) / SigmaVAR(DeltaT), the residual covariance matrix of the discrete-time model, for a range of time intervals based on its underlying drift matrix. There is also an interactive web application on my website to create a Phi-plot: Phi-and-Psi-Plots and Find DeltaT (\url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}).
 #'
 #' @param DeltaT Optional. The time interval used. By default, DeltaT = 1.
 #' @param Phi Matrix of size q times q of (un)standardized lagged effects of the first-order discrete-time vector autoregressive (DT-VAR(1)) model.
-#' It also takes a fitted object from the classes "varest" (from the VAR() function in vars package) and "ctsemFit" (from the ctFit() function in the ctsem package); see example below. From such an object, the (standardized) Drift matrix is calculated/extracted.
+#' It also takes a fitted object from the classes "varest" (from the VAR() function in vars package) and "ctsemFit" (from the ctFit() function in the ctsem package); see example below. From such an object, the (standardized) Phi/Drift and SigmaVAR/Sigma matrices are calculated/extracted.
 #' @param SigmaVAR Residual covariance matrix of the first-order discrete-time vector autoregressive (DT-VAR(1)) model.
-#' @param Drift Optional (either Phi or Drift). Underling first-order continuous-time lagged effects matrix (i.e., Drift matrix) of the discrete-time lagged effects matrix Phi(DeltaT). By default, input for Phi is used; only when Phi = NULL, Drift will be used.
-#' @param Sigma Optional (either SigmaVAR, Sigma or Gamma). Residual covariance matrix of the first-order continuous-time (CT-VAR(1)) model, that is, the diffusion matrix. By default, input for SigmaVAR is used; only when SigmaVAR = NULL, Sigma will be used.
-#' @param Gamma Optional (either SigmaVAR, Sigma or Gamma). Stationary covariance matrix, that is, the contemporaneous covariance matrix of the data. By default, input for SigmaVAR is used; only when SigmaVAR = NULL, Gamma will be used.
+#' @param Drift Optional (either Phi or Drift). Underling first-order continuous-time lagged effects matrix (i.e., Drift matrix) of the discrete-time lagged effects matrix Phi(DeltaT).
+#' @param Sigma Optional (either SigmaVAR, Sigma, or Gamma). Residual covariance matrix of the first-order continuous-time (CT-VAR(1)) model, that is, the diffusion matrix.
+#' @param Gamma Optional (either SigmaVAR, Sigma, or Gamma). Stationary covariance matrix, that is, the contemporaneous covariance matrix of the data.
 #' Note that if Phi and SigmaVAR (or Drift and Sigma) are known, Gamma can be calculated; hence, only one out of SigmaVAR, Sigma, and Gamma is needed as input.
 #' @param AddGamma Optional. Indicator (0/1) for including horizontal lines at the values for Gamma in the plot. By default, AddGamma = 1.
 #' Note that SigmaVAR converges to Gamma, so the time-interval dependent curves of SigmaVAR will converge for large time-intervals to the Gamma-lines.
+#' @param Stand Optional. Indicator for whether Phi (or Drift) and SigmaVAR (or Sigma) should be standardized (1) or not (0). By default, Stand = 0.
 #' @param Min Optional. Minimum time interval used in the Phi-plot. By default, Min = 0.
 #' @param Max Optional. Maximum time interval used in the Phi-plot. By default, Max = 10.
 #' @param Step Optional. The step-size taken in the time intervals. By default, Step = 0.05. Hence, using the defaults, the Phi-plots is based on the values of Phi(DeltaT) for DeltaT = 0, 0.05, 0.10, ..., 10. Note: Especially in case of complex eigenvalues, this step size should be very small (then, the oscillating behaviour can be seen best).
@@ -28,10 +29,10 @@
 #' ### Make Psi-plot/SigmaVAR-plot ###
 #'
 #' ## Example 1 ##
-#' #
+#'
 #' # Phi(DeltaT)
 #' DeltaT <- 1
-#' Phi <- myPhi[1:2,1:2] # For simplicity, it is assumed that this is a standardized Phi matrix.
+#' Phi <- myPhi[1:2,1:2]
 #' SigmaVAR <- diag(2) # for ease
 #' #
 #' # Determine the continuous-time equivalent, that is, the drift matrix
@@ -39,22 +40,32 @@
 #' library(expm)
 #' Drift <- logm(Phi)/DeltaT
 #' Sigma <- diag(2) # for ease. Note that this is not the CT-equivalent of SigmaVAR.
-#' #
+#'
+#' # Example 1.1: unstandardized Phi&SigmaVAR #
 #' #
 #' # Make plot of SigmaVAR
-#' SigmaVARPlot(DeltaT, Phi, SigmaVAR = SigmaVAR)
-#' SigmaVARPlot(DeltaT, Phi, SigmaVAR = SigmaVAR, Min = 0, Max = 10, Step = 0.01)
+#' SigmaVARPlot(DeltaT, Phi, SigmaVAR)
+#' SigmaVARPlot(DeltaT, Phi, SigmaVAR, Min = 0, Max = 10, Step = 0.01)
 #' SigmaVARPlot(DeltaT, Drift = Drift, Sigma = Sigma, Min = 0, Max = 10, Step = 0.01)
 #'
 #'
+#' # Example 1.2: standardized Phi&SigmaVAR #
+#' SigmaVARPlot(DeltaT, Phi, SigmaVAR, Stand = 1)
+#'
+#'
 #' ## Example 2: input from fitted object of class "varest" ##
-#' #
+#'
 #' DeltaT <- 1
 #' data <- myData
 #' if (!require("vars")) install.packages("vars")
 #' library(vars)
 #' out_VAR <- VAR(data, p = 1)
+#'
+#' # Example 2.1: unstandardized Phi #
 #' SigmaVARPlot(DeltaT, out_VAR)
+#'
+#' # Example 2.2: standardized Phi #
+#' SigmaVARPlot(DeltaT, out_VAR, Stand = 1)
 #'
 #'
 #' ## Example 3: Change plot options ##
@@ -75,13 +86,12 @@
 #' Labels <- c(LabelsS, LabelsG)
 #' Col <- c(1,2,1,2)
 #' Lty <- c(1,2,1,2)
-#' SigmaVARPlot(DeltaT = 1, Phi, Drift = NULL, SigmaVAR = SigmaVAR, Sigma = NULL, Gamma = NULL, AddGamma = 1, Min = 0, Max = 10, Step = 0.05, WhichElements, Labels, Col, Lty)
-#' # or
-#' SigmaVARPlot(DeltaT = 1, Phi, SigmaVAR = SigmaVAR, Min = 0, Max = 10, Step = 0.05, WhichElements = WhichElements, Labels = Labels, Col = Col, Lty = Lty)
+#' # Standardized Phi and SigmaVAR
+#' SigmaVARPlot(DeltaT = 1, Phi, SigmaVAR, Stand = 1, Min = 0, Max = 10, Step = 0.05, WhichElements = WhichElements, Labels = Labels, Col = Col, Lty = Lty)
 #'
 
 
-SigmaVARPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, SigmaVAR = NULL, Sigma = NULL, Gamma = NULL, AddGamma = 1, Min = 0, Max = 10, Step = 0.05, WhichElements = NULL, Labels = NULL, Col = NULL, Lty = NULL, Title = NULL) {
+SigmaVARPlot <- function(DeltaT = 1, Phi = NULL, SigmaVAR = NULL, Drift = NULL, Sigma = NULL, Gamma = NULL, AddGamma = 1, Stand = 0, Min = 0, Max = 10, Step = 0.05, WhichElements = NULL, Labels = NULL, Col = NULL, Lty = NULL, Title = NULL) {
 
   #  #######################################################################################################################
   #
@@ -93,6 +103,10 @@ SigmaVARPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, SigmaVAR = NULL, 
   # Checks:
   if(length(DeltaT) != 1){
     print(paste("The argument DeltaT should be a scalar, that is, one number, that is, a vector with one element."))
+    stop()
+  }
+  if(Stand != 0 & Stand != 1){
+    print(paste("The argument Stand should be a 0 or a 1."))
     stop()
   }
   if(length(Min) != 1){
@@ -119,7 +133,6 @@ SigmaVARPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, SigmaVAR = NULL, 
     }else{
       q <- dim(Drift)[1]
     }
-    # TO DO bepaal standardized Phi en dus Drift!
   } else if(any(class(Phi) == "ctsemFit")){
     Drift <- summary(Phi)$DRIFT
     Sigma_ctsem <- summary(Phi)$DIFFUSION
@@ -129,7 +142,6 @@ SigmaVARPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, SigmaVAR = NULL, 
     }else{
       q <- dim(Drift)[1]
     }
-    # TO DO bepaal standardized Drift!
   } else{
 
     if(is.null(Drift)){
@@ -252,6 +264,15 @@ SigmaVARPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, SigmaVAR = NULL, 
   }
   #
   #
+  if(Stand == 1){
+    # Standardize Drift and Gamma
+    Sxy <- sqrt(diag(diag(Gamma)))
+    Gamma <- solve(Sxy) %*% Gamma %*% solve(Sxy)
+    Drift <- solve(Sxy) %*% Drift %*% Sxy
+    #Sigma_s <- solve(Sxy) %*% Sigma %*% solve(Sxy)
+  }
+  #
+  #
   if(!is.null(WhichElements)){
     if(length(WhichElements) == 1){
       if(q != 1){
@@ -287,7 +308,7 @@ SigmaVARPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, SigmaVAR = NULL, 
         stop()
       }
     }
-    #if(any(!is.character(Labels))){ # TO DO could also be an expression
+    #if(any(!is.character(Labels))){ # Note: This does not suffice, since it could also be an expression
     #  print(paste("The argument Labels should consist of solely characters."))
     #  stop()
     #}
@@ -335,11 +356,8 @@ SigmaVARPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, SigmaVAR = NULL, 
       print(paste("The argument (list) Title should at max contain 3 items. Currently, it consists of ", length(Title), " items."))
       stop()
     }
-    # TO DO check of elk element in list een "call" of een 'character' is...
+    # Option: Also check whether each element in list either a "call" or a 'character' is...
   }
-
-  # TO DO bepaal standardized Drift! Dus dan voor een VAR(1) de Sigma gebruiken of Gamma!
-  # TO DO Geldt voor andere modellen ook dat ik Gamma kan gebruiken??
 
 
   if(is.null(Labels)){
@@ -397,7 +415,7 @@ SigmaVARPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, SigmaVAR = NULL, 
 
 
 
-  if(any(is.complex(eigen(Drift)$val))){ # Does this matter with SigmaVAR?
+  if(any(is.complex(eigen(Drift)$val))){
     while (!is.null(dev.list()))  dev.off()  # to reset the graphics pars to defaults
     # Multiple solutions, then 2x2 plots
     op <- par(mfrow=c(2,2))

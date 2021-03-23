@@ -1,11 +1,15 @@
-#' Phi-plot of Phi based on its underling drift matrix
+#' Phi-plot of Phi based on its underlying drift matrix
 #'
-#' This function makes a Phi-plot of Phi(DeltaT) for a range of time intervals based on its underling drift matrix. There is also an interactive web application on my website to create a Phi-plot: Phi-and-Psi-Plots and Find DeltaT (\url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}).
+#' This function makes a Phi-plot of Phi(DeltaT) for a range of time intervals based on its underlying drift matrix. There is also an interactive web application on my website to create a Phi-plot: Phi-and-Psi-Plots and Find DeltaT (\url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}).
 #'
 #' @param DeltaT Optional. The time interval used. By default, DeltaT = 1.
 #' @param Phi Matrix of size q times q of (un)standardized lagged effects. Note that the Phi (or Drift) matrix should be standardized to make a fair comparison between cross-lagged effects.
-#' It also takes a fitted object from the classes "varest" (from the VAR() function in vars package) and "ctsemFit" (from the ctFit() function in the ctsem package); see example below. From such an object, the (standardized) Drift matrix is calculated/extracted.
+#' It also takes a fitted object from the classes "varest" (from the VAR() function in vars package) and "ctsemFit" (from the ctFit() function in the ctsem package); see example below. From such an object, the (standardized) Phi/Drift matrix is calculated/extracted.
 #' @param Drift Optional (either Phi or Drift). Underling continuous-time lagged effects matrix (i.e., Drift matrix) of the discrete-time lagged effects matrix Phi(DeltaT). By default, input for Phi is used; only when Phi = NULL, Drift will be used.
+#' @param Stand Optional. Indicator for whether Phi (or Drift) should be standardized (1) or not (0). In case Stand = 1, one of the following matrices should be input as well: SigmaVAR, Sigma, or Gamma (or it is substracted from a varest or ctsemFit object). By default, Stand = 0.
+#' @param SigmaVAR Optional (if Stand = 1, then either SigmaVAR, Sigma, or Gamma needed). Residual covariance matrix of the first-order discrete-time vector autoregressive (DT-VAR(1)) model.
+#' @param Sigma Optional (if Stand = 1, then either SigmaVAR, Sigma, or Gamma needed). Residual covariance matrix of the first-order continuous-time (CT-VAR(1)) model, that is, the diffusion matrix.
+#' @param Gamma Optional (either SigmaVAR, Sigma or Gamma). Stationary covariance matrix, that is, the contemporaneous covariance matrix of the data.
 #' @param Min Optional. Minimum time interval used in the Phi-plot. By default, Min = 0.
 #' @param Max Optional. Maximum time interval used in the Phi-plot. By default, Max = 10.
 #' @param Step Optional. The step-size taken in the time intervals. By default, Step = 0.05. Hence, using the defaults, the Phi-plots is based on the values of Phi(DeltaT) for DeltaT = 0, 0.05, 0.10, ..., 10. Note: Especially in case of complex eigenvalues, this step size should be very small (then, the oscillating behaviour can be seen best).
@@ -25,15 +29,17 @@
 #' ### Make Phi-plot ###
 #'
 #' ## Example 1 ##
-#' #
+#'
 #' # Phi(DeltaT)
 #' DeltaT <- 1
-#' Phi <- myPhi[1:2,1:2] # For simplicity, it is assumed that this is a standardized Phi matrix.
+#' Phi <- myPhi[1:2,1:2]
 #' #
 #' # Determine the continuous-time equivalent, that is, the drift matrix
 #' if (!require("expm")) install.packages("expm") # Use expm package for function logm()
 #' library(expm)
 #' Drift <- logm(Phi)/DeltaT
+#'
+#' # Example 1.1: unstandardized Phi #
 #' #
 #' # Make plot of Phi
 #' ggPhiPlot(DeltaT, Phi)
@@ -41,14 +47,24 @@
 #' ggPhiPlot(DeltaT, Drift = Drift, Min = 0, Max = 10, Step = 0.01)
 #'
 #'
+#' # Example 1.2: standardized Phi #
+#' SigmaVAR <- diag(2) # for ease
+#' ggPhiPlot(DeltaT, Phi, Stand = 1, SigmaVAR = SigmaVAR)
+#'
+#'
 #' ## Example 2: input from fitted object of class "varest" ##
-#' #
+#'
 #' DeltaT <- 1
 #' data <- myData
 #' if (!require("vars")) install.packages("vars")
 #' library(vars)
 #' out_VAR <- VAR(data, p = 1)
+#'
+#' # Example 2.1: unstandardized Phi #
 #' ggPhiPlot(DeltaT, out_VAR)
+#'
+#' # Example 2.2: standardized Phi #
+#' ggPhiPlot(DeltaT, out_VAR, Stand = 1)
 #'
 #'
 #' ## Example 3: Change plot options ##
@@ -64,13 +80,12 @@
 #' }
 #' Col <- c(1,2)
 #' Lty <- c(1,2)
-#' ggPhiPlot(DeltaT = 1, Phi, Drift = NULL, Min = 0, Max = 10, Step = 0.05, WhichElements, Labels, Col, Lty)
-#' # or
-#' ggPhiPlot(DeltaT = 1, Phi, Min = 0, Max = 10, Step = 0.05, WhichElements = WhichElements, Labels = Labels, Col = Col, Lty = Lty)
+#' # Standardized Phi
+#' ggPhiPlot(DeltaT = 1, Phi, Stand = 1, SigmaVAR = SigmaVAR, Min = 0, Max = 10, Step = 0.05, WhichElements = WhichElements, Labels = Labels, Col = Col, Lty = Lty)
 #'
 
 
-ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Min = 0, Max = 10, Step = 0.05, WhichElements = NULL, Labels = NULL, Col = NULL, Lty = NULL, Title = NULL) {
+ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = NULL, Sigma = NULL, Gamma = NULL, Min = 0, Max = 10, Step = 0.05, WhichElements = NULL, Labels = NULL, Col = NULL, Lty = NULL, Title = NULL) {
 #Min = 0; Max = 10; Step = 0.05; WhichElements = NULL; Labels = NULL; Col = NULL; Lty = NULL; Title = NULL
 # library(expm); library(purrr); library(ggplot2); library(dplyr)
 # library(tidyverse)
@@ -90,6 +105,10 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Min = 0, Max = 10, S
   # Checks:
   if(length(DeltaT) != 1){
     print(paste("The argument DeltaT should be a scalar, that is, one number, that is, a vector with one element."))
+    stop()
+  }
+  if(Stand != 0 & Stand != 1){
+    print(paste("The argument Stand should be a 0 or a 1."))
     stop()
   }
   if(length(Min) != 1){
@@ -114,7 +133,6 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Min = 0, Max = 10, S
     }else{
       q <- dim(Drift)[1]
     }
-    # TO DO bepaal standardized Phi en dus Drift!
   } else if(any(class(Phi) == "ctsemFit")){
     Drift <- summary(Phi)$DRIFT
     if(length(Drift) == 1){
@@ -122,7 +140,6 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Min = 0, Max = 10, S
     }else{
       q <- dim(Drift)[1]
     }
-    # TO DO bepaal standardized Drift!
   } else{
 
     if(is.null(Drift)){
@@ -164,6 +181,100 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Min = 0, Max = 10, S
   }
   #
   #
+  if(Stand == 1){
+    # Check on SigmaVAR, Sigma, and Gamma
+    if(any(class(Phi) == "varest")){
+      SigmaVAR_VARest <- cov(resid(Phi))
+      Gamma <- Gamma.fromVAR(Phi_VARest, SigmaVAR_VARest)
+    } else if(any(class(Phi) == "ctsemFit")){
+      Sigma_ctsem <- summary(Phi)$DIFFUSION
+      Gamma <- Gamma.fromCTM(Drift, Sigma_ctsem)
+    } else if(is.null(SigmaVAR) & is.null(Gamma) & is.null(Sigma)){ # All three unknown
+      print(paste("The arguments SigmaVAR, Sigma, or Gamma are not found: one should be part of the input (when Stand = 1). Notably, in case of the first matrix, specify 'SigmaVAR = SigmaVAR'."))
+      stop()
+    }else if(is.null(Gamma)){ # Gamma unknown, calculate Gamma from Phi & SigmaVAR or Drift & Sigma
+
+      if(!is.null(SigmaVAR)){ # SigmaVAR known, calculate Gamma from Phi & SigmaVAR
+
+        # Checks on SigmaVAR
+        if(length(SigmaVAR) != 1){
+          if(dim(SigmaVAR)[1] != dim(SigmaVAR)[2]){
+            print(paste("The residual covariance matrix SigmaVAR should be a square matrix of size q times q, with q = ", q, "."))
+            stop()
+          }
+          if(dim(SigmaVAR)[1] != q){
+            print(paste("The residual covariance matrix SigmaVAR should, like Phi (or Drift), be a matrix of size q times q, with q = ", q, "."))
+            stop()
+          }
+          if(length(dim(SigmaVAR)) > 2){
+            print(paste("The residual covariance matrix SigmaVAR should be an q times q matrix, with q = ", q, "."))
+            stop()
+          }
+        }else if(q != 1){
+          print(paste("The residual covariance matrix SigmaVAR should, like Phi (or Drift), be a scalar."))
+          stop()
+        }
+
+        # Calculate Gamma
+        Gamma <- Gamma.fromVAR(Phi, SigmaVAR)
+
+      }else if(!is.null(Sigma)){ # Sigma known, calculate Gamma from Drift & Sigma
+
+        # Checks on Sigma
+        if(length(Sigma) != 1){
+          if(dim(Sigma)[1] != dim(Sigma)[2]){
+            print(paste("The residual covariance matrix Sigma should be a square matrix of size q times q, with q = ", q, "."))
+            stop()
+          }
+          if(dim(Sigma)[1] != q){
+            print(paste("The residual covariance matrix Sigma should, like Phi (or Drift), be a matrix of size q times q, with q = ", q, "."))
+            stop()
+          }
+          if(length(dim(Sigma)) > 2){
+            print(paste("The residual covariance matrix Sigma should be an q times q matrix, with q = ", q, "."))
+            stop()
+          }
+        }else if(q != 1){
+          print(paste("The residual covariance matrix Sigma should, like Phi (or Drift), be a scalar."))
+          stop()
+        }
+
+        # Calculate Gamma
+        Gamma <- Gamma.fromCTM(Drift, Sigma)
+
+      }
+
+    }else if(!is.null(Gamma)){ # Gamma known, only check on Gamma needed
+
+      # Checks on Gamma
+      if(length(Gamma) != 1){
+        if(dim(Gamma)[1] != dim(Gamma)[2]){
+          print(paste("The stationary covariance matrix Gamma should be a square matrix of size q times q, with q = ", q, "."))
+          stop()
+        }
+        if(dim(Gamma)[1] != q){
+          print(paste("The stationary covariance matrix Gamma should, like Phi (or Drift), be a matrix of size q times q, with q = ", q, "."))
+          stop()
+        }
+        if(length(dim(Gamma)) > 2){
+          print(paste("The stationary covariance matrix Gamma should be an q times q matrix, with q = ", q, "."))
+          stop()
+        }
+      }else if(q != 1){
+        print(paste("The stationary covariance matrix Gamma should, like Phi (or Drift), be a scalar."))
+        stop()
+      }
+
+    }
+
+    # Standardize Drift and Gamma
+    Sxy <- sqrt(diag(diag(Gamma)))
+    Gamma <- solve(Sxy) %*% Gamma %*% solve(Sxy)
+    Drift <- solve(Sxy) %*% Drift %*% Sxy
+    #Sigma_s <- solve(Sxy) %*% Sigma %*% solve(Sxy)
+  }
+  #
+  #
   if(!is.null(WhichElements)){
     if(length(WhichElements) == 1){
       if(q != 1){
@@ -191,7 +302,7 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Min = 0, Max = 10, S
       print(paste("The argument Labels should contain ", nrLines, " elements, that is, q*q or the number of 1s in WhichElements (or WhichElements is incorrectly specified)."))
       stop()
     }
-    #if(any(!is.character(Labels))){ # TO DO could also be an expression
+    #if(any(!is.character(Labels))){ # Note: This does not suffice, since it could also be an expression
     #  print(paste("The argument Labels should consist of solely characters."))
     #  stop()
     #}
@@ -225,11 +336,8 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Min = 0, Max = 10, S
       print(paste("The argument (list) Title should at max contain 3 items. Currently, it consists of ", length(Title), " items."))
       stop()
     }
-    # TO DO check of elk element in list een "call" of een 'character' is...
+    # Option: Also check whether each element in list either a "call" or a 'character' is...
   }
-
-  # TO DO bepaal standardized Drift! Dus dan voor een VAR(1) de Sigma gebruiken of Gamma!
-  # TO DO Geldt voor andere modellen ook dat ik Gamma kan gebruiken??
 
 
   #def.par <- par(no.readonly = TRUE) # save default, for resetting...

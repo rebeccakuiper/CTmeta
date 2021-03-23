@@ -39,7 +39,7 @@
 #' Area(DeltaT, Phi, t_min = 1, t_max = 2)
 #'
 #'
-#' # Note that the function 'PhiPlot' can help for visualisation of the curves in the Phi(DeltaT)-plot.
+#' # Note that the function 'PhiPlot' can help for visualization of the curves in the Phi(DeltaT)-plot.
 #' PhiPlot(DeltaT, Phi)
 #'
 #'

@@ -32,6 +32,7 @@ The discrete-time lagged-effects model matrices correspoding to the continuous-t
 Phi <- myPhi[1:2, 1:2]
 if (!require("expm")) install.packages("expm") # Use expm package for function logm()
 library(expm)
+DeltaT <- 1
 Drift <- logm(Phi)/DeltaT
 #
 Sigma <- diag(2) # for ease

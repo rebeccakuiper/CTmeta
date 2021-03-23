@@ -82,7 +82,6 @@ DiagDeltaT <- function(Phi = NULL, Drift = NULL, SigmaVAR = NULL, Sigma = NULL, 
     }else{
       q <- dim(Phi)[1]
     }
-    # TO DO bepaal standardized Phi en dus Drift!
   } else if(any(class(Phi) == "ctsemFit")){
     Drift <- summary(Phi)$DRIFT
     Sigma <- summary(Phi)$DIFFUSION
@@ -93,7 +92,6 @@ DiagDeltaT <- function(Phi = NULL, Drift = NULL, SigmaVAR = NULL, Sigma = NULL, 
     }else{
       q <- dim(Phi)[1]
     }
-    # TO DO bepaal standardized Drift!
   } else{
 
     if(is.null(Drift)){
@@ -515,8 +513,10 @@ DiagDeltaT <- function(Phi = NULL, Drift = NULL, SigmaVAR = NULL, Sigma = NULL, 
                   message = message,
                   Phi_DeltaT_diag = Phi_DeltaT,
                   SigmaVAR_DeltaT_diag = S,
+                  Gamma = Gamma,
                   StandPhi_DeltaT_diag = Phi_DeltaT_s,
                   StandSigmaVAR_DeltaT_diag = S_s,
+                  Gamma_s = Gamma_s,
                   #MaxDiff_IfNonzeroIndicationMultipleSolutions = max(abs(DiagAndDelta_first - DiagAndDelta_last)),
                   errorMatrices=errorMatrices,
                   message_startvalues=message_startvalues)

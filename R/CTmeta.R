@@ -86,28 +86,32 @@
 #' # Extract the q times q overall Phi matrix
 #' out_CTmeta <- CTmeta(N, DeltaT, DeltaTStar, Phi, Gamma = Gamma)
 #' q <- sqrt(length(out_CTmeta$Overall_standPhi_DeltaTStar))
-#' overallPhi <- matrix(out_CTmeta$Overall_standPhi_DeltaTStar, byrow = T, ncol = q) # resulting overall Phi
+#' # resulting overall Phi:
+#' overallPhi <- matrix(out_CTmeta$Overall_standPhi_DeltaTStar, byrow = T, ncol = q)
 #'
 #'
 #' # Make Phi-plot:
-#' Title <- as.list(expression(paste(Phi(Delta[t]), " plot:"), "How do the overall lagged parameters vary", "as a function of the time-interval"))
+#' Title <- as.list(expression(paste(Phi(Delta[t]), " plot:"),
+#'    "How do the overall lagged parameters vary", "as a function of the time-interval"))
 #' PhiPlot(DeltaTStar, overallPhi, Min = 0, Max = 40, Step = 0.5, Title = Title)
 #'
 #'
 #'
 #' ## Evaluate dominance of cross-lagged effects ##
 #'
-#' # Extract the vectorized overall standardized Phi matrix and its covariance matrix
+#' # Extract the vectorized overall standardized overallPhi matrix and its covariance matrix
 #' out_CTmeta <- CTmeta(N, DeltaT, DeltaTStar, Phi, Gamma = Gamma)
-#' est <- out_CTmeta$Overall_standPhi_DeltaTStar
+#' est <- out_CTmeta$Overall_vecStandPhi_DeltaTStar
 #' VCOV <- out_CTmeta$CovMx_OverallPhi_DeltaTStar
 #' # Specify hypothesis
 #' H1 <- "overallPhi12 < overallPhi21"
 #' #H2 <- "overallPhi12 > overallPhi21"
-#' # Evaluate dominance of cross-lagged effects via AIC-type criterion called the GORICA (Altinisik, Nederhof, Hoijtink, Oldehinkel, Kuiper, unpublished).
-#' if (!require("restriktor")) install.packages("restriktor") # Use restriktor package for function goric() of Vanbrabant and Kuiper.
+#' # Evaluate dominance of cross-lagged effects via AIC-type criterion called the GORICA (Altinisik, Nederhof, Hoijtink, Oldehinkel, Kuiper, conditionally accepted).
+#' if (!require("restriktor")) install.packages("restriktor")
+#' # Use restriktor package for function goric().
+#' # Authors of goric(): Vanbrabant and Kuiper.
 #' library(restriktor)
-#' #goric(est, VCOV = VCOV, H1, H2, type = "gorica", comparison = "none") # authors of goric(): Vanbrabant and Kuiper
+#' #goric(est, VCOV = VCOV, H1, H2, type = "gorica", comparison = "none")
 #' # or equivalently:
 #' goric(est, VCOV = VCOV, H1, type = "gorica", comparison = "complement")
 #'
@@ -121,21 +125,42 @@
 #'                       0.40, 1.00, 0.31, 0.63,
 #'                       0.63, 0.31, 1.00, 0.41,
 #'                       0.34, 0.63, 0.41, 1.00), byrow = T, ncol = 2*q)
-#' # In the example below, the following values are used:
-#' #DeltaTStar <- 12
-#' #DeltaT <- 24
-#' #N <- 2235
-#' # Then, use the function 'TransPhi_Corr' to calculate the corresponding standardized lagged effects matrix per primary study:
-#' out <- TransPhi_Corr(12, 24, 2235, corr_YXYX) # TO DO
-#' Phi_1 <- matrix(out$vecStandPhi_DeltaTStar, byrow = T, ncol = q)
-#' Phi_2 <- matrix(out$vecStandPhi_DeltaTStar, byrow = T, ncol = q)
-#' Phi_3 <- matrix(out$vecStandPhi_DeltaTStar, byrow = T, ncol = q)
+#'
+#' # In the example below, the same N and DeltaT(Star) values are used:
+#' N <- matrix(c(643, 651, 473))
+#' DeltaT <- matrix(c(2, 3, 1))
+#' DeltaTStar <- 1
+#'
+#' # Use the function 'TransPhi_Corr' to calculate the corresponding standardized lagged effects matrix per primary study.
+#' # Note that one can already make the time-intervals equal via the arguments DeltaTStar and DeltaT, but CTmeta can as well.
+#' # In this example, I deliberately make the time-intervals unequal, such that the example is in line with the input (i.e., DeltaT <- matrix(c(2, 3, 1))) and such the resulting overall Phi should equal the Phi that underlies this lagged correlation matrix (which I check at the end).
+#' out_1 <- TransPhi_Corr(DeltaTStar = DeltaT[1], DeltaT = 1, N = N[1], corr_YXYX)
+#' Phi_1 <- out_1$standPhi_DeltaTStar
+#' SigmaVAR_1 <- out_1$standSigmaVAR_DeltaTStar
+#' out_2 <- TransPhi_Corr(DeltaTStar = DeltaT[2], DeltaT = 1, N = N[2], corr_YXYX)
+#' Phi_2 <- out_2$standPhi_DeltaTStar
+#' SigmaVAR_2 <- out_2$standSigmaVAR_DeltaTStar
+#' out_3 <- TransPhi_Corr(DeltaTStar = DeltaT[3], DeltaT = 1, N = N[3], corr_YXYX)
+#' Phi_3 <- out_3$standPhi_DeltaTStar
+#' SigmaVAR_3 <- out_3$standSigmaVAR_DeltaTStar
+#'
+#' # Make Phi
 #' Phi <- rbind(Phi_1, Phi_2, Phi_3) # This, returns a stacked matrix of size S q times q.
+#' SigmaVAR <- rbind(SigmaVAR_1, SigmaVAR_2, SigmaVAR_3)
 #' # For more details, see ?TransPhi_Corr
 #'
 #' # The example CTmeta() code above can be run using this Phi; e.g.,
-#' CTmeta(N, DeltaT, DeltaTStar, Phi, Gamma = Gamma)
+#' CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR)
 #'
+#' # The overall q-times-q (here, 2x2) lagged effects matrix Phi
+#' out_CTmeta <- CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR)
+#' out_CTmeta$Overall_standPhi
+#' #
+#' # As a check, to see indeed that CTmeta works properly (where the resulting Phi is independent of the choise of N).
+#' TransPhi_Corr(DeltaTStar = 1, DeltaT = 1, N = 100, corr_YXYX)$standPhi_DeltaTStar
+#' # Note that is normally not a check you would do.
+#'
+
 
 CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Moderators = 0, Mod = NULL, FEorRE = 1, alpha=0.05, Plot = FALSE) {
 
@@ -742,7 +767,8 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
       if(Multivar == 1 & Trans == 1){
         if(FEorRE == 1){ # FE
           final <- list(DeltaTStar = dT_star,
-                        Overall_standPhi_DeltaTStar = Phi_metaan_MV,
+                        Overall_standPhi_DeltaTStar = matrix(Phi_metaan_MV, byrow = T, ncol = q),
+                        Overall_vecStandPhi_DeltaTStar = Phi_metaan_MV,
                         elliptical_CI = multiCI,
                         alpha_CI = alpha,
                         CovMx_OverallPhi_DeltaTStar = CovMxPhi_metaan,
@@ -752,7 +778,8 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
                         summaryMetaAnalysis = summary(metaan))
         } else{ # RE
           final <- list(DeltaTStar = dT_star,
-                        Overall_standPhi_DeltaTStar = Phi_metaan_MV,
+                        Overall_standPhi_DeltaTStar = matrix(Phi_metaan_MV, byrow = T, ncol = q),
+                        Overall_vecStandPhi_DeltaTStar = Phi_metaan_MV,
                         elliptical_CI = multiCI,
                         alpha_CI = alpha,
                         CovMx_OverallPhi_DeltaTStar = CovMxPhi_metaan,
@@ -766,7 +793,8 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
       }else if(Multivar == 1 & Trans == 0){
         if(FEorRE == 1){ # FE
           final <- list(UniqueTimeIntervals = dT,
-                        Overall_standPhi_PerUniqueTimeInterval = Phi_metaan_MV,
+                        Overall_standPhi_PerUniqueTimeInterval = matrix(Phi_metaan_MV, byrow = T, ncol = q),
+                        Overall_vecStandPhi_PerUniqueTimeInterval = Phi_metaan_MV,
                         LB_elliptical_CI = minPhi,
                         UB_elliptical_CI = maxPhi,
                         alpha_CI = alpha,
@@ -777,7 +805,8 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
                         summaryMetaAnalysis = summary(metaan))
         } else{ # RE
           final <- list(UniqueTimeIntervals = dT,
-                        Overall_standPhi_PerUniqueTimeInterval = Phi_metaan_MV,
+                        Overall_standPhi_PerUniqueTimeInterval = matrix(Phi_metaan_MV, byrow = T, ncol = q),
+                        Overall_vecStandPhi_PerUniqueTimeInterval = Phi_metaan_MV,
                         LB_elliptical_CI = minPhi,
                         UB_elliptical_CI = maxPhi,
                         alpha_CI = alpha,
@@ -792,7 +821,8 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
       }else if(Multivar == 0 & Trans == 1){
         if(FEorRE == 1){ # FE
           final <- list(DeltaTStar = dT_star,
-                        Overall_standPhi_DeltaTStar = Phi_metaan,
+                        Overall_standPhi_DeltaTStar = matrix(Phi_metaan, byrow = T, ncol = q),
+                        Overall_vecSstandPhi_DeltaTStar = Phi_metaan,
                         LB_CI = minPhi,
                         UB_CI = maxPhi,
                         alpha_CI = alpha,
@@ -804,7 +834,8 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
                         ratioDeltaT = ratioDeltaT)
         } else{ # RE
           final <- list(DeltaTStar = dT_star,
-                        Overall_standPhi_DeltaTStar = Phi_metaan,
+                        Overall_standPhi_DeltaTStar = matrix(Phi_metaan, byrow = T, ncol = q),
+                        Overall_vecSstandPhi_DeltaTStar = Phi_metaan,
                         LB_CI = minPhi,
                         UB_CI = maxPhi,
                         alpha_CI = alpha,
@@ -820,7 +851,8 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
       }else if(Multivar == 0 & Trans == 0){
         if(FEorRE == 1){ # FE
           final <- list(UniqueTimeIntervals = dT,
-                        Overall_standPhi_PerUniqueTimeInterval = Phi_metaan_dum,
+                        Overall_standPhi_PerUniqueTimeInterval = matrix(Phi_metaan_dum, byrow = T, ncol = q),
+                        Overall_vecStandPhi_PerUniqueTimeInterval = Phi_metaan_dum,
                         LB_CI = minPhi,
                         UB_CI = maxPhi,
                         alpha_CI = alpha,
@@ -832,7 +864,8 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
                         ratioDeltaT = ratioDeltaT)
         } else{ # RE
           final <- list(UniqueTimeIntervals = dT,
-                        Overall_standPhi_PerUniqueTimeInterval = Phi_metaan_dum,
+                        Overall_standPhi_PerUniqueTimeInterval = matrix(Phi_metaan_dum, byrow = T, ncol = q),
+                        Overall_vecStandPhi_PerUniqueTimeInterval = Phi_metaan_dum,
                         LB_CI = minPhi,
                         UB_CI = maxPhi,
                         alpha_CI = alpha,
