@@ -18,7 +18,7 @@ Imports:
 expm,
 nleqslv,
 fastDummies,
-metafor,
+metafor
 Suggests: 
     knitr,
     rmarkdown,
