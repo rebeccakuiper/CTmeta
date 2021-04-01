@@ -115,6 +115,9 @@ StandPhi <- function(N = NULL, Phi, SigmaVAR = NULL, Gamma = NULL, alpha = 0.05)
     }else if(!is.null(SigmaVAR)){ # SigmaVAR known
       # Check on SigmaVAR
       Check_SigmaVAR(SigmaVAR, q)
+    }else if(!is.null(Gamma)){ # Gamma known
+      # Checks on Gamma
+      Check_Gamma(Gamma, q)
     }
   }
   #
@@ -124,11 +127,9 @@ StandPhi <- function(N = NULL, Phi, SigmaVAR = NULL, Gamma = NULL, alpha = 0.05)
     q <- dim(Phi)[1]
   }
 
-  # Check on Gamma
+  # Calculate Gamma and Sigma - if necessary
   if(!is.null(Gamma)){ # Gamma known
-    # Checks on Gamma
-    Check_Gamma(Gamma, q)
-    if(!is.null(SigmaVAR)){ # SigmaVAR unknow, calculate it
+    if(is.null(SigmaVAR)){ # SigmaVAR unknown, calculate it
       # Calculate SigmaVAR
       if(q != 1){
         SigmaVAR <- Gamma - Phi %*% Gamma %*% t(Phi)
@@ -136,18 +137,27 @@ StandPhi <- function(N = NULL, Phi, SigmaVAR = NULL, Gamma = NULL, alpha = 0.05)
         SigmaVAR <- Gamma - Phi * Gamma * Phi
       }
     }
-  }else{ # Gamma unknown, calculate Gamma from SigmaVAR and Phi
+  }else if(!is.null(SigmaVAR)){  # Gamma unknown and SigmaVAR known, calculate Gamma from SigmaVAR and Phi
     # Calculate Gamma
     Gamma <- Gamma.fromVAR(Phi, SigmaVAR)
   }
 
 
-Sxy <- sqrt(diag(diag(Gamma)))
-Gamma_s <- solve(Sxy) %*% Gamma %*% solve(Sxy)
-Phi_s <- solve(Sxy) %*% Phi %*% Sxy
-SigmaVAR_s <- solve(Sxy) %*% SigmaVAR %*% solve(Sxy)
-
-vecPhi <- as.vector(t(Phi_s))
+if(q > 1){
+  Sxy <- sqrt(diag(diag(Gamma)))
+  Gamma_s <- solve(Sxy) %*% Gamma %*% solve(Sxy)
+  Phi_s <- solve(Sxy) %*% Phi %*% Sxy
+  SigmaVAR_s <- solve(Sxy) %*% SigmaVAR %*% solve(Sxy)
+  #
+  vecPhi <- as.vector(t(Phi_s))
+}else{
+  Sxy <- sqrt(diag(diag(Gamma)))
+  Gamma_s <- solve(Sxy) * Gamma * solve(Sxy)
+  Phi_s <- solve(Sxy) * Phi * Sxy
+  SigmaVAR_s <- solve(Sxy) * SigmaVAR * solve(Sxy)
+  #
+  vechi <- Phi_s
+}
 
 
 if(!is.null(N)){

@@ -18,6 +18,7 @@
 #' #
 #' Phi <- myPhi[1:2,1:2]
 #' #Phi <- matrix(c(0.50, 0.15, 0.25, 0.40), byrow=T, ncol = 2)
+#' q <- dim(Phi)[1]
 #' SigmaVAR <- diag(q) # for ease
 #' Gamma.fromVAR(Phi, SigmaVAR)
 #'

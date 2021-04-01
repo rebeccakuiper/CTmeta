@@ -128,6 +128,9 @@ StandTransPhi <- function(DeltaTStar, DeltaT = 1, N = NULL, Phi, SigmaVAR = NULL
     }else if(!is.null(SigmaVAR)){ # SigmaVAR known
       # Check on SigmaVAR
       Check_SigmaVAR(SigmaVAR, q)
+    }else if(!is.null(Gamma)){ # Gamma known
+      # Checks on Gamma
+      Check_Gamma(Gamma, q)
     }
   }
   #
@@ -137,11 +140,9 @@ StandTransPhi <- function(DeltaTStar, DeltaT = 1, N = NULL, Phi, SigmaVAR = NULL
     q <- dim(Phi)[1]
   }
 
-  # Check on Gamma
-  if(!is.null(Gamma)){ # Both SigmaVAR and Gamma known
-    # Checks on Gamma
-    Check_Gamma(Gamma, q)
-    if(!is.null(SigmaVAR)){
+  # Calculate Gamma and Sigma - if necessary
+  if(!is.null(Gamma)){ # Gamma known
+    if(is.null(SigmaVAR)){ # SigmaVAR unknown, calculate it
       # Calculate SigmaVAR
       if(q != 1){
         SigmaVAR <- Gamma - Phi %*% Gamma %*% t(Phi)
@@ -149,15 +150,10 @@ StandTransPhi <- function(DeltaTStar, DeltaT = 1, N = NULL, Phi, SigmaVAR = NULL
         SigmaVAR <- Gamma - Phi * Gamma * Phi
       }
     }
-  }else{ # Gamma unknown, calculate Gamma from SigmaVAR and Phi
+  }else if(!is.null(SigmaVAR)){  # Gamma unknown and SigmaVAR known, calculate Gamma from SigmaVAR and Phi
     # Calculate Gamma
     Gamma <- Gamma.fromVAR(Phi, SigmaVAR)
   }
-
-
-
-
-
 
 
 
@@ -186,16 +182,25 @@ if(any(is.complex(eigenPhi$values))){
 
 if(!(is.null(SigmaVAR) & is.null(Gamma))){
 
-  SigmaVAR_DeltaT <- Gamma - Phi_DeltaT %*% Gamma %*% t(Phi_DeltaT)
-
-  Sxy <- sqrt(diag(diag(Gamma)))
-  Gamma_s <- solve(Sxy) %*% Gamma %*% solve(Sxy)
-  Phi_DeltaT_s <- solve(Sxy) %*% Phi_DeltaT %*% Sxy
-  SigmaVAR_DeltaT_s <- solve(Sxy) %*% SigmaVAR_DeltaT %*% solve(Sxy)
-
-
-  vecPhi <- as.vector(t(Phi_DeltaT_s))
-
+  if(q > 1){
+    SigmaVAR_DeltaT <- Gamma - Phi_DeltaT %*% Gamma %*% t(Phi_DeltaT)
+    #
+    Sxy <- sqrt(diag(diag(Gamma)))
+    Gamma_s <- solve(Sxy) %*% Gamma %*% solve(Sxy)
+    Phi_DeltaT_s <- solve(Sxy) %*% Phi_DeltaT %*% Sxy
+    SigmaVAR_DeltaT_s <- solve(Sxy) %*% SigmaVAR_DeltaT %*% solve(Sxy)
+    #
+    vecPhi <- as.vector(t(Phi_DeltaT_s))
+  }else{
+    SigmaVAR_DeltaT <- Gamma - Phi_DeltaT * Gamma * t(Phi_DeltaT)
+    #
+    Sxy <- sqrt(diag(diag(Gamma)))
+    Gamma_s <- solve(Sxy) * Gamma * solve(Sxy)
+    Phi_DeltaT_s <- solve(Sxy) * Phi_DeltaT * Sxy
+    SigmaVAR_DeltaT_s <- solve(Sxy) * SigmaVAR_DeltaT * solve(Sxy)
+    #
+    vecPhi <- Phi_DeltaT_s
+  }
 
   if(!is.null(N)){
 

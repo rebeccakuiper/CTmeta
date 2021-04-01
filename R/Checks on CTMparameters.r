@@ -23,6 +23,7 @@
 #' Phi <- myPhi[1:2, 1:2]
 #' if (!require("expm")) install.packages("expm") # Use expm package for function logm()
 #' library(expm)
+#' DeltaT <- 1
 #' Drift <- logm(Phi)/DeltaT
 #' #
 #' q <- dim(Phi)[1]

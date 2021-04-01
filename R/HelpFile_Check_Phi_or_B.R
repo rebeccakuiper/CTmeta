@@ -1,5 +1,5 @@
 
-Check_Phi <- function(Phi){
+Check_Phi_or_B <- function(Phi){
 
   if(is.null(dim(Phi))){
     if(!is.null(length(Phi))){

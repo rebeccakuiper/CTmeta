@@ -171,7 +171,8 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
     # Check on SigmaVAR, Sigma, and Gamma
     if(any(class(Phi) == "varest")){
       SigmaVAR <- cov(resid(Phi))
-      Gamma <- Gamma.fromVAR(Phi_VARest, SigmaVAR)
+      Phi <- Phi_VARest
+      Gamma <- Gamma.fromVAR(Phi, SigmaVAR)
     }else if(any(class(Phi) == "ctsemFit")){
       Sigma <- summary(Phi)$DIFFUSION
       Gamma <- Gamma.fromCTM(Drift, Sigma)
@@ -186,14 +187,14 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
         Check_SigmaVAR(SigmaVAR, q)
 
         # Calculate Gamma
-        if(is.null(Phi_VARest)){
+        if(is.null(Phi)){
           if(q == 1){
-            Phi_VARest <- exp(-B*DeltaT)
+            Phi <- exp(-B*DeltaT)
           }else{
-            Phi_VARest <- expm(-B*DeltaT)
+            Phi <- expm(-B*DeltaT)
           }
         }
-        Gamma <- Gamma.fromVAR(Phi_VARest, SigmaVAR)
+        Gamma <- Gamma.fromVAR(Phi, SigmaVAR)
 
 
       }else if(!is.null(Sigma)){ # Sigma known, calculate Gamma from Drift & Sigma
@@ -328,12 +329,10 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
         Title_1 <- Title
       }
       Title_2 <- NULL
-      Title <- list("", "", Title_1)
-    }#else if(length(Title) == 2){
-    #  Title_1 <- Title[[1]]
-    #  Title_2 <- Title[[2]]
-    #  Title <- list(Title_1, Title_2)
-    #}
+    }else if(length(Title) == 2){
+      Title_1 <- Title[[1]]
+      Title_2 <- Title[[2]]
+    }
   }
 
 ##########################################################################################

@@ -44,16 +44,16 @@ Time-interval (DeltaT) for which the (discrete-time) residual covariance matrix 
 ##################################################################################################
 # Input needed in examples below with q=2 variables.
 # I will use the example matrices stored in the package:
-DeltaT <- 1
 Phi <- myPhi[1:2, 1:2]
-#SigmaVAR <- diag(2) # Then, DeltaT_diag = DeltaT = 1
 q <- dim(Phi)[1]
+#SigmaVAR <- diag(q) # Then, DeltaT_diag = DeltaT = 1
 Gamma <- matrix(c(1, 0.5, 0.4, 1), byrow = T, nrow = q, ncol = q)
 SigmaVAR <- Gamma - Phi \%*\% Gamma \%*\% t(Phi)
 
 # If you would use the drift matrix Drift as input, then use:
 if (!require("expm")) install.packages("expm") # Use expm package for function logm()
 library(expm)
+DeltaT <- 1
 Drift <- logm(Phi)/DeltaT
 Sigma <- diag(2) # for ease. Note that this is not the CT-equivalent of SigmaVAR.
 ##################################################################################################

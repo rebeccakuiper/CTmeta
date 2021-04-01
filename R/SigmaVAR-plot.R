@@ -130,10 +130,10 @@ SigmaVARPlot <- function(DeltaT = 1, Phi = NULL, SigmaVAR = NULL, Drift = NULL, 
   #
   # Check on Phi
   if(any(class(Phi) == "varest")){
-    Phi_VARest <- Acoef(Phi)[[1]]
-    Drift <- logm(Phi_VARest)/DeltaT # Phi = expm(Drift * DeltaT)
     SigmaVAR_VARest <- cov(resid(Phi))
-    Gamma <- Gamma.fromVAR(Phi_VARest, SigmaVAR_VARest)
+    Phi <- Acoef(Phi)[[1]]
+    Drift <- logm(Phi)/DeltaT # Phi = expm(Drift * DeltaT)
+    Gamma <- Gamma.fromVAR(Phi, SigmaVAR_VARest)
   } else if(any(class(Phi) == "ctsemFit")){
     Drift <- summary(Phi)$DRIFT
     Sigma_ctsem <- summary(Phi)$DIFFUSION
@@ -191,14 +191,14 @@ SigmaVARPlot <- function(DeltaT = 1, Phi = NULL, SigmaVAR = NULL, Drift = NULL, 
       Check_SigmaVAR(SigmaVAR, q)
 
       # Calculate Gamma
-      if(is.null(Phi_VARest)){
+      if(is.null(Phi)){
         if(q == 1){
-          Phi_VARest <- exp(-B*DeltaT)
+          Phi <- exp(-B*DeltaT)
         }else{
-          Phi_VARest <- expm(-B*DeltaT)
+          Phi <- expm(-B*DeltaT)
         }
       }
-      Gamma <- Gamma.fromVAR(Phi_VARest, SigmaVAR)
+      Gamma <- Gamma.fromVAR(Phi, SigmaVAR)
 
     }else if(!is.null(Sigma)){ # Sigma known, calculate Gamma from Drift & Sigma
 

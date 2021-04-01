@@ -26,16 +26,16 @@
 #' ##################################################################################################
 #' # Input needed in examples below with q=2 variables.
 #' # I will use the example matrices stored in the package:
-#' DeltaT <- 1
 #' Phi <- myPhi[1:2, 1:2]
-#' #SigmaVAR <- diag(2) # Then, DeltaT_diag = DeltaT = 1
 #' q <- dim(Phi)[1]
+#' #SigmaVAR <- diag(q) # Then, DeltaT_diag = DeltaT = 1
 #' Gamma <- matrix(c(1, 0.5, 0.4, 1), byrow = T, nrow = q, ncol = q)
 #' SigmaVAR <- Gamma - Phi %*% Gamma %*% t(Phi)
 #'
 #' # If you would use the drift matrix Drift as input, then use:
 #' if (!require("expm")) install.packages("expm") # Use expm package for function logm()
 #' library(expm)
+#' DeltaT <- 1
 #' Drift <- logm(Phi)/DeltaT
 #' Sigma <- diag(2) # for ease. Note that this is not the CT-equivalent of SigmaVAR.
 #' ##################################################################################################
@@ -78,11 +78,16 @@ DiagDeltaT <- function(Phi = NULL, Drift = NULL, SigmaVAR = NULL, Sigma = NULL, 
     SigmaVAR <- cov(resid(Phi))
     Phi <- Acoef(Phi)[[1]]
     #
-    Gamma <- Gamma.fromVAR(Phi_VARest, SigmaVAR)
+    Gamma <- Gamma.fromVAR(Phi, SigmaVAR)
     #
     #CTparam <- CTMparam (DeltaT, Phi, SigmaVAR)
     #Drift <- CTparam$Drift
     #Sigma <- CTparam$Sigma
+    if(length(Phi) == 1){
+      Drift <- log(Phi)/DeltaT
+    }else{
+      Drift <- logm(Phi)/DeltaT # Phi = expm(Drift * DeltaT)
+    }
   } else if(any(class(Phi) == "ctsemFit")){
     Drift <- summary(Phi)$DRIFT
     Sigma <- summary(Phi)$DIFFUSION
@@ -141,6 +146,14 @@ DiagDeltaT <- function(Phi = NULL, Drift = NULL, SigmaVAR = NULL, Sigma = NULL, 
     }else{
       q <- dim(Phi)[1]
     }
+    #
+    if(is.null(Drift)){
+      if(q == 1){
+        Drift <- log(Phi)/DeltaT
+      }else{
+        Drift <- logm(Phi)/DeltaT # Phi = expm(Drift * DeltaT)
+      }
+    }
 
     # Check on SigmaVAR, Sigma, and Gamma
     if(is.null(SigmaVAR) & is.null(Gamma) & is.null(Sigma)){ # All three unknown
@@ -162,13 +175,6 @@ DiagDeltaT <- function(Phi = NULL, Drift = NULL, SigmaVAR = NULL, Sigma = NULL, 
         Check_Sigma(Sigma, q)
 
         # Calculate Gamma
-        if(is.null(Drift)){
-          if(q == 1){
-            Drift <- log(Phi)/DeltaT
-          }else{
-            Drift <- logm(Phi)/DeltaT # Phi = expm(Drift * DeltaT)
-          }
-        }
         Gamma <- Gamma.fromCTM(Drift, Sigma)
 
       }

@@ -101,7 +101,7 @@ CTmeta(N, DeltaT, DeltaTStar, Phi, Gamma = Gamma, FEorRE = 2)
 ## Example with moderators ##
 
 Mod <- matrix(c(64,65,47)) # 1 moderator
-#Mod <- matrix(cbind(c(64,65,47), c(78,89,34)), ncol = q); colnames(Mod) <- c("Mod1", "Mod2") # two moderators, in each column 1
+#q <- dim(Phi)[2]; Mod <- matrix(cbind(c(64,65,47), c(78,89,34)), ncol = q); colnames(Mod) <- c("Mod1", "Mod2") # two moderators, in each column 1
 CTmeta(N, DeltaT, DeltaTStar, Phi, Gamma = Gamma, Moderators = 1, Mod = Mod) # fixed effects model
 #CTmeta(N, DeltaT, DeltaTStar, Phi, Gamma = Gamma, Moderators = 1, Mod = Mod, FEorRE = 2) # random effects model
 
@@ -123,8 +123,10 @@ overallPhi <- out_CTmeta$Overall_standPhi
 
 # Make Phi-plot:
 Title <- as.list(expression(paste0(Phi(Delta[t]), " plot:"),
-   "How do the overall lagged parameters vary", "as a function of the time-interval"))
+   "How do the overall lagged parameters vary as a function of the time-interval"))
 PhiPlot(DeltaTStar, overallPhi, Min = 0, Max = 40, Step = 0.5, Title = Title)
+# or
+ggPhiPlot(DeltaTStar, overallPhi, Min = 0, Max = 40, Step = 0.5, Title = Title)
 
 
 

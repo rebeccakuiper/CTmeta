@@ -38,7 +38,7 @@
 #' # Therefore, the matrix 'MinOrMaxPhi' is not a Phi-matrix, but each element should be inspected seperately.
 #' # To obtain the full Phi-matrix for a specific DeltaT one can use:
 #' DeltaT_MinOrMaxPhi <- MaxDeltaT(DeltaT, Phi)$DeltaT_MinOrMaxPhi
-#' StandTransPhi(DeltaTStar = DeltaT_MinOrMaxPhi[1,2], DeltaT, N = NULL, Phi, SigmaVAR = NULL, Gamma = NULL)
+#' StandTransPhi(DeltaTStar = DeltaT_MinOrMaxPhi[1,2], DeltaT, N = NULL, Phi)
 #'
 #' # If you would use the drift matrix Drift as input, then use:
 #' MaxDeltaT(DeltaT, Drift = Drift)

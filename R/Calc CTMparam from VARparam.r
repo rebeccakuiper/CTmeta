@@ -66,10 +66,15 @@ CTMparam <- function(DeltaT, Phi, SigmaVAR = NULL, Gamma = NULL) {
     stop()
   }
   #
+  B <- NULL
+  Sigma <- NULL
+  #
   # Check on Phi
   if(any(class(Phi) == "varest")){
     SigmaVAR <- cov(resid(Phi))
     Phi <- Acoef(Phi)[[1]]
+    # Calculate Gamma
+    Gamma <- Gamma.fromVAR(Phi, SigmaVAR)
     #
     if(length(Phi) == 1){
       q <- 1
@@ -99,6 +104,9 @@ CTMparam <- function(DeltaT, Phi, SigmaVAR = NULL, Gamma = NULL) {
       Check_Phi(Phi)
       q <- dim(Phi)[1]
     }
+    #
+    #Check on Phi
+    Check_Phi(Phi)
     #
     # Check on SigmaVAR and Gamma
     if(is.null(SigmaVAR) & is.null(Gamma)){ # Both SigmaVAR and Gamma unknown
@@ -166,7 +174,7 @@ if(is.null(B)){
 #if(all(abs(Im(B)) < 0.0001) == TRUE){B <- Re(B)}
 
 if(is.null(SigmaVAR) & is.null(Gamma)){
-  Sigma_OU = "Input for SigmaVAR(DeltaT) or Gamma is required to calculate the corresponding Sigma."
+  Sigma = "Input for SigmaVAR(DeltaT) or Gamma is required to calculate the corresponding Sigma."
   Gamma <- "Input for SigmaVAR(DeltaT) or Gamma is required to calculate the corresponding Gamma."
   Gamma_s <- "Input for SigmaVAR(DeltaT) or Gamma is required to calculate the corresponding standGamma."
   Drift_s <- "Input for SigmaVAR(DeltaT) or Gamma is required to calculate the corresponding standDrift."
@@ -235,7 +243,7 @@ final <- list(eigenvalueDrift = -Eigen_ParamCTM,
               StableProcess = StableProcess,
               #UniqueSolution = UniqueSolution,
               Drift = -B,
-              Sigma = Sigma_OU,
+              Sigma = Sigma,
               Gamma = Gamma,
               standDrift = Drift_s,
               standSigma = Sigma_s,

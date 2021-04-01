@@ -34,6 +34,7 @@ Phi <- myPhi[1:2, 1:2]
 # If you would use the drift matrix Drift as input, then use:
 if (!require("expm")) install.packages("expm") # Use expm package for function logm()
 library(expm)
+DeltaT <- 1
 Drift <- logm(Phi)/DeltaT
 ##################################################################################################
 
