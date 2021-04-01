@@ -30,7 +30,7 @@ It also takes a fitted object from the classes "varest" (from the VAR() function
 
 \item{Drift}{Optional (either Phi or Drift). Underlying continuous-time lagged effects matrix (i.e., Drift matrix) of the discrete-time lagged effects matrix Phi(DeltaT). By default, input for Phi is used; only when Phi = NULL, Drift will be used.}
 
-\item{Stand}{Optional. Indicator for whether Phi (or Drift) should be standardized (1) or not (0). In case Stand = 1, one of the following matrices should be input as well: SigmaVAR, Sigma, or Gamma  (or it is substracted from a varest or ctsemFit object). By default, Stand = 0.}
+\item{Stand}{Optional. Indicator for whether Phi (or Drift) should be standardized (1) or not (0). In case Stand = 1, one of the following matrices should be input as well: SigmaVAR, Sigma, or Gamma  (or it is subtracted from a varest or ctsemFit object). By default, Stand = 0.}
 
 \item{SigmaVAR}{Optional (if Stand = 1, then either SigmaVAR, Sigma, or Gamma needed). Residual covariance matrix of the first-order discrete-time vector autoregressive (DT-VAR(1)) model.}
 
@@ -42,7 +42,7 @@ It also takes a fitted object from the classes "varest" (from the VAR() function
 
 \item{Max}{Optional. Maximum time interval used in the Phi-plot. By default, Max = 10.}
 
-\item{Step}{Optional. The step-size taken in the time intervals. By default, Step = 0.05. Hence, using the defaults, the Phi-plots is based on the values of Phi(DeltaT) for DeltaT = 0, 0.05, 0.10, ..., 10. Note: Especially in case of complex eigenvalues, this step size should be very small (then, the oscillating behaviour can be seen best).}
+\item{Step}{Optional. The step-size taken in the time intervals. By default, Step = 0.05. Hence, using the defaults, the Phi-plots is based on the values of Phi(DeltaT) for DeltaT = 0, 0.05, 0.10, ..., 10. Note: Especially in case of complex eigenvalues, this step size should be very small (then, the oscillating behavior can be seen best).}
 
 \item{WhichElements}{Optional. Matrix of same size as Drift denoting which element/line should be plotted (1) or not (0). By default, WhichElements = NULL. Note that even though not all lines have to be plotted, the full Drift matrix is needed to determine the selected lines.}
 
@@ -52,7 +52,7 @@ It also takes a fitted object from the classes "varest" (from the VAR() function
 
 \item{Lty}{Optional. Vector with line type values (integers) of the lines to be plotted. The length of this vector equals the number of 1s in WhichElements (or equals q*q). By default, Lty = NULL, which renders solid lines for the autoregressive effects and the same type of dashed line for reciprocal effects (i.e., same type for Phi_ij as for Phi_ji). See \url{https://www.statmethods.net/advgraphs/parameters.html} for more information about the values.}
 
-\item{Title}{Optional. A character or a list consisting of maximum 3 characters or 'call' class objects, like from the paste() function, that together represent the title of the Phi-plot. By default, Title = NULL, then the following code will be used for the title: as.list(expression(paste(Phi(Delta[t]), " plot:"), "How do the lagged parameters vary", "as a function of the time-interval"))).}
+\item{Title}{Optional. A character or a list consisting of maximum 2 character-strings or 'expression' class objects that together represent the title of the Phi-plot. By default, Title = NULL, then the following code will be used for the title: as.list(expression(Phi(Delta[t])~plot), "How do the lagged parameters vary as a function of the time-interval")).}
 }
 \value{
 This function returns a Phi-plot for a range of time intervals.
@@ -61,6 +61,9 @@ This function returns a Phi-plot for a range of time intervals.
 This function makes a Phi-plot of Phi(DeltaT) for a range of time intervals based on its underlying drift matrix. There is also an interactive web application on my website to create a Phi-plot: Phi-and-Psi-Plots and Find DeltaT (\url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}).
 }
 \examples{
+
+# library(CTmeta)
+
 ### Make Phi-plot ###
 
 ## Example 1 ##
@@ -83,7 +86,8 @@ PhiPlot(DeltaT, Drift = Drift, Min = 0, Max = 10, Step = 0.01)
 
 
 # Example 1.2: standardized Phi #
-SigmaVAR <- diag(2) # for ease
+q <- dim(Phi)[1]
+SigmaVAR <- diag(q) # for ease
 PhiPlot(DeltaT, Phi, Stand = 1, SigmaVAR = SigmaVAR)
 
 

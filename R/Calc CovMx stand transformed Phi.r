@@ -17,6 +17,9 @@
 #' @importFrom expm expm
 #' @export
 #' @examples
+#'
+#' # library(CTmeta)
+#'
 #' ## Example 1 ##
 #'
 #' # Input for examples below
@@ -28,6 +31,7 @@
 #' #Phi <- matrix(c(0.25, 0.10,
 #' #               0.20, 0.36), byrow=T, ncol = 2)
 #' # SigmaVAR(DeltaT)
+#' q <- dim(Phi)[1]
 #' SigmaVAR <- diag(q) # for ease
 #' # Calculate the Gamma corresponding to Phi and SigmaVAR - used in the second example
 #' Gamma <- Gamma.fromVAR(Phi, SigmaVAR) # ?Gamma.fromVAR
@@ -76,15 +80,20 @@ StandTransPhi <- function(DeltaTStar, DeltaT = 1, N = NULL, Phi, SigmaVAR = NULL
 
   # Checks:
   if(length(DeltaTStar) != 1){
-    print(paste("The argument DeltaTStar should be a scalar, that is, one number, that is, a vector with one element."))
+    print(paste0("The argument DeltaTStar should be a scalar, that is, one number, that is, a vector with one element. Currently, DeltaTStar = ", DeltaTStar))
     stop()
   }
   if(length(DeltaT) != 1){
-    print(paste("The argument DeltaT should be a scalar, that is, one number, that is, a vector with one element."))
+    print(paste0("The argument DeltaT should be a scalar, that is, one number, that is, a vector with one element. Currently, DeltaT = ", DeltaT))
     stop()
   }
   if(!is.null(N) & length(N) != 1){
-    print(paste("The argument N should be a scalar, that is, one number, that is, a vector with one element."))
+    print(paste0("The argument N should be a scalar, that is, one number, that is, a vector with one element. Currently, N = ", N))
+    stop()
+  }
+  #
+  if(length(alpha) != 1){
+    print(paste0("The argument alpha should be a scalar, that is, one number, that is, a vector with one element. Currently, alpha = ", alpha))
     stop()
   }
   #
@@ -92,151 +101,63 @@ StandTransPhi <- function(DeltaTStar, DeltaT = 1, N = NULL, Phi, SigmaVAR = NULL
   if(any(class(Phi) == "varest")){
     SigmaVAR <- cov(resid(Phi))
     Phi <- Acoef(Phi)[[1]]
-    if(length(Phi) == 1){
-      q <- 1
-    }else{
-      q <- dim(Phi)[1]
-    }
   } else if(any(class(Phi) == "ctsemFit")){
     B <- -1 * summary(Phi)$DRIFT
     Sigma <- summary(Phi)$DIFFUSION
-    #Phi <- summary(Phi)$discreteDRIFT # Is no longer output in ctsem...
-    Phi <- expm(-B*DeltaT)
-    #source("Calc VARparam from CTMparam.r") # werkt zo niet, moet er dan ws ook net als andere files package fie van maken
-    #VarEst <- VARparam(DeltaT, B, Sigma)
-    #Phi <- VarEst$Phi
-    if(length(Phi) == 1){
-      q <- 1
-    }else{
-      q <- dim(Phi)[1]
-    }
-    #SigmaVAR <- VarEst$SigmaVAR
-    kronsum <- kronecker(diag(q),B) + kronecker(B,diag(q))
-    SigmaVAR <- matrix((solve(kronsum) %*% (diag(q*q) - expm(-kronsum * DeltaT)) %*% as.vector(Sigma)), ncol=q, nrow=q)
+    #
+    VarEst <- VARparam(DeltaT, -B, Sigma)
+    Phi <- VarEst$Phi
+    SigmaVAR <- VarEst$SigmaVAR
   } else{
+    #
     if(length(Phi) != 1){
-      if(is.null(dim(Phi))){
-        if(!is.null(length(Phi))){
-          print(paste("The argument Phi is not a matrix of size q times q."))
-          stop()
-        }else{
-          print(paste("The argument Phi is not found: The lagged effects matrix Phi is unknown, but should be part of the input."))
-          stop()
-        }
-      }
+      Check_Phi(Phi)
       q <- dim(Phi)[1]
-      #
-      if(dim(Phi)[1] != dim(Phi)[2]){
-        print(paste("The lagged effects matrix Phi should be a square matrix of size q times q, with q = ", q, "."))
-        stop()
-      }
-      if(length(dim(Phi)) > 2){
-        print(paste("The lagged effects matrix Phi should be an q times q matrix, with q = ", q, "."))
-        stop()
-      }
     } else{
       q <- 1
     }
+    #
+    # Check on SigmaVAR and Gamma
+    if(is.null(SigmaVAR) & is.null(Gamma)){ # Both SigmaVAR and Gamma unknown
+      print("Just to be sure:")
+      print(paste0("The arguments SigmaVAR and Gamma are not found: Both SigmaVAR and Gamma are NULL."))
+      print(paste0("Now, only the (unstandardized) transformed Phi is calculated."))
+      print(paste0("In case you want a standarized matrix or more: either SigmaVAR and/or Gamma should be part of the input. In case of first matrix, specify 'SigmaVAR = <insert your matrix name>'."))
+      print("")
+      #stop()
+    }else if(!is.null(SigmaVAR)){ # SigmaVAR known
+      # Check on SigmaVAR
+      Check_SigmaVAR(SigmaVAR, q)
+    }
+  }
+  #
+  if(length(Phi) == 1){
+    q <- 1
+  }else{
+    q <- dim(Phi)[1]
   }
 
-  # Check on SigmaVAR and Gamma
-  if(is.null(SigmaVAR) & is.null(Gamma)){ # Both SigmaVAR and Gamma unknown
-    print("Just to be sure:")
-    print(paste("The arguments SigmaVAR and Gamma are not found: Both SigmaVAR and Gamma are NULL."))
-    print(paste("Now, only the (unstandardized) transformed Phi is calculated."))
-    print(paste("In case you want a standarized matrix or more: either SigmaVAR and/or Gamma should be part of the input. In case of first matrix, specify 'SigmaVAR = <insert your matrix name>'."))
-    print("")
-    #stop()
-  }else if(is.null(Gamma)){ # Gamma unknown, calculate Gamma from SigmaVAR and Phi
-
-    # Checks on SigmaVAR
-    if(length(SigmaVAR) != 1){
-      if(dim(SigmaVAR)[1] != dim(SigmaVAR)[2]){
-        print(paste("The residual covariance matrix SigmaVAR should be a square matrix of size q times q, with q = ", q, "."))
-        stop()
+  # Check on Gamma
+  if(!is.null(Gamma)){ # Both SigmaVAR and Gamma known
+    # Checks on Gamma
+    Check_Gamma(Gamma, q)
+    if(!is.null(SigmaVAR)){
+      # Calculate SigmaVAR
+      if(q != 1){
+        SigmaVAR <- Gamma - Phi %*% Gamma %*% t(Phi)
+      }else{
+        SigmaVAR <- Gamma - Phi * Gamma * Phi
       }
-      if(dim(SigmaVAR)[1] != q){
-        print(paste("The residual covariance matrix SigmaVAR should, like Phi, be a matrix of size q times q, with q = ", q, "."))
-        stop()
-      }
-      if(length(dim(SigmaVAR)) > 2){
-        print(paste("The residual covariance matrix SigmaVAR should be an q times q matrix, with q = ", q, "."))
-        stop()
-      }
-    }else if(q != 1){
-      print(paste("The residual covariance matrix SigmaVAR should, like Phi, be a scalar."))
-      stop()
     }
-
+  }else{ # Gamma unknown, calculate Gamma from SigmaVAR and Phi
     # Calculate Gamma
     Gamma <- Gamma.fromVAR(Phi, SigmaVAR)
-
-  }else if(is.null(SigmaVAR)){ # SigmaVAR unknown, calculate SigmaVAR from Gamma and Phi
-
-
-    # Checks on Gamma
-    if(length(Gamma) != 1){
-      if(dim(Gamma)[1] != dim(Gamma)[2]){
-        print(paste("The stationary covariance matrix Gamma should be a square matrix of size q times q, with q = ", q, "."))
-        stop()
-      }
-      if(dim(Gamma)[1] != q){
-        print(paste("The stationary covariance matrix Gamma should, like Phi, be a matrix of size q times q, with q = ", q, "."))
-        stop()
-      }
-      if(length(dim(Gamma)) > 2){
-        print(paste("The stationary covariance matrix Gamma should be an q times q matrix, with q = ", q, "."))
-        stop()
-      }
-    }else if(q != 1){
-      print(paste("The stationary covariance matrix Gamma should, like Phi, be a scalar."))
-      stop()
-    }
-
-    # Calculate SigmaVAR
-    SigmaVAR <- Gamma - Phi %*% Gamma %*% t(Phi)
-
-  }else{ # Both SigmaVAR and Gamma known
-
-    # Checks on SigmaVAR
-    if(length(SigmaVAR) != 1){
-      if(dim(SigmaVAR)[1] != dim(SigmaVAR)[2]){
-        print(paste("The residual covariance matrix SigmaVAR should be a square matrix of size q times q, with q = ", q, "."))
-        stop()
-      }
-      if(dim(SigmaVAR)[1] != q){
-        print(paste("The residual covariance matrix SigmaVAR should, like Phi, be a matrix of size q times q, with q = ", q, "."))
-        stop()
-      }
-      if(length(dim(SigmaVAR)) > 2){
-        print(paste("The residual covariance matrix SigmaVAR should be an q times q matrix, with q = ", q, "."))
-        stop()
-      }
-    }else if(q != 1){
-      print(paste("The residual covariance matrix SigmaVAR should, like Phi, be a scalar."))
-      stop()
-    }
-
-    # Checks on Gamma
-    if(length(Gamma) != 1){
-      if(dim(Gamma)[1] != dim(Gamma)[2]){
-        print(paste("The stationary covariance matrix Gamma should be a square matrix of size q times q, with q = ", q, "."))
-        stop()
-      }
-      if(dim(Gamma)[1] != q){
-        print(paste("The stationary covariance matrix Gamma should, like Phi, be a matrix of size q times q, with q = ", q, "."))
-        stop()
-      }
-      if(length(dim(Gamma)) > 2){
-        print(paste("The stationary covariance matrix Gamma should be an q times q matrix, with q = ", q, "."))
-        stop()
-      }
-    }else if(q != 1){
-      print(paste("The stationary covariance matrix Gamma should, like Phi, be a scalar."))
-      stop()
-    }
-
   }
+
+
+
+
+
 
 
 
@@ -266,19 +187,6 @@ if(any(is.complex(eigenPhi$values))){
 if(!(is.null(SigmaVAR) & is.null(Gamma))){
 
   SigmaVAR_DeltaT <- Gamma - Phi_DeltaT %*% Gamma %*% t(Phi_DeltaT)
-
-  #CTMparam <- CTMparam(ratioDeltaT, Phi, SigmaVAR)
-  #CTMparam$WarningPhi
-  #if (!is.null(CTMparam$WarningPhi)){
-  #  WarningPhi = "'Phi' does not have a CTM-equivalent drift matrix; so, no positive autocorrelation (like CTM models). For example, one or more real eigenvalues is negative."
-  #  final <- list(WarningPhi = WarningPhi)
-  #  return(final)
-  #  stop(WarningPhi)
-  #}
-  #VARparam <- VARparam(1, CTMparam$A , CTMparam$SigmaCTM)
-  #Phi_DeltaT <- VARparam$Phi_DeltaT
-  #SigmaVAR_DeltaT <- VARparam$SigmaVAR_DeltaT
-
 
   Sxy <- sqrt(diag(diag(Gamma)))
   Gamma_s <- solve(Sxy) %*% Gamma %*% solve(Sxy)

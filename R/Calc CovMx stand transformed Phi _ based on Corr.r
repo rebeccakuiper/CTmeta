@@ -13,6 +13,8 @@
 #' @export
 #' @examples
 #'
+#' # library(CTmeta)
+#'
 #' # In the examples below, the following values are used:
 #' DeltaTStar <- 12
 #' DeltaT <- 24
@@ -48,41 +50,59 @@
 #'
 
 
-TransPhi_Corr <- function(DeltaTStar, DeltaT = 1, N = NULL, corr_YXYX, alpha=0.05) {
+TransPhi_Corr <- function(DeltaTStar, DeltaT = 1, N = NULL, corr_YXYX, alpha = 0.05) {
 
   # Checks:
   if(length(DeltaTStar) != 1){
-    print(paste("The argument DeltaTStar should be a scalar, that is, one number, that is, a vector with one element."))
+    print(paste0("The argument DeltaTStar should be a scalar, that is, one number, that is, a vector with one element. Currently, DeltaTStar = ", DeltaTStar))
     stop()
   }
   if(length(DeltaT) != 1){
-    print(paste("The argument DeltaT should be a scalar, that is, one number, that is, a vector with one element."))
+    print(paste0("The argument DeltaT should be a scalar, that is, one number, that is, a vector with one element. Currently, DeltaT = ", DeltaT))
     stop()
   }
   if(!is.null(N) & length(N) != 1){
-    print(paste("The argument N should be a scalar, that is, one number, that is, a vector with one element."))
+    print(paste0("The argument N should be a scalar, that is, one number, that is, a vector with one element. Currently, N = ", N))
+    stop()
+  }
+  #
+  if(length(alpha) != 1){
+    print(paste0("The argument alpha should be a scalar, that is, one number, that is, a vector with one element. Currently, alpha = ", alpha))
     stop()
   }
   #
   # Check on corr_YXYX
   if(is.null(dim(corr_YXYX))){
     if(!is.null(length(corr_YXYX))){ # Should be matrix
-      print(paste("The argument corr_YXYX is not a matrix of size 2q times 2q."))
+      print(paste0("The argument corr_YXYX is not a matrix. It should be a matrix of size 2q times 2q."))
       stop()
     }else{
-      print(paste("The argument corr_YXYX is not found: The (lagged) correlation matrix corr_YXYX is unknown, but should be part of the input."))
-      stop()
-    }
-  }else{ # Should be square matrix
-    if(dim(corr_YXYX)[1] != dim(corr_YXYX)[2] | length(dim(corr_YXYX)) != 2){
-      print(paste("The argument corr_YXYX is not a matrix of size 2q times 2q."))
-      stop()
-    }
-    if((dim(corr_YXYX)[1] %% 2) != 0) { # 2q should be an even number
-      print(paste("The argument corr_YXYX is not a matrix of size 2q times 2q, since its dimension are not even (but an odd number)."))
+      print(paste0("The argument corr_YXYX is not found: The (lagged) correlation matrix corr_YXYX is unknown, but should be part of the input."))
       stop()
     }
   }
+  # Should be square matrix
+    #if(dim(corr_YXYX)[1] != dim(corr_YXYX)[2] | length(dim(corr_YXYX)) != 2){
+    #  print(paste0("The argument corr_YXYX is not a matrix of size 2q times 2q. Currently, it is of size ", dim(corr_YXYX)))
+    #  stop()
+    #}
+    if(length(dim(corr_YXYX)) < 2){
+      print(paste0("The argument corr_YXYX is not a matrix. It should be a matrix of size 2q times 2q."))
+      stop()
+    }
+    if(length(dim(corr_YXYX)) > 2){
+      print(paste0("The argument corr_YXYX is not a matrix of size 2q times 2q. Currently, it is of size ", dim(corr_YXYX)))
+      stop()
+    }
+    if(dim(corr_YXYX)[1] != dim(corr_YXYX)[2]){
+      print(paste0("The argument corr_YXYX should be a square matrix. It should be a matrix of size 2q times 2q. Currently, it is of size ", dim(corr_YXYX)[1], " times ", dim(corr_YXYX)[2]))
+      stop()
+    }
+    #
+    if((dim(corr_YXYX)[1] %% 2) != 0) { # 2q should be an even number
+      print(paste0("The argument corr_YXYX is not a matrix of size 2q times 2q, since the number of rows/columns is not even but an odd number, namely ", dim(corr_YXYX)[1]))
+      stop()
+    }
 
 
     q <- dim(corr_YXYX)[1]/2

@@ -21,6 +21,9 @@ The output renders, per element (i,j), the time-interval for which Phi_ij reache
 Time-interval (DeltaT) for which Phi_ij(DeltaT) reaches its minimum or maximum (together with that minimum or maximum). The interactive web application 'Phi-and-Psi-Plots and Find DeltaT' also contains this functionality, you can find it on my website: \url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}.
 }
 \examples{
+
+# library(CTmeta)
+
 ## Example 1 ##
 
 ##################################################################################################

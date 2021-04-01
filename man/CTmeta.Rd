@@ -15,7 +15,7 @@ CTmeta(
   Mod = NULL,
   FEorRE = 1,
   alpha = 0.05,
-  Plot = FALSE
+  PrintPlot = FALSE
 )
 }
 \arguments{
@@ -30,25 +30,27 @@ CTmeta(
 \item{SigmaVAR}{Stacked matrix of size S*q times q or array with dimensions q times q times S of residual covariance matrices of the first-order discrete-time vector autoregressive (DT-VAR(1)) model.}
 
 \item{Gamma}{Optional (either SigmaVAR or Gamma). Stacked matrix of size S*q times q or array with dimensions q times q times S of stationary covariance matrices, that is, the contemporaneous covariance matrices of the data sets.
-Note that if Phi and Gamma are known, SigmaVAR can be calculated; hence, only SigmaVAR or Gamma is needed as input (if only Gamma, then use 'Gamma = Gamma' or set SigmaVAR to NULL, see examples below).}
+Note that if Phi and Gamma are known, SigmaVAR can be calculated. Hence, only SigmaVAR or Gamma is needed as input (if only Gamma, then use 'Gamma = Gamma' or set SigmaVAR to NULL, see examples below).}
 
-\item{Moderators}{Optional. Indicator whether there are moderators to be included (1) or not (0; default).}
+\item{Moderators}{Optional. Indicator (TRUE/FALSE or 1/0) whether there are moderators to be included (TRUE or 1) or not (FALSE or 0). By default, Moderators = 0.}
 
-\item{Mod}{Optional. Matrix of moderators to be included in the analysis when Moderators == 1. By default, Mod = NULL.}
+\item{Mod}{Optional. An S x m matrix of m moderators to be included in the analysis when Moderators == 1. By default, Mod = NULL.}
 
-\item{FEorRE}{Optional. Indicator whether continuous-time meta-analysis should use a fixed-effects model (1; default) or random-effects model (2).}
+\item{FEorRE}{Optional. Indicator (2/1) whether continuous-time meta-analysis should use a fixed-effects model (1) or random-effects model (2). By default, FEorRE = 1.}
 
 \item{alpha}{Optional. The alpha level in determining the (1-alpha)*100\% confidence interval (CI). By default, alpha = 0.05; resulting in a 95\% CI.}
 
-\item{Plot}{Optional. Indicator for rendering a Phi-plot (TRUE) or not (FALSE). By default, Plot = FALSE.}
+\item{PrintPlot}{Optional. Indicator (TRUE/FALSE or 1/0) for rendering a Phi-plot (TRUE or 1) or not (FALSE or 0). By default, PrintPlot = FALSE.}
 }
 \value{
-The output comprises, among others, the overall vectorized transformed standardized lagged effects, their covariance matrix, and the corresponding elleptical/multivariate 95\% CI.
+The output comprises, among others, the overall vectorized transformed standardized lagged effects, their covariance matrix, and the corresponding elliptical/multivariate 95\% CI.
 }
 \description{
 Continuous-time meta-analysis (CTmeta) on standarized lagged effects (Phi) taking into account the various time-intervals used in the primary studies. There is also an interactive web application on my website to perform CTmeta: \url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}.
 }
 \examples{
+
+# library(CTmeta)
 
 ##################################################################################################
 # Input needed in examples below with q=2 variables and S=3 primary studies
@@ -107,18 +109,20 @@ CTmeta(N, DeltaT, DeltaTStar, Phi, Gamma = Gamma, Moderators = 1, Mod = Mod) # f
 
 ## Make customized Phi-plot of resulting overall Phi ##
 
-# Note: The customized Phi-plot can be made using the function 'PhiPlot' (see below) or by using the interactive web app from my website (\url{https://www.uu.nl/staff/RMKuiper/Websites\\%20\\%2F\\%20Shiny\\%20apps}).
+# Option 1: Using the plot option in the function:
+CTmeta(N, DeltaT, DeltaTStar, Phi, Gamma = Gamma, PrintPlot = TRUE)
+
+
+# Option 2: A customized Phi-plot can be made using the function 'PhiPlot' (see below) or by using the interactive web app from my website (\url{https://www.uu.nl/staff/RMKuiper/Websites\\%20\\%2F\\%20Shiny\\%20apps}).
 # Alternatively, one can use the function 'ggPhiPlot' instead of 'PhiPlot'.
 
-# Extract the q times q overall Phi matrix
+# Extract the (q times q) overall Phi matrix
 out_CTmeta <- CTmeta(N, DeltaT, DeltaTStar, Phi, Gamma = Gamma)
-q <- sqrt(length(out_CTmeta$Overall_standPhi_DeltaTStar))
 # resulting overall Phi:
-overallPhi <- matrix(out_CTmeta$Overall_standPhi_DeltaTStar, byrow = T, ncol = q)
-
+overallPhi <- out_CTmeta$Overall_standPhi
 
 # Make Phi-plot:
-Title <- as.list(expression(paste(Phi(Delta[t]), " plot:"),
+Title <- as.list(expression(paste0(Phi(Delta[t]), " plot:"),
    "How do the overall lagged parameters vary", "as a function of the time-interval"))
 PhiPlot(DeltaTStar, overallPhi, Min = 0, Max = 40, Step = 0.5, Title = Title)
 

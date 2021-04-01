@@ -12,7 +12,10 @@
 #' @importFrom expm expm
 #' @export
 #' @examples
-#'## Example 1 ##
+#'
+#' # library(CTmeta)
+#'
+#' ## Example 1 ##
 #'
 #' ##################################################################################################
 #' # Input needed in examples below with q=2 variables.
@@ -22,7 +25,8 @@
 #' library(expm)
 #' Drift <- logm(Phi)/DeltaT
 #' #
-#' Sigma <- diag(2) # for ease
+#' q <- dim(Phi)[1]
+#' Sigma <- diag(q) # for ease
 #' #
 #' Gamma <- Gamma.fromCTM(Drift, Sigma)
 #' ##################################################################################################
@@ -52,95 +56,84 @@ ChecksCTM <- function(Drift, Sigma = NULL, Gamma = NULL) {
   #  #######################################################################################################################
 
   # Checks:
-
   if(any(class(Drift) == "ctsemFit")){
     B <- -1 * summary(Drift)$DRIFT
     Sigma <- summary(Drift)$DIFFUSION
+    #
+    if(length(B) == 1){
+      q <- 1
+    }else{
+      q <- dim(B)[1]
+    }
   }else{
     # Drift = A = -B
     # B is drift matrix that is pos def, so Phi(DeltaT) = expm(-B*DeltaT)
-    B <- -Drift
-    if(all(eigen(B)$val < 0)){
-      #("All the eigenvalues of the drift matrix B are negative; therefore. I assume the input was A=-B instead of B. I will use -A=B in the calculation.")
+    if(is.null(Drift)){
+      ("The drift matrix Drift should be input to the function.")
       #("Note that Phi(DeltaT) = expm(-B*DeltaT).")
-      ("All the eigenvalues of the drift matrix Drift are positive. Therefore. I assume the input was B=-A instead of A. I will use -B=A in the calculation.")
-      B = -B
+      stop()
+    }else{ # !is.null(Drift)
+      B <- -Drift
+      #
+      if(length(B) == 1){
+        q <- 1
+      }else{
+        q <- dim(B)[1]
+      }
     }
-    #
+
     # Check on B
-    if(any(eigen(B)$val <= 0)){
-      #("The function stopped, since some of the eigenvalues of the drift matrix B are negative or zero.")
-      ("The function stopped, since some of the eigenvalues of the drift matrix Drift are positive or zero.")
-      stop()
-    }
-    if(dim(B)[1] != dim(B)[2]){
-      print(paste("The matrix (Drift or Phi) should be a square (q times q) matrix."))
-      stop()
-    }
-  }
-  #
-  if(length(B) == 1){
-    q <- 1
-  }else{
-    q <- dim(B)[1]
-  }
-  #
-  # Check on Sigma, and Gamma
-  if(is.null(Gamma) & is.null(Sigma)){ # Both unknown
-    print(paste("The arguments Sigma or Gamma are not found: one should be part of the input. Notably, in case of the last matrix, specify 'Gamma = Gamma'."))
-    stop()
-  }else if(is.null(Gamma)){ # Gamma unknown, calculate Gamma from Drift & Sigma
-
-    if(!is.null(Sigma)){ # Sigma known, calculate Gamma from Drift & Sigma
-
-      # Checks on Sigma
-      if(length(Sigma) != 1){
-        if(dim(Sigma)[1] != dim(Sigma)[2]){
-          print(paste("The residual covariance matrix Sigma should be a square matrix of size q times q, with q = ", q, "."))
-          stop()
-        }
-        if(dim(Sigma)[1] != q){
-          print(paste("The residual covariance matrix Sigma should, like Phi (or Drift), be a matrix of size q times q, with q = ", q, "."))
-          stop()
-        }
-        if(length(dim(Sigma)) > 2){
-          print(paste("The residual covariance matrix Sigma should be an q times q matrix, with q = ", q, "."))
-          stop()
-        }
-      }else if(q != 1){
-        print(paste("The residual covariance matrix Sigma should, like Phi (or Drift), be a scalar."))
+    if(length(B) > 1){
+      Check_B(B)
+      if(all(eigen(B)$val < 0)){
+        #("All the eigenvalues of the drift matrix B are negative; therefore. I assume the input was A=-B instead of B. I will use -A=B in the calculation.")
+        #("Note that Phi(DeltaT) = expm(-B*DeltaT).")
+        ("All the eigenvalues of the drift matrix Drift are positive. Therefore. I assume the input for Drift was B = -A instead of A. I will use Drift = -B = A.")
+        ("Note that Phi(DeltaT) = expm(-B*DeltaT) = expm(A*DeltaT) = expm(Drift*DeltaT).")
+        B = -B
+      }
+      if(any(eigen(B)$val <= 0)){
+        #("The function stopped, since some of the eigenvalues of the drift matrix B are negative or zero.")
+        ("The function stopped, since some of the eigenvalues of the drift matrix Drift are positive or zero.")
         stop()
       }
-
-      # Calculate Gamma
-      Gamma <- Gamma.fromCTM(-B, Sigma)
-
     }
 
-  }else if(!is.null(Gamma)){ # Gamma known, only check on Gamma needed and calculate Sigma
-
+    # Check on Sigma and Gamma - need Sigma
+    if(is.null(Sigma) & is.null(Gamma)){ # Both Sigma and Gamma unknown
+      print(paste0("The arguments Sigma and Gamma are not found: Both Sigma and Gamma are unknown; one should be part of the input."))
+      stop()
+    }else if(!is.null(Sigma)){ # Sigma known
+      # Check on Sigma
+      Check_Sigma(Sigma, q)
+    }else{ # Sigma unknown and Gamma known, calculate Sigma
+      # Checks on Gamma
+      Check_Gamma(Gamma, q)
+      # Calculate Sigma
+      if(q != 1){
+        Sigma <- B %*% Gamma + t(B %*% Gamma)
+      }else{
+        Sigma <- B * Gamma + (B * Gamma)
+      }
+    }
+  }
+  #
+  # Check on Gamma
+  if(!is.null(Gamma)){ # Gamma known
     # Checks on Gamma
-    if(length(Gamma) != 1){
-      if(dim(Gamma)[1] != dim(Gamma)[2]){
-        print(paste("The stationary covariance matrix Gamma should be a square matrix of size q times q, with q = ", q, "."))
-        stop()
+    Check_Gamma(Gamma, q)
+    if(!is.null(Sigma)){ # Sigma unknow, calculate it
+      # Calculate Sigma
+      if(q != 1){
+        SigmaVAR <- Gamma - Phi %*% Gamma %*% t(Phi)
+      }else{
+        SigmaVAR <- Gamma - Phi * Gamma * Phi
       }
-      if(dim(Gamma)[1] != q){
-        print(paste("The stationary covariance matrix Gamma should, like Phi (or Drift), be a matrix of size q times q, with q = ", q, "."))
-        stop()
-      }
-      if(length(dim(Gamma)) > 2){
-        print(paste("The stationary covariance matrix Gamma should be an q times q matrix, with q = ", q, "."))
-        stop()
-      }
-    }else if(q != 1){
-      print(paste("The stationary covariance matrix Gamma should, like Phi (or Drift), be a scalar."))
-      stop()
     }
-
-    # Calculate Sigma
-    Sigma <- B %*% Gamma + t(B %*% Gamma)
-
+  }else{ # Gamma unknown, calculate Gamma from Sigma and Phi
+    # Calculate Gamma
+    # Sigma <- B %*% Gamma + Gamma %*% t(B)
+    Gamma <- Gamma.fromCTM(-B, Sigma)
   }
 
 
@@ -149,14 +142,6 @@ error <- list()
 append(error, "Checks on the matrices Drift, Sigma, and Gamma are inspected, the following problems exist:")
 
 
-#BplusTransB = B + t(B) # Namely, B niet per se symmetric, hence positive eigenvalues is not a suficient condition for positive (semi-)definiteness
-##Decomp_BB <- eigen(BplusTransB, sym=TRUE)
-##diagD_BB <- Decomp_BB$values
-#diagD_BB <- eigen(BplusTransB, symmetric=FALSE)$val
-#if (any(diagD_BB <= 0)){
-#  ("'B' is not positive definite")
-#  ChecksAreFine = FALSE
-#}
 # Eigenvalues positive (or at least real part)
 diagD_B <- eigen(B, symmetric=FALSE)$val
 if (any(Re(diagD_B) <= 0)){
@@ -192,31 +177,15 @@ if (any(diagDSigma <= 0)){
   error <- append(error, "'Sigma' is not positive definite.")
 }
 
-
-# Determine corresponding Gamma (if q < 4)
-# Sigma <- B %*% Gamma + Gamma %*% t(B)
-# Determine via other function!
-if(q == 1){
-  # Sigma = B %*% Gamma + Gamma %*% t(B) = 2 * beta * gamma, dus gamma = sigma / (2 * beta)
-  Gamma <- Sigma / (2 * B)
-}else if(q > 1){
-Gamma <- Gamma.fromCTM(-B, Sigma)
+# CHECK pos def
+#Decomp_Gamma <- eigen(Gamma, sym=TRUE)
+#diagDGamma <- Decomp_Gamma$values
+diagDGamma <- eigen(Gamma, symmetric=T)$val
+if (any(diagDGamma <= 0)){
+  cat("The stationary covariance matrix ('Gamma'), corresponding to 'Drift' and 'Sigma', is not positive definite. \n")
+  ChecksAreFine <- FALSE
+  error <- append(error, "'Gamma' (stationary covariance matrix) is not positive definite.")
 }
-#
-#if(q > 3){
-#  cat("'Gamma', corresponding to 'B' and 'SigmaCTM', cannot be calculated for q > 3 (in this sofware). \n")
-#  cat("Thus, positive definiteness of 'Gamma' is not checked (in generation of CTM data). \n")
-#}else{
-  # CHECK pos def
-  #Decomp_Gamma <- eigen(Gamma, sym=TRUE)
-  #diagDGamma <- Decomp_Gamma$values
-  diagDGamma <- eigen(Gamma, symmetric=T)$val
-  if (any(diagDGamma <= 0)){
-    cat("The stationary covariance matrix ('Gamma'), corresponding to 'Drift' and 'Sigma', is not positive definite. \n")
-    ChecksAreFine <- FALSE
-    error <- append(error, "'Gamma' (stationary covariance matrix) is not positive definite.")
-  }
-#}
 
 
   if(ChecksAreFine){

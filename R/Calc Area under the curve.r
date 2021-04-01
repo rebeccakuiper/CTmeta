@@ -12,7 +12,10 @@
 #' @importFrom expm logm
 #' @export
 #' @examples
-#'## Example 1 ##
+#'
+#' # library(CTmeta)
+#'
+#' ## Example 1 ##
 #'
 #' ##################################################################################################
 #' # Input needed in examples below with q=2 variables.
@@ -57,32 +60,16 @@ Area <- function(DeltaT = 1, Phi = NULL, Drift = NULL, t_min = 0, t_max = "inf")
 
   # Checks:
   if(length(DeltaT) != 1){
-    print(paste("The argument DeltaT should be a scalar, that is, one number, that is, a vector with one element."))
+    print(paste0("The argument DeltaT should be a scalar, that is, one number, that is, a vector with one element. Currently, DeltaT = ", DeltaT))
     stop()
   }
   #
   # Check on Phi
   if(any(class(Phi) == "varest")){
-    #SigmaVAR <- cov(resid(Phi))
     Phi <- Acoef(Phi)[[1]]
-    B <- -logm(Phi)/DeltaT
+    B <- -logm(Phi)/DeltaT # Phi = expm(Drift * DeltaT)
   } else if(any(class(Phi) == "ctsemFit")){
     B <- -1 * summary(Phi)$DRIFT
-    #Sigma <- summary(Phi)$DIFFUSION
-    #
-    ##Phi <- summary(Phi)$discreteDRIFT # Is no longer output in ctsem...
-    ##Phi <- expm(-B*DeltaT)
-    ##source("Calc VARparam from CTMparam.r")
-    #VarEst <- VARparam(DeltaT, -B, Sigma)
-    #Phi <- VarEst$Phi
-    #SigmaVAR <- VarEst$SigmaVAR
-    #if(length(B) == 1){
-    #  q <- 1
-    #}else{
-    #  q <- dim(B)[1]
-    #}
-    #kronsum <- kronecker(diag(q),B) + kronecker(B,diag(q))
-    #SigmaVAR <- matrix((solve(kronsum) %*% (diag(q*q) - expm(-kronsum * DeltaT)) %*% as.vector(Sigma)), ncol=q, nrow=q)
   } else{
 
     # Drift = A = -B
@@ -97,32 +84,31 @@ Area <- function(DeltaT = 1, Phi = NULL, Drift = NULL, t_min = 0, t_max = "inf")
       }
     }else{ # !is.null(Drift)
       B <- -Drift
+    }
+    # Check on B
+    if(length(B) > 1){
+      Check_B_or_Phi(B)
       if(all(eigen(B)$val < 0)){
         #("All the eigenvalues of the drift matrix B are negative; therefore. I assume the input was A=-B instead of B. I will use -A=B in the calculation.")
         #("Note that Phi(DeltaT) = expm(-B*DeltaT).")
-        ("All the eigenvalues of the drift matrix Drift are positive. Therefore. I assume the input was B=-A instead of A. I will use -B=A in the calculation.")
+        ("All the eigenvalues of the drift matrix Drift are positive. Therefore. I assume the input for Drift was B = -A instead of A. I will use Drift = -B = A.")
+        ("Note that Phi(DeltaT) = expm(-B*DeltaT) = expm(A*DeltaT) = expm(Drift*DeltaT).")
         B = -B
       }
+      if(any(eigen(B)$val <= 0)){
+        #("The function stopped, since some of the eigenvalues of the drift matrix B are negative or zero.")
+        ("The function stopped, since some of the eigenvalues of the drift matrix Drift are positive or zero.")
+        stop()
+      }
     }
-    # Check on B
-    if(any(eigen(B)$val <= 0)){
-      #("The function stopped, since some of the eigenvalues of the drift matrix B are negative or zero.")
-      ("The function stopped, since some of the eigenvalues of the drift matrix Drift are positive or zero.")
-      stop()
-    }
-    if(dim(B)[1] != dim(B)[2]){
-      print(paste("The matrix (Drift or Phi) should be a square (q times q) matrix."))
-      stop()
-    }
-
   }
-
-
+  #
   if(length(B) == 1){
     q <- 1
   }else{
     q <- dim(B)[1]
   }
+
 
   Area_full <- solve(B)
   if(t_max == "inf"){

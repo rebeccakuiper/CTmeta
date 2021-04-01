@@ -26,6 +26,9 @@ This function returns the vectorized standardized lagged effects and - if N is p
 This function calculates the (vectorized) standardized lagged effects matrix, their covariance matrix, and corresponding elliptical 95\% confidence interval (CI). There is also an interactive web application on my website: Standardizing and/or transforming lagged regression estimates (\url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}).
 }
 \examples{
+
+# library(CTmeta)
+
 ## Example 1 ##
 
 # Input for examples below
@@ -33,7 +36,8 @@ N <- 643
 Phi <- myPhi[1:2,1:2]
 #Phi <- matrix(c(0.25, 0.10,
 #                0.20, 0.36), byrow=T, ncol = 2)
-SigmaVAR <- diag(2) # for ease
+q <- dim(Phi)[1]
+SigmaVAR <- diag(q) # for ease
 # Calculate the Gamma corresponding to Phi and SigmaVAR - used in the second example
 Gamma <- Gamma.fromVAR(Phi, SigmaVAR) # ?Gamma.fromVAR
 
@@ -44,6 +48,24 @@ StandPhi(N, Phi, SigmaVAR)
 StandPhi(N, Phi, NULL, Gamma)
 # or
 StandPhi(N, Phi, Gamma = Gamma)
+
+# Note: In case of a Drift matrix, this gives the standardized Drift
+# BUT not all output is accurate then.
+if (!require("expm")) install.packages("expm") # Use expm package for function logm()
+library(expm)
+Drift <- logm(Phi)/DeltaT
+q <- dim(Drift)[1]
+Sigma <- diag(q)
+#
+standCT <- StandPhi(N, Phi = Drift, SigmaVAR = Sigma)
+standCT$StandPhi_DeltaT # standardized Drift
+standCT$standGamma # standardized Gamma
+# Do not inspect the rest of the output
+#
+standCT <- StandPhi(N, Phi = Drift, Gamma = Gamma)
+standCT$StandPhi_DeltaT # standardized Drift
+standCT$standSigmaVAR_DeltaT # standardized Sigma
+# Do not inspect the rest of the output
 
 
 ## Example 2: input from fitted object of class "varest" ##

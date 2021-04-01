@@ -21,6 +21,9 @@ The output renders, per element (i,j), the area under the curve for Phi_ij.
 Area under the curves in the Phi(DeltaT)-plot, for time-intervals from 0 to infinity and optionally for a user-specified range. The interactive web application 'Phi-and-Psi-Plots and Find DeltaT' also contains this functionality, you can find it on my website: \url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}.
 }
 \examples{
+
+# library(CTmeta)
+
 ## Example 1 ##
 
 ##################################################################################################

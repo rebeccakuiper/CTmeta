@@ -10,6 +10,9 @@
 #' @return This function returns the stationary covariance matrix, that is, the contemporaneous covariance matrix of the data.
 #' @export
 #' @examples
+#'
+#' # library(CTmeta)
+#'
 #' ## Example 1 ##
 #' #
 #' Phi <- myPhi[1:2,1:2]
@@ -19,6 +22,7 @@
 #' DeltaT <- 1
 #' Drift <- logm(Phi)/DeltaT
 #' #
+#' q <- dim(Phi)[1]
 #' Sigma <- diag(q) # for ease
 #' #
 #' Gamma.fromCTM(Drift, Sigma)
@@ -35,68 +39,91 @@
 
 Gamma.fromCTM <- function(Drift, Sigma) {
 
+  # Checks:
   if(any(class(Drift) == "ctsemFit")){
     B <- -1 * summary(Drift)$DRIFT
     Sigma <- summary(Drift)$DIFFUSION
-
-  } else{
-
-    # Check on Drift
-    if(length(Drift) == 1){
+    #
+    if(length(B) == 1){
       q <- 1
     }else{
-      #
-      if(is.null(dim(Drift))){
-        if(!is.null(length(Drift))){
-          print(paste("The argument Drift is not a matrix of size q times q."))
-          stop()
-        }else{
-          print(paste("The argument Drift is not found: The continuous-time lagged effects matrix Drift is unknown, but should be part of the input."))
-          stop()
-        }
-      }else{
-        if(dim(Drift)[1] != dim(Drift)[2] | length(dim(Drift)) != 2){
-          print(paste("The argument Drift is not a matrix of size q times q."))
-          stop()
-        }
-        q <- dim(Drift)[1]
-      }
+      q <- dim(B)[1]
     }
-
-    # Checks on Sigma
-    if(length(Sigma) != 1){
-      if(dim(Sigma)[1] != dim(Sigma)[2]){ # Should be square
-        print(paste("The residual covariance matrix Sigma should be a square matrix of size q times q, with q = ", q, "."))
-        stop()
-      }
-      if(dim(Sigma)[1] != q){ # Should have same dimension as Drift
-        print(paste("The residual covariance matrix Sigma should, like Drift, be a matrix of size q times q, with q = ", q, "."))
-        stop()
-      }
-      if(length(dim(Sigma)) > 2){ # Should be matrix, not array
-        print(paste("The residual covariance matrix Sigma should be an q times q matrix, with q = ", q, "."))
-        stop()
-      }
-    }else if(q != 1){
-      print(paste("The residual covariance matrix Sigma should, like Drift, be a scalar."))
+  }else{
+    # Drift = A = -B
+    # B is drift matrix that is pos def, so Phi(DeltaT) = expm(-B*DeltaT)
+    if(is.null(Drift)){
+      ("The drift matrix Drift should be input to the function.")
+      #("Note that Phi(DeltaT) = expm(-B*DeltaT).")
       stop()
+    }else{ # !is.null(Drift)
+      B <- -Drift
+      #
+      if(length(B) == 1){
+        q <- 1
+      }else{
+        q <- dim(B)[1]
+      }
     }
 
+    # Check on B
+    if(length(B) > 1){
+      Check_B(B)
+      if(all(eigen(B)$val < 0)){
+        #("All the eigenvalues of the drift matrix B are negative; therefore. I assume the input was A=-B instead of B. I will use -A=B in the calculation.")
+        #("Note that Phi(DeltaT) = expm(-B*DeltaT).")
+        ("All the eigenvalues of the drift matrix Drift are positive. Therefore. I assume the input was B=-A instead of A. I will use -B=A in the calculation.")
+        B = -B
+      }
+      if(any(eigen(B)$val <= 0)){
+        #("The function stopped, since some of the eigenvalues of the drift matrix B are negative or zero.")
+        ("The function stopped, since some of the eigenvalues of the drift matrix Drift are positive or zero.")
+        stop()
+      }
+    }
+
+    # Check on Sigma
+    if(is.null(Sigma)){ # Sigma unknown
+      print(paste0("The argument Sigma is not found: Sigma is unknown, but should be part of the input."))
+      stop()
+    }else if(!is.null(Sigma)){ # Sigma known
+      # Check on Sigma
+      Check_Sigma(Sigma, q)
+    }
   }
 
-  # Drift = A = -Drift
-  # B is drift matrix that is pos def, so Phi(DeltaT) = expm(-B*DeltaT)
-  B <- -Drift
+
+    # Check on B
+    if(length(Drift) > 1){
+      Check_B(B)
+      if(all(eigen(Drift)$val > 0)){
+        #("All the eigenvalues of the drift matrix B are negative; therefore. I assume the input was A=-B instead of B. I will use -A=B in the calculation.")
+        #("Note that Phi(DeltaT) = expm(-B*DeltaT).")
+        ("All the eigenvalues of the drift matrix Drift are positive. Therefore. I assume the input for Drift was B = -A instead of A. I will use Drift = -B = A.")
+        ("Note that Phi(DeltaT) = expm(-B*DeltaT) = expm(A*DeltaT) = expm(Drift*DeltaT).")
+        Drift = -Drift
+      }
+      if(any(eigen(Drift)$val >= 0)){
+        #("The function stopped, since some of the eigenvalues of the drift matrix B are negative or zero.")
+        ("The function stopped, since some of the eigenvalues of the drift matrix Drift are positive or zero.")
+        stop()
+      }
+    }
+
 
   #Gamma <- matrix((solve(kronecker(diag(q),B) + kronecker(B,diag(q))) %*% as.vector(Sigma)), ncol=q, nrow=q)
   #
   R <- kronecker(diag(q),B) + kronecker(B,diag(q))
   #
-  if(abs(det(R)) > 0.0001){
+  if(q == 1){
+    # Sigma = B %*% Gamma + Gamma %*% t(B) = 2 * beta * gamma, dus gamma = sigma / (2 * beta)
+    Gamma_q <- Sigma / (2 * B)
+  }else if(abs(det(R)) > 0.0001){
     Gamma_q <- matrix((solve(R) %*% as.vector(Sigma)), ncol=q, nrow=q)
   } else{
     Gamma_q = NULL
   }
+
 
   return(Gamma_q)
 }

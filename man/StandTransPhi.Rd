@@ -38,6 +38,9 @@ This function returns the vectorized transformed (standardized) lagged effects a
 This function calculates the (vectorized) transformed standardized Phi, their covariance matrix and elliptical 95\% confidence interval (CI). There is also an interactive web application on my website: Standardizing and/or transforming lagged regression estimates (\url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}).
 }
 \examples{
+
+# library(CTmeta)
+
 ## Example 1 ##
 
 # Input for examples below
@@ -49,6 +52,7 @@ Phi <- myPhi[1:2,1:2]
 #Phi <- matrix(c(0.25, 0.10,
 #               0.20, 0.36), byrow=T, ncol = 2)
 # SigmaVAR(DeltaT)
+q <- dim(Phi)[1]
 SigmaVAR <- diag(q) # for ease
 # Calculate the Gamma corresponding to Phi and SigmaVAR - used in the second example
 Gamma <- Gamma.fromVAR(Phi, SigmaVAR) # ?Gamma.fromVAR

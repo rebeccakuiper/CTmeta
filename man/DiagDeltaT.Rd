@@ -35,6 +35,9 @@ The output renders the time-interval for which the (discrete-time) residual cova
 Time-interval (DeltaT) for which the (discrete-time) residual covariance matrix (i.e., SigmaVAR(DeltaT)) is diagonal (together with that diagonal SigmaVAR and corresponding lagged-effects matrix Phi). The interactive web application 'Phi-and-Psi-Plots and Find DeltaT' also contains this functionality, you can find it on my website: \url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}.
 }
 \examples{
+
+# library(CTmeta)
+
 ## Example 1 ##
 # Here, DeltaT_diag = 0
 
@@ -44,7 +47,8 @@ Time-interval (DeltaT) for which the (discrete-time) residual covariance matrix 
 DeltaT <- 1
 Phi <- myPhi[1:2, 1:2]
 #SigmaVAR <- diag(2) # Then, DeltaT_diag = DeltaT = 1
-Gamma <- matrix(c(1, 0.5, 0.4, 1), byrow = T, nrow = 2, ncol = 2)
+q <- dim(Phi)[1]
+Gamma <- matrix(c(1, 0.5, 0.4, 1), byrow = T, nrow = q, ncol = q)
 SigmaVAR <- Gamma - Phi \%*\% Gamma \%*\% t(Phi)
 
 # If you would use the drift matrix Drift as input, then use:

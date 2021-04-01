@@ -20,12 +20,16 @@
 #' @param Labels Optional. Vector with (character) labels of the lines to be plotted. The length of this vector equals the number of 1s in WhichElements (or equals q*(q+1)/2). Note, if AddGamma = 1, then twice this number is needed. By default, Labels = NULL, which renders labels with Greek letter of SigmaVAR (as a function of the time-interval); and, if AddGamma, also for Gamma.
 #' @param Col Optional. Vector with color values (integers) of the lines to be plotted. The length of this vector equals the number of 1s in WhichElements (or equals q*(q+1)/2, the unique elements in the symmetric matrix SigmaVAR). By default, Col = NULL, which renders the same color for effects that belong to the same outcome variable (i.e. a row in the SigmaVAR matrix). See \url{https://www.statmethods.net/advgraphs/parameters.html} for more information about the values.
 #' @param Lty Optional. Vector with line type values (integers) of the lines to be plotted. The length of this vector equals the number of 1s in WhichElements (or equals q*(q+1)/2). By default, Lty = NULL, which renders solid lines for the variances and the same type of dashed line for the covariances. See \url{https://www.statmethods.net/advgraphs/parameters.html} for more information about the values.
-#' @param Title Optional. A character or a list consisting of maximum 3 characters or 'call' class objects, like from the paste() function, that together represent the title of the Phi-plot. By default, Title = NULL, then the following code will be used for the title: as.list(expression(paste(Sigma[VAR](Delta[t]), " plot:"), "How do the VAR(1) (co)variance parameters vary", "as a function of the time-interval")).
+#' @param Title Optional. A character or a list consisting of maximum 3 characters or 'call' class objects, like from the paste0() function, that together represent the title of the Phi-plot. By default, Title = NULL, then the following code will be used for the title: as.list(expression(paste0(Sigma[VAR](Delta[t]), " plot:"), "How do the VAR(1) (co)variance parameters vary", "as a function of the time-interval")).
 #'
 #' @return This function returns a Psi/SigmaVAR-plot for a range of time intervals.
 #' @importFrom expm expm
+#' @importFrom expm logm
 #' @export
 #' @examples
+#'
+#' # library(CTmeta)
+#'
 #' ### Make Psi-plot/SigmaVAR-plot ###
 #'
 #' ## Example 1 ##
@@ -33,13 +37,15 @@
 #' # Phi(DeltaT)
 #' DeltaT <- 1
 #' Phi <- myPhi[1:2,1:2]
-#' SigmaVAR <- diag(2) # for ease
+#' q <- dim(Phi)[1]
+#' SigmaVAR <- diag(q) # for ease
 #' #
 #' # Determine the continuous-time equivalent, that is, the drift matrix
 #' if (!require("expm")) install.packages("expm") # Use expm package for function logm()
 #' library(expm)
 #' Drift <- logm(Phi)/DeltaT
-#' Sigma <- diag(2) # for ease. Note that this is not the CT-equivalent of SigmaVAR.
+#' q <- dim(Drift)[1]
+#' Sigma <- diag(q) # for ease. Note that this is not the CT-equivalent of SigmaVAR.
 #'
 #' # Example 1.1: unstandardized Phi&SigmaVAR #
 #' #
@@ -102,23 +108,23 @@ SigmaVARPlot <- function(DeltaT = 1, Phi = NULL, SigmaVAR = NULL, Drift = NULL, 
 
   # Checks:
   if(length(DeltaT) != 1){
-    print(paste("The argument DeltaT should be a scalar, that is, one number, that is, a vector with one element."))
+    print(paste0("The argument DeltaT should be a scalar, that is, one number, that is, a vector with one element. Currently, DeltaT = ", DeltaT))
     stop()
   }
   if(Stand != 0 & Stand != 1){
-    print(paste("The argument Stand should be a 0 or a 1."))
+    print(paste0("The argument Stand should be a 0 or a 1, not ", Stand))
     stop()
   }
   if(length(Min) != 1){
-    print(paste("The argument Min should be a scalar, that is, one number, that is, a vector with one element."))
+    print(paste0("The argument Min should be a scalar, that is, one number, that is, a vector with one element. Currently, Min = ", Min))
     stop()
   }
   if(length(Max) != 1){
-    print(paste("The argument Max should be a scalar, that is, one number, that is, a vector with one element."))
+    print(paste0("The argument Max should be a scalar, that is, one number, that is, a vector with one element. Currently, Max = ", Max))
     stop()
   }
   if(length(Step) != 1){
-    print(paste("The argument Step should be a scalar, that is, one number, that is, a vector with one element."))
+    print(paste0("The argument Step should be a scalar, that is, one number, that is, a vector with one element. Currently, Step = ", Step))
     stop()
   }
   #
@@ -128,114 +134,85 @@ SigmaVARPlot <- function(DeltaT = 1, Phi = NULL, SigmaVAR = NULL, Drift = NULL, 
     Drift <- logm(Phi_VARest)/DeltaT # Phi = expm(Drift * DeltaT)
     SigmaVAR_VARest <- cov(resid(Phi))
     Gamma <- Gamma.fromVAR(Phi_VARest, SigmaVAR_VARest)
-    if(length(Drift) == 1){
-      q <- 1
-    }else{
-      q <- dim(Drift)[1]
-    }
   } else if(any(class(Phi) == "ctsemFit")){
     Drift <- summary(Phi)$DRIFT
     Sigma_ctsem <- summary(Phi)$DIFFUSION
     Gamma <- Gamma.fromCTM(Drift, Sigma_ctsem)
-    if(length(Drift) == 1){
-      q <- 1
-    }else{
-      q <- dim(Drift)[1]
-    }
   } else{
 
     if(is.null(Drift)){
       if(!is.null(Phi)){
-        Drift <- logm(Phi)/DeltaT
+        if(length(Phi) == 1){
+          Drift <- log(Phi)/DeltaT
+        }else{
+          Drift <- logm(Phi)/DeltaT
+        }
       }else{ # is.null(Phi)
         ("Either the drift matrix Drift or the autoregressive matrix Phi should be input to the function.")
-        ("Note that Phi(DeltaT) = expm(Drift*DeltaT).")
+        #("Note that Phi(DeltaT) = expm(Drift*DeltaT).")
         stop()
       }
-    }else{ # !is.null(Drift)
-      Phi <- expm(Drift*DeltaT)
-      if(all(eigen(Drift)$val > 0)){
-        ("All the eigenvalues of the drift matrix Drift are positive; therefore. I assume the input was B=-A instead of A. I will use -Drift in the calculation.")
+    }
+    #
+    # Check on B
+    if(length(B) > 1){
+      Check_B_or_Phi(B=-Drift)
+      if(all(eigen(Drift)$val < 0)){
+        #("All the eigenvalues of the drift matrix B are negative; therefore. I assume the input was A=-B instead of B. I will use -A=B in the calculation.")
+        #("Note that Phi(DeltaT) = expm(-B*DeltaT).")
+        ("All the eigenvalues of the drift matrix Drift are positive. Therefore. I assume the input for Drift was B = -A instead of A. I will use Drift = -B = A.")
         ("Note that Phi(DeltaT) = expm(-B*DeltaT) = expm(A*DeltaT) = expm(Drift*DeltaT).")
         Drift = -Drift
       }
-    }
-
-    if(length(Drift) == 1){
-      q <- 1
-    }else{
-      #
-      if(is.null(dim(Drift))){
-        if(!is.null(length(Drift))){
-          print(paste("The argument Drift (or Phi) is not a matrix of size q times q."))
-          stop()
-        }else{
-          print(paste("The argument Drift (or Phi) is not found: The lagged effects matrix Drift is unknown, but should be part of the input."))
-          stop()
-        }
-      }else{
-        if(dim(Drift)[1] != dim(Drift)[2] | length(dim(Drift)) != 2){
-          print(paste("The argument Drift (or Phi) is not a matrix of size q times q."))
-          stop()
-        }
-        q <- dim(Drift)[1]
+      if(any(eigen(Drift)$val <= 0)){
+        #("The function stopped, since some of the eigenvalues of the drift matrix B are negative or zero.")
+        ("The function stopped, since some of the eigenvalues of the drift matrix Drift are positive or zero.")
+        stop()
       }
     }
+  }
+  #
+  if(length(Drift) == 1){
+    q <- 1
+  }else{
+    q <- dim(Drift)[1]
   }
   #
   #
   # Check on SigmaVAR, Sigma, and Gamma
   if(is.null(SigmaVAR) & is.null(Gamma) & is.null(Sigma)){ # All three unknown
-    print(paste("The arguments SigmaVAR, Sigma, or Gamma are not found: one should be part of the input. Notably, in case of the first matrix, specify 'SigmaVAR = SigmaVAR'."))
+    print(paste0("The arguments SigmaVAR, Sigma, or Gamma are not found: one should be part of the input. Notably, in case of the first matrix, specify 'SigmaVAR = SigmaVAR'."))
     stop()
   }else if(is.null(Gamma)){ # Gamma unknown, calculate Gamma from Phi & SigmaVAR or Drift & Sigma
 
     if(!is.null(SigmaVAR)){ # SigmaVAR known, calculate Gamma from Phi & SigmaVAR
 
-      # Checks on SigmaVAR
-      if(length(SigmaVAR) != 1){
-        if(dim(SigmaVAR)[1] != dim(SigmaVAR)[2]){
-          print(paste("The residual covariance matrix SigmaVAR should be a square matrix of size q times q, with q = ", q, "."))
-          stop()
-        }
-        if(dim(SigmaVAR)[1] != q){
-          print(paste("The residual covariance matrix SigmaVAR should, like Phi (or Drift), be a matrix of size q times q, with q = ", q, "."))
-          stop()
-        }
-        if(length(dim(SigmaVAR)) > 2){
-          print(paste("The residual covariance matrix SigmaVAR should be an q times q matrix, with q = ", q, "."))
-          stop()
-        }
-      }else if(q != 1){
-        print(paste("The residual covariance matrix SigmaVAR should, like Phi (or Drift), be a scalar."))
-        stop()
-      }
+      # Check on SigmaVAR
+      Check_SigmaVAR(SigmaVAR, q)
 
       # Calculate Gamma
-      Gamma <- Gamma.fromVAR(Phi, SigmaVAR)
+      if(is.null(Phi_VARest)){
+        if(q == 1){
+          Phi_VARest <- exp(-B*DeltaT)
+        }else{
+          Phi_VARest <- expm(-B*DeltaT)
+        }
+      }
+      Gamma <- Gamma.fromVAR(Phi_VARest, SigmaVAR)
 
     }else if(!is.null(Sigma)){ # Sigma known, calculate Gamma from Drift & Sigma
 
-      # Checks on Sigma
-      if(length(Sigma) != 1){
-        if(dim(Sigma)[1] != dim(Sigma)[2]){
-          print(paste("The residual covariance matrix Sigma should be a square matrix of size q times q, with q = ", q, "."))
-          stop()
-        }
-        if(dim(Sigma)[1] != q){
-          print(paste("The residual covariance matrix Sigma should, like Phi (or Drift), be a matrix of size q times q, with q = ", q, "."))
-          stop()
-        }
-        if(length(dim(Sigma)) > 2){
-          print(paste("The residual covariance matrix Sigma should be an q times q matrix, with q = ", q, "."))
-          stop()
-        }
-      }else if(q != 1){
-        print(paste("The residual covariance matrix Sigma should, like Phi (or Drift), be a scalar."))
-        stop()
-      }
+      # Check on Sigma
+      Check_Sigma(Sigma, q)
 
       # Calculate Gamma
+      if(is.null(Drift)){
+        if(q == 1){
+          Drift <- log(Phi)/DeltaT
+        }else{
+          Drift <- logm(Phi)/DeltaT # Phi = expm(Drift * DeltaT)
+        }
+      }
       Gamma <- Gamma.fromCTM(Drift, Sigma)
 
     }
@@ -243,23 +220,7 @@ SigmaVARPlot <- function(DeltaT = 1, Phi = NULL, SigmaVAR = NULL, Drift = NULL, 
   }else if(!is.null(Gamma)){ # Gamma known, only check on Gamma needed
 
     # Checks on Gamma
-    if(length(Gamma) != 1){
-      if(dim(Gamma)[1] != dim(Gamma)[2]){
-        print(paste("The stationary covariance matrix Gamma should be a square matrix of size q times q, with q = ", q, "."))
-        stop()
-      }
-      if(dim(Gamma)[1] != q){
-        print(paste("The stationary covariance matrix Gamma should, like Phi (or Drift), be a matrix of size q times q, with q = ", q, "."))
-        stop()
-      }
-      if(length(dim(Gamma)) > 2){
-        print(paste("The stationary covariance matrix Gamma should be an q times q matrix, with q = ", q, "."))
-        stop()
-      }
-    }else if(q != 1){
-      print(paste("The stationary covariance matrix Gamma should, like Phi (or Drift), be a scalar."))
-      stop()
-    }
+    Check_Gamma(Gamma, q)
 
   }
   #
@@ -274,86 +235,72 @@ SigmaVARPlot <- function(DeltaT = 1, Phi = NULL, SigmaVAR = NULL, Drift = NULL, 
   #
   #
   if(!is.null(WhichElements)){
-    if(length(WhichElements) == 1){
-      if(q != 1){
-        print(paste("The argument WhichElements is one element and not a matrix of size q times q, with q = ", q, "."))
-        stop()
-      }
-    } else if(dim(WhichElements)[1] != dim(WhichElements)[2] | length(dim(WhichElements)) != 2){
-      print(paste("The argument WhichElements is not a (square) matrix. It should be a matrix of size q times q, with q = ", q, "."))
-      stop()
-    } else if(dim(WhichElements)[1] != q){
-      print(paste("The argument WhichElements is not a matrix of size q times q, with q = ", q, "."))
-      stop()
-    }
-    if(any(WhichElements != 0 & WhichElements != 1)){
-      print(paste("The argument WhichElements should consist of solely 1s and 0s."))
-      stop()
-    }
+    # Check on WhichElements
+    Check_WhichElts(WhichElements, q)
     nrLines <- sum(WhichElements)
   } else{
     WhichElements <- matrix(1, ncol = q, nrow = q)
-    nrLines <- q*(q+1)/2 # number of unique values in symmetric (covariance) matrix
+    nrLines <- q*q #<- sum(WhichElements)
   }
   #
   if(!is.null(Labels)){
     if(AddGamma == 1){
       if(length(Labels) != 2*nrLines){
-        print(paste("The argument Labels should contain ", 2*nrLines, " elements, that is, q*(q+1) or twice the number of 1s in WhichElements (or WhichElements is incorrectly specified)."))
+        print(paste0("The argument Labels should contain ", 2*nrLines, " elements, that is, q*(q+1) or twice the number of 1s in WhichElements (or WhichElements is incorrectly specified); not ", length(Labels), ". Note that Labels are needed for both SigmaVAR and Gamma."))
         stop()
       }
     }else{
       if(length(Labels) != nrLines){
-        print(paste("The argument Labels should contain ", nrLines, " elements, that is, q*(q+1)/2 or the number of 1s in WhichElements (or WhichElements is incorrectly specified)."))
+        print(paste0("The argument Labels should contain ", nrLines, " elements, that is, q*(q+1)/2 or the number of 1s in WhichElements (or WhichElements is incorrectly specified); not ", length(Labels)))
         stop()
       }
     }
     #if(any(!is.character(Labels))){ # Note: This does not suffice, since it could also be an expression
-    #  print(paste("The argument Labels should consist of solely characters."))
+    #  print(paste0("The argument Labels should consist of solely characters."))
     #  stop()
     #}
   }
   if(!is.null(Col)){
     if(AddGamma == 1){
       if(length(Col) != 2*nrLines){
-        print(paste("The argument Col should contain ", 2*nrLines, " elements, that is, q*(q+1) or twice the number of 1s in WhichElements (or WhichElements is incorrectly specified)."))
+        print(paste0("The argument Col should contain ", 2*nrLines, " elements, that is, q*(q+1) or twice the number of 1s in WhichElements (or WhichElements is incorrectly specified); not ", length(Col), ". Note that values (integers) are needed for both SigmaVAR and Gamma."))
         stop()
       }
     }else{
       if(length(Col) != nrLines){
-        print(paste("The argument Col should contain ", nrLines, " elements, that is, q*(q+1)/2 or the number of 1s in WhichElements (or WhichElements is incorrectly specified)."))
+        print(paste0("The argument Col should contain ", nrLines, " elements, that is, q*(q+1)/2 or the number of 1s in WhichElements (or WhichElements is incorrectly specified); not ", length(Col)))
         stop()
       }
     }
     if(any(Col %% 1 != 0)){
-      print(paste("The argument Col should consist of solely integers."))
+      print(paste0("The argument Col should consist of solely integers."))
       stop()
     }
   }
   if(!is.null(Lty)){
     if(AddGamma == 1){
       if(length(Lty) != 2*nrLines){
-        print(paste("The argument Lty should contain ", 2*nrLines, " elements, that is, q*(q+1) or twice the number of 1s in WhichElements (or WhichElements is incorrectly specified)."))
+        print(paste0("The argument Lty should contain ", 2*nrLines, " elements, that is, q*(q+1) or twice the number of 1s in WhichElements (or WhichElements is incorrectly specified); not ", length(Lty), ". Note that values (integers) are needed for both SigmaVAR and Gamma."))
         stop()
       }
     }else{
       if(length(Lty) != nrLines){
-        print(paste("The argument Lty should contain ", nrLines, " elements, that is, q*(q+1)/2 or the number of 1s in WhichElements (or WhichElements is incorrectly specified)."))
+        print(paste0("The argument Lty should contain ", nrLines, " elements, that is, q*(q+1)/2 or the number of 1s in WhichElements (or WhichElements is incorrectly specified); not ", length(Lty)))
         stop()
       }
     }
     if(any(Lty %% 1 != 0)){
-      print(paste("The argument Lty should consist of solely integers."))
+      print(paste0("The argument Lty should consist of solely integers."))
       stop()
     }
   }
   if(!is.null(Title)){
     if(length(Title) != 1 & !is.list(Title)){
-      print(paste("The argument Title should be a character or a list (containing at max 3 items)."))
+      print(paste0("The argument Title should be a character or a list (containing at max 3 items)."))
       stop()
     }
     if(length(Title) > 3){
-      print(paste("The argument (list) Title should at max contain 3 items. Currently, it consists of ", length(Title), " items."))
+      print(paste0("The argument (list) Title should at max contain 3 items. Currently, it consists of ", length(Title), " items."))
       stop()
     }
     # Option: Also check whether each element in list either a "call" or a 'character' is...
@@ -363,7 +310,7 @@ SigmaVARPlot <- function(DeltaT = 1, Phi = NULL, SigmaVAR = NULL, Drift = NULL, 
   if(is.null(Labels)){
     subscripts = NULL
     for(i in 1:q){
-      subscripts = c(subscripts, paste(i, 1:q, sep=""))
+      subscripts = c(subscripts, paste0(i, 1:q, sep=""))
     }
     legendT = NULL
     for(i in 1:length(subscripts)){
@@ -400,7 +347,7 @@ SigmaVARPlot <- function(DeltaT = 1, Phi = NULL, SigmaVAR = NULL, Drift = NULL, 
   }
 
   if(is.null(Title)){
-    Title <- as.list(expression(paste(Sigma[VAR](Delta[t]), " plot:"), "How do the VAR(1) (co)variance parameters vary", "as a function of the time-interval"))
+    Title <- as.list(expression(paste0(Sigma[VAR](Delta[t]), " plot:"), "How do the VAR(1) (co)variance parameters vary", "as a function of the time-interval"))
   }else{
     if(length(Title) == 1){
       if(is.list(Title)){Title <- Title[[1]]}
@@ -464,8 +411,8 @@ SigmaVARPlot <- function(DeltaT = 1, Phi = NULL, SigmaVAR = NULL, Drift = NULL, 
   teller <- 1
   YLIM=c(min(SigmaVARDeltaTs, Gamma), max(SigmaVARDeltaTs, Gamma))
   plot(y=rep(0, length(DeltaTs)), x=DeltaTs, type="l", ylim=YLIM,
-       ylab = expression(paste(Sigma[VAR](Delta[t]), " values")),
-       xlab = expression(paste("Time-interval (", Delta[t], ")", sep="")),
+       ylab = expression(paste0(Sigma[VAR](Delta[t]), " values")),
+       xlab = expression(paste0("Time-interval (", Delta[t], ")", sep="")),
        col=1000, lwd=2, lty=1,
        main=mtext(do.call(expression, Title), side=3, line = c(2,1,0), cex = 1 )
        #"Effect lag curve: \n How do the VAR(1) parameters Phi vary \n as a function of the time-interval"

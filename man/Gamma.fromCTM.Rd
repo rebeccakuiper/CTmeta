@@ -19,6 +19,9 @@ This function returns the stationary covariance matrix, that is, the contemporan
 Calculates the stationary covariance matrix (Gamma) from the continuous-time (un)standardized lagged effects matrix (Drift) and residual covariance matrix (Sigma). There is also an interactive web application on my website: Standardizing and/or transforming lagged regression estimates (\url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}).
 }
 \examples{
+
+# library(CTmeta)
+
 ## Example 1 ##
 #
 Phi <- myPhi[1:2,1:2]
@@ -28,6 +31,7 @@ library(expm)
 DeltaT <- 1
 Drift <- logm(Phi)/DeltaT
 #
+q <- dim(Phi)[1]
 Sigma <- diag(q) # for ease
 #
 Gamma.fromCTM(Drift, Sigma)

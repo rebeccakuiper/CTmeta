@@ -24,6 +24,9 @@ The output renders the discrete-times equivalent matrices of the continuous-time
 The discrete-time lagged-effects model matrices correspoding to the continuous-time ones. The interactive web application 'Phi-and-Psi-Plots and Find DeltaT' also contains this functionality, you can find it on my website: \url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}.
 }
 \examples{
+
+# library(CTmeta)
+
 ## Example 1 ##
 
 ##################################################################################################
@@ -35,7 +38,8 @@ library(expm)
 DeltaT <- 1
 Drift <- logm(Phi)/DeltaT
 #
-Sigma <- diag(2) # for ease
+q <- dim(Phi)[1]
+Sigma <- diag(q) # for ease
 #
 Gamma <- Gamma.fromCTM(Drift, Sigma)
 ##################################################################################################

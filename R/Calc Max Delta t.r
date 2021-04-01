@@ -13,7 +13,10 @@
 #' @importFrom nleqslv nleqslv
 #' @export
 #' @examples
-#'## Example 1 ##
+#'
+#' # library(CTmeta)
+#'
+#' ## Example 1 ##
 #'
 #' ##################################################################################################
 #' # Input needed in examples below with q=2 variables.
@@ -58,35 +61,16 @@ MaxDeltaT <- function(DeltaT = 1, Phi = NULL, Drift = NULL) {
 
   # Checks:
   if(length(DeltaT) != 1){
-    print(paste("The argument DeltaT should be a scalar, that is, one number, that is, a vector with one element."))
+    print(paste0("The argument DeltaT should be a scalar, that is, one number, that is, a vector with one element. Currently, DeltaT = ", DeltaT))
     stop()
   }
   #
   # Check on Phi
   if(any(class(Phi) == "varest")){
-    SigmaVAR <- cov(resid(Phi))
     Phi <- Acoef(Phi)[[1]]
-    if(length(Phi) == 1){
-      q <- 1
-    }else{
-      q <- dim(Phi)[1]
-    }
+    B <- -logm(Phi)/DeltaT # Phi = expm(Drift * DeltaT)
   } else if(any(class(Phi) == "ctsemFit")){
     B <- -1 * summary(Phi)$DRIFT
-    Sigma <- summary(Phi)$DIFFUSION
-    #Phi <- summary(Phi)$discreteDRIFT # Is no longer output in ctsem...
-    Phi <- expm(-B*DeltaT)
-    #source("Calc VARparam from CTMparam.r") # werkt zo niet, moet er dan ws ook net als andere files package fie van maken
-    #VarEst <- VARparam(DeltaT, B, Sigma)
-    #Phi <- VarEst$Phi
-    if(length(Phi) == 1){
-      q <- 1
-    }else{
-      q <- dim(Phi)[1]
-    }
-    #SigmaVAR <- VarEst$SigmaVAR
-    kronsum <- kronecker(diag(q),B) + kronecker(B,diag(q))
-    SigmaVAR <- matrix((solve(kronsum) %*% (diag(q*q) - expm(-kronsum * DeltaT)) %*% as.vector(Sigma)), ncol=q, nrow=q)
   } else{
 
     # Drift = A = -B
@@ -101,34 +85,33 @@ MaxDeltaT <- function(DeltaT = 1, Phi = NULL, Drift = NULL) {
       }
     }else{ # !is.null(Drift)
       B <- -Drift
+    }
+    # Check on B
+    if(length(B) > 1){
+      Check_B_or_Phi(B)
       if(all(eigen(B)$val < 0)){
         #("All the eigenvalues of the drift matrix B are negative; therefore. I assume the input was A=-B instead of B. I will use -A=B in the calculation.")
         #("Note that Phi(DeltaT) = expm(-B*DeltaT).")
-        ("All the eigenvalues of the drift matrix Drift are positive. Therefore. I assume the input was B=-A instead of A. I will use -B=A in the calculation.")
+        ("All the eigenvalues of the drift matrix Drift are positive. Therefore. I assume the input for Drift was B = -A instead of A. I will use Drift = -B = A.")
+        ("Note that Phi(DeltaT) = expm(-B*DeltaT) = expm(A*DeltaT) = expm(Drift*DeltaT).")
         B = -B
       }
+      if(any(eigen(B)$val <= 0)){
+        #("The function stopped, since some of the eigenvalues of the drift matrix B are negative or zero.")
+        ("The function stopped, since some of the eigenvalues of the drift matrix Drift are positive or zero.")
+        stop()
+      }
     }
-    # Check on B
-    if(any(eigen(B)$val <= 0)){
-      #("The function stopped, since some of the eigenvalues of the drift matrix B are negative or zero.")
-      ("The function stopped, since some of the eigenvalues of the drift matrix Drift are positive or zero.")
-      stop()
-    }
-    if(dim(B)[1] != dim(B)[2]){
-      print(paste("The matrix (Drift or Phi) should be a square (q times q) matrix."))
-      stop()
-    }
-
   }
-
-
-  message = "There is a DeltaT such that the Phi(DeltaT) functions reach a minimum or maximum."
-
+  #
   if(length(B) == 1){
     q <- 1
   }else{
     q <- dim(B)[1]
   }
+
+
+  message = "There is a DeltaT such that the Phi(DeltaT) functions reach a minimum or maximum."
 
 
   SolveForMaxDelta_ij_fie <- function(q, B, i, j) {
@@ -146,35 +129,36 @@ MaxDeltaT <- function(DeltaT = 1, Phi = NULL, Drift = NULL) {
   for(i in 1:q){
     for(j in 1:q){
       #
-  SolveForMaxDelta_ij <- SolveForMaxDelta_ij_fie(q, B, i, j)
-  #
-  #
-  xstart_ij <- 1
-  fstart_ij <- SolveForMaxDelta_ij(xstart_ij)
-  # Check
-  if(all(is.nan(fstart_ij) == FALSE) == FALSE){
-    ("There is no DeltaT such that the Phi(DeltaT) functions reach a minimum or maximum!")
-    message = "There is no DeltaT such that the Phi(DeltaT) functions reach a minimum or maximum."
-  }
-  #
-  #
-  #
-  sol_ij <- nleqslv(xstart_ij, SolveForMaxDelta_ij, control=list(btol=.0000001, allowSingular = TRUE)) #, method="Newton")
-  MaxDeltaT_ij <- sol_ij$x
-  #MaxDeltaT_ij
-  # Function terminated if sol$termcd does not equal 1 (and 1 is "Function criterion is near zero. Convergence of function values has been achieved.")
-  sol_ij$message
-  sol_ij$fvec
-  if(sol_ij$termcd != 1){
-    ("The nleqslv-function terminated.")
-    ("Hence, there is no DeltaT such that the Phi(DeltaT) functions reach a minimum or maximum.")
-    message = "There is no DeltaT such that the Phi(DeltaT) functions reach a minimum or maximum."
-    #stop()
-  }
-  #
-  #
-  MaxDeltaT_mx[i,j] <- MaxDeltaT_ij
-  }} #end loop i and j
+      SolveForMaxDelta_ij <- SolveForMaxDelta_ij_fie(q, B, i, j)
+      #
+      #
+      xstart_ij <- 1
+      fstart_ij <- SolveForMaxDelta_ij(xstart_ij)
+      # Check
+      if(all(is.nan(fstart_ij) == FALSE) == FALSE){
+        ("There is no DeltaT such that the Phi(DeltaT) functions reach a minimum or maximum!")
+        message = "There is no DeltaT such that the Phi(DeltaT) functions reach a minimum or maximum."
+      }
+      #
+      #
+      #
+      sol_ij <- nleqslv(xstart_ij, SolveForMaxDelta_ij, control=list(btol=.0000001, allowSingular = TRUE)) #, method="Newton")
+      MaxDeltaT_ij <- sol_ij$x
+      #MaxDeltaT_ij
+      # Function terminated if sol$termcd does not equal 1 (and 1 is "Function criterion is near zero. Convergence of function values has been achieved.")
+      sol_ij$message
+      sol_ij$fvec
+      if(sol_ij$termcd != 1){
+        ("The nleqslv-function terminated.")
+        ("Hence, there is no DeltaT such that the Phi(DeltaT) functions reach a minimum or maximum.")
+        message = "There is no DeltaT such that the Phi(DeltaT) functions reach a minimum or maximum."
+        #stop()
+      }
+      #
+      #
+      MaxDeltaT_mx[i,j] <- MaxDeltaT_ij
+    } #end loop j
+  } #end loop i
 
   ## For a single i and j
   #MaxDeltaT_ij

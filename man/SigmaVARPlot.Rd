@@ -57,7 +57,7 @@ Note that SigmaVAR converges to Gamma, so the time-interval dependent curves of 
 
 \item{Lty}{Optional. Vector with line type values (integers) of the lines to be plotted. The length of this vector equals the number of 1s in WhichElements (or equals q*(q+1)/2). By default, Lty = NULL, which renders solid lines for the variances and the same type of dashed line for the covariances. See \url{https://www.statmethods.net/advgraphs/parameters.html} for more information about the values.}
 
-\item{Title}{Optional. A character or a list consisting of maximum 3 characters or 'call' class objects, like from the paste() function, that together represent the title of the Phi-plot. By default, Title = NULL, then the following code will be used for the title: as.list(expression(paste(Sigma[VAR](Delta[t]), " plot:"), "How do the VAR(1) (co)variance parameters vary", "as a function of the time-interval")).}
+\item{Title}{Optional. A character or a list consisting of maximum 3 characters or 'call' class objects, like from the paste0() function, that together represent the title of the Phi-plot. By default, Title = NULL, then the following code will be used for the title: as.list(expression(paste0(Sigma[VAR](Delta[t]), " plot:"), "How do the VAR(1) (co)variance parameters vary", "as a function of the time-interval")).}
 }
 \value{
 This function returns a Psi/SigmaVAR-plot for a range of time intervals.
@@ -66,6 +66,9 @@ This function returns a Psi/SigmaVAR-plot for a range of time intervals.
 This function makes a plot of Psi(DeltaT) / SigmaVAR(DeltaT), the residual covariance matrix of the discrete-time model, for a range of time intervals based on its underlying drift matrix. There is also an interactive web application on my website to create a Phi-plot: Phi-and-Psi-Plots and Find DeltaT (\url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}).
 }
 \examples{
+
+# library(CTmeta)
+
 ### Make Psi-plot/SigmaVAR-plot ###
 
 ## Example 1 ##
@@ -73,13 +76,15 @@ This function makes a plot of Psi(DeltaT) / SigmaVAR(DeltaT), the residual covar
 # Phi(DeltaT)
 DeltaT <- 1
 Phi <- myPhi[1:2,1:2]
-SigmaVAR <- diag(2) # for ease
+q <- dim(Phi)[1]
+SigmaVAR <- diag(q) # for ease
 #
 # Determine the continuous-time equivalent, that is, the drift matrix
 if (!require("expm")) install.packages("expm") # Use expm package for function logm()
 library(expm)
 Drift <- logm(Phi)/DeltaT
-Sigma <- diag(2) # for ease. Note that this is not the CT-equivalent of SigmaVAR.
+q <- dim(Drift)[1]
+Sigma <- diag(q) # for ease. Note that this is not the CT-equivalent of SigmaVAR.
 
 # Example 1.1: unstandardized Phi&SigmaVAR #
 #

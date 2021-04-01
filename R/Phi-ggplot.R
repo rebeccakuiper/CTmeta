@@ -6,26 +6,31 @@
 #' @param Phi Matrix of size q times q of (un)standardized lagged effects. Note that the Phi (or Drift) matrix should be standardized to make a fair comparison between cross-lagged effects.
 #' It also takes a fitted object from the classes "varest" (from the VAR() function in vars package) and "ctsemFit" (from the ctFit() function in the ctsem package); see example below. From such an object, the (standardized) Phi/Drift matrix is calculated/extracted.
 #' @param Drift Optional (either Phi or Drift). Underling continuous-time lagged effects matrix (i.e., Drift matrix) of the discrete-time lagged effects matrix Phi(DeltaT). By default, input for Phi is used; only when Phi = NULL, Drift will be used.
-#' @param Stand Optional. Indicator for whether Phi (or Drift) should be standardized (1) or not (0). In case Stand = 1, one of the following matrices should be input as well: SigmaVAR, Sigma, or Gamma (or it is substracted from a varest or ctsemFit object). By default, Stand = 0.
+#' @param Stand Optional. Indicator for whether Phi (or Drift) should be standardized (1) or not (0). In case Stand = 1, one of the following matrices should be input as well: SigmaVAR, Sigma, or Gamma (or it is subtracted from a varest or ctsemFit object). By default, Stand = 0.
 #' @param SigmaVAR Optional (if Stand = 1, then either SigmaVAR, Sigma, or Gamma needed). Residual covariance matrix of the first-order discrete-time vector autoregressive (DT-VAR(1)) model.
 #' @param Sigma Optional (if Stand = 1, then either SigmaVAR, Sigma, or Gamma needed). Residual covariance matrix of the first-order continuous-time (CT-VAR(1)) model, that is, the diffusion matrix.
 #' @param Gamma Optional (either SigmaVAR, Sigma or Gamma). Stationary covariance matrix, that is, the contemporaneous covariance matrix of the data.
 #' @param Min Optional. Minimum time interval used in the Phi-plot. By default, Min = 0.
 #' @param Max Optional. Maximum time interval used in the Phi-plot. By default, Max = 10.
-#' @param Step Optional. The step-size taken in the time intervals. By default, Step = 0.05. Hence, using the defaults, the Phi-plots is based on the values of Phi(DeltaT) for DeltaT = 0, 0.05, 0.10, ..., 10. Note: Especially in case of complex eigenvalues, this step size should be very small (then, the oscillating behaviour can be seen best).
+#' @param Step Optional. The step-size taken in the time intervals. By default, Step = 0.05. Hence, using the defaults, the Phi-plots is based on the values of Phi(DeltaT) for DeltaT = 0, 0.05, 0.10, ..., 10. Note: Especially in case of complex eigenvalues, this step size should be very small (then, the oscillating behavior can be seen best).
 #' @param WhichElements Optional. Matrix of same size as Drift denoting which element/line should be plotted (1) or not (0). By default, WhichElements = NULL. Note that even though not all lines have to be plotted, the full Drift matrix is needed to determine the selected lines.
 #' @param Labels Optional. Vector with (character) labels of the lines to be plotted. The length of this vector equals the number of 1s in WhichElements (or equals q*q). By default, Labels = NULL, which renders labels with Greek letter of Phi (as a function of the time-interval) together with the indices (of outcome and predictor variables).
 #' @param Col Optional. Vector with color values (integers) of the lines to be plotted. The length of this vector equals the number of 1s in WhichElements (or equals q*q). By default, Col = NULL, which renders the same color for effects that belong to the same outcome variable (i.e. a row in the Drift matrix). See \url{https://www.statmethods.net/advgraphs/parameters.html} for more information about the values.
 #' @param Lty Optional. Vector with line type values (integers) of the lines to be plotted. The length of this vector equals the number of 1s in WhichElements (or equals q*q). By default, Lty = NULL, which renders solid lines for the autoregressive effects and the same type of dashed line for reciprocal effects (i.e., same type for Phi_ij as for Phi_ji). See \url{https://www.statmethods.net/advgraphs/parameters.html} for more information about the values.
-#' @param Title Optional. A character or a list consisting of maximum 3 characters or 'call' class objects, like from the paste() function, that together represent the title of the Phi-plot. By default, Title = NULL, then the following code will be used for the title: as.list(expression(paste(Phi(Delta[t]), " plot:"), "How do the lagged parameters vary", "as a function of the time-interval"))).
+#' @param Title Optional. A character or a list consisting of maximum 2 character-strings or 'expression' class objects that together represent the title of the Phi-plot. By default, Title = NULL, then the following code will be used for the title: as.list(expression(Phi(Delta[t])~plot), "How do the lagged parameters vary as a function of the time-interval")).
 #'
 #' @return This function returns a Phi-plot for a range of time intervals.
 #' @importFrom expm expm
+#' @importFrom expm logm
 #' @importFrom purrr map
 #' @importFrom ggplot2 ggplot
+#' @importFrom ggpubr ggarrange
 #' @import dplyr
 #' @export
 #' @examples
+#'
+#' # library(CTmeta)
+#'
 #' ### Make Phi-plot ###
 #'
 #' ## Example 1 ##
@@ -48,7 +53,8 @@
 #'
 #'
 #' # Example 1.2: standardized Phi #
-#' SigmaVAR <- diag(2) # for ease
+#' q <- dim(Phi)[1]
+#' SigmaVAR <- diag(q) # for ease
 #' ggPhiPlot(DeltaT, Phi, Stand = 1, SigmaVAR = SigmaVAR)
 #'
 #'
@@ -86,9 +92,9 @@
 
 
 ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = NULL, Sigma = NULL, Gamma = NULL, Min = 0, Max = 10, Step = 0.05, WhichElements = NULL, Labels = NULL, Col = NULL, Lty = NULL, Title = NULL) {
-#Min = 0; Max = 10; Step = 0.05; WhichElements = NULL; Labels = NULL; Col = NULL; Lty = NULL; Title = NULL
-# library(expm); library(purrr); library(ggplot2); library(dplyr)
-# library(tidyverse)
+# DeltaT = 1; Drift = NULL; Stand = 0; SigmaVAR = NULL; Sigma = NULL; Gamma = NULL; Min = 0; Max = 10; Step = 0.05; WhichElements = NULL; Labels = NULL; Col = NULL; Lty = NULL; Title = NULL
+# library(expm); library(purrr); library(ggplot2); library(dplyr); library(ggpubr) # library(tidyverse)
+# library(CTmeta); Phi <- myPhi[1:2,1:2]
 
   # Note needed:
   #@import tidyverse
@@ -104,23 +110,23 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
 
   # Checks:
   if(length(DeltaT) != 1){
-    print(paste("The argument DeltaT should be a scalar, that is, one number, that is, a vector with one element."))
+    print(paste0("The argument DeltaT should be a scalar, that is, one number, that is, a vector with one element. Currently, DeltaT = ", DeltaT))
     stop()
   }
   if(Stand != 0 & Stand != 1){
-    print(paste("The argument Stand should be a 0 or a 1."))
+    print(paste0("The argument Stand should be a 0 or a 1, not ", Stand))
     stop()
   }
   if(length(Min) != 1){
-    print(paste("The argument Min should be a scalar, that is, one number, that is, a vector with one element."))
+    print(paste0("The argument Min should be a scalar, that is, one number, that is, a vector with one element. Currently, Min = ", Min))
     stop()
   }
   if(length(Max) != 1){
-    print(paste("The argument Max should be a scalar, that is, one number, that is, a vector with one element."))
+    print(paste0("The argument Max should be a scalar, that is, one number, that is, a vector with one element. Currently, Max = ", Max))
     stop()
   }
   if(length(Step) != 1){
-    print(paste("The argument Step should be a scalar, that is, one number, that is, a vector with one element."))
+    print(paste0("The argument Step should be a scalar, that is, one number, that is, a vector with one element. Currently, Step = ", Step))
     stop()
   }
   #
@@ -128,118 +134,91 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
   if(any(class(Phi) == "varest")){
     Phi_VARest <- Acoef(Phi)[[1]]
     Drift <- logm(Phi_VARest)/DeltaT # Phi = expm(Drift * DeltaT)
-    if(length(Drift) == 1){
-      q <- 1
-    }else{
-      q <- dim(Drift)[1]
-    }
   } else if(any(class(Phi) == "ctsemFit")){
     Drift <- summary(Phi)$DRIFT
-    if(length(Drift) == 1){
-      q <- 1
-    }else{
-      q <- dim(Drift)[1]
-    }
   } else{
 
     if(is.null(Drift)){
       if(!is.null(Phi)){
-        Drift <- logm(Phi)/DeltaT
+        if(length(Phi) == 1){
+          Drift <- log(Phi)/DeltaT
+        }else{
+          Drift <- logm(Phi)/DeltaT
+        }
       }else{ # is.null(Phi)
         ("Either the drift matrix Drift or the autoregressive matrix Phi should be input to the function.")
-        ("Note that Phi(DeltaT)  = expm(Drift*DeltaT).")
+        #("Note that Phi(DeltaT) = expm(Drift*DeltaT).")
         stop()
       }
-    }else{ # !is.null(Drift)
+    }
+    #
+    # Check on B
+    if(length(Drift) > 1){
+      Check_B_or_Phi(B=-Drift)
       if(all(eigen(Drift)$val > 0)){
-        ("All the eigenvalues of the drift matrix Drift are positive; therefore. I assume the input was B=-A instead of A. I will use -Drift in the calculation.")
+        #("All the eigenvalues of the drift matrix B are negative; therefore. I assume the input was A=-B instead of B. I will use -A=B in the calculation.")
+        #("Note that Phi(DeltaT) = expm(-B*DeltaT).")
+        ("All the eigenvalues of the drift matrix Drift are positive. Therefore. I assume the input for Drift was B = -A instead of A. I will use Drift = -B = A.")
         ("Note that Phi(DeltaT) = expm(-B*DeltaT) = expm(A*DeltaT) = expm(Drift*DeltaT).")
         Drift = -Drift
       }
-    }
-
-    if(length(Drift) == 1){
-      q <- 1
-    }else{
-      #
-      if(is.null(dim(Drift))){
-        if(!is.null(length(Drift))){
-          print(paste("The argument Drift (or Phi) is not a matrix of size q times q."))
-          stop()
-        }else{
-          print(paste("The argument Drift (or Phi) is not found: The lagged effects matrix Drift is unknown, but should be part of the input."))
-          stop()
-        }
-      }else{
-        if(dim(Drift)[1] != dim(Drift)[2] | length(dim(Drift)) != 2){
-          print(paste("The argument Drift (or Phi) is not a matrix of size q times q."))
-          stop()
-        }
-        q <- dim(Drift)[1]
+      if(any(eigen(Drift)$val >= 0)){
+        #("The function stopped, since some of the eigenvalues of the drift matrix B are negative or zero.")
+        ("The function stopped, since some of the eigenvalues of the drift matrix Drift are positive or zero.")
+        stop()
       }
     }
+  }
+  #
+  if(length(Drift) == 1){
+    q <- 1
+  }else{
+    q <- dim(Drift)[1]
   }
   #
   #
   if(Stand == 1){
     # Check on SigmaVAR, Sigma, and Gamma
     if(any(class(Phi) == "varest")){
-      SigmaVAR_VARest <- cov(resid(Phi))
-      Gamma <- Gamma.fromVAR(Phi_VARest, SigmaVAR_VARest)
-    } else if(any(class(Phi) == "ctsemFit")){
-      Sigma_ctsem <- summary(Phi)$DIFFUSION
-      Gamma <- Gamma.fromCTM(Drift, Sigma_ctsem)
-    } else if(is.null(SigmaVAR) & is.null(Gamma) & is.null(Sigma)){ # All three unknown
-      print(paste("The arguments SigmaVAR, Sigma, or Gamma are not found: one should be part of the input (when Stand = 1). Notably, in case of the first matrix, specify 'SigmaVAR = SigmaVAR'."))
+      SigmaVAR <- cov(resid(Phi))
+      Gamma <- Gamma.fromVAR(Phi_VARest, SigmaVAR)
+    }else if(any(class(Phi) == "ctsemFit")){
+      Sigma <- summary(Phi)$DIFFUSION
+      Gamma <- Gamma.fromCTM(Drift, Sigma)
+    }else if(is.null(SigmaVAR) & is.null(Gamma) & is.null(Sigma)){ # All three unknown
+      print(paste0("The arguments SigmaVAR, Sigma, or Gamma are not found: one should be part of the input (when Stand = 1). Notably, in case of the first matrix, specify 'SigmaVAR = SigmaVAR'."))
       stop()
     }else if(is.null(Gamma)){ # Gamma unknown, calculate Gamma from Phi & SigmaVAR or Drift & Sigma
 
       if(!is.null(SigmaVAR)){ # SigmaVAR known, calculate Gamma from Phi & SigmaVAR
 
-        # Checks on SigmaVAR
-        if(length(SigmaVAR) != 1){
-          if(dim(SigmaVAR)[1] != dim(SigmaVAR)[2]){
-            print(paste("The residual covariance matrix SigmaVAR should be a square matrix of size q times q, with q = ", q, "."))
-            stop()
-          }
-          if(dim(SigmaVAR)[1] != q){
-            print(paste("The residual covariance matrix SigmaVAR should, like Phi (or Drift), be a matrix of size q times q, with q = ", q, "."))
-            stop()
-          }
-          if(length(dim(SigmaVAR)) > 2){
-            print(paste("The residual covariance matrix SigmaVAR should be an q times q matrix, with q = ", q, "."))
-            stop()
-          }
-        }else if(q != 1){
-          print(paste("The residual covariance matrix SigmaVAR should, like Phi (or Drift), be a scalar."))
-          stop()
-        }
+        # Check on SigmaVAR
+        Check_SigmaVAR(SigmaVAR, q)
 
         # Calculate Gamma
-        Gamma <- Gamma.fromVAR(Phi, SigmaVAR)
+        if(is.null(Phi_VARest)){
+          if(q == 1){
+            Phi_VARest <- exp(-B*DeltaT)
+          }else{
+            Phi_VARest <- expm(-B*DeltaT)
+          }
+        }
+        Gamma <- Gamma.fromVAR(Phi_VARest, SigmaVAR)
+
 
       }else if(!is.null(Sigma)){ # Sigma known, calculate Gamma from Drift & Sigma
 
-        # Checks on Sigma
-        if(length(Sigma) != 1){
-          if(dim(Sigma)[1] != dim(Sigma)[2]){
-            print(paste("The residual covariance matrix Sigma should be a square matrix of size q times q, with q = ", q, "."))
-            stop()
-          }
-          if(dim(Sigma)[1] != q){
-            print(paste("The residual covariance matrix Sigma should, like Phi (or Drift), be a matrix of size q times q, with q = ", q, "."))
-            stop()
-          }
-          if(length(dim(Sigma)) > 2){
-            print(paste("The residual covariance matrix Sigma should be an q times q matrix, with q = ", q, "."))
-            stop()
-          }
-        }else if(q != 1){
-          print(paste("The residual covariance matrix Sigma should, like Phi (or Drift), be a scalar."))
-          stop()
-        }
+        # Check on Sigma
+        Check_Sigma(Sigma, q)
 
         # Calculate Gamma
+        if(is.null(Drift)){
+          if(q == 1){
+            Drift <- log(Phi)/DeltaT
+          }else{
+            Drift <- logm(Phi)/DeltaT # Phi = expm(Drift * DeltaT)
+          }
+        }
         Gamma <- Gamma.fromCTM(Drift, Sigma)
 
       }
@@ -247,23 +226,7 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
     }else if(!is.null(Gamma)){ # Gamma known, only check on Gamma needed
 
       # Checks on Gamma
-      if(length(Gamma) != 1){
-        if(dim(Gamma)[1] != dim(Gamma)[2]){
-          print(paste("The stationary covariance matrix Gamma should be a square matrix of size q times q, with q = ", q, "."))
-          stop()
-        }
-        if(dim(Gamma)[1] != q){
-          print(paste("The stationary covariance matrix Gamma should, like Phi (or Drift), be a matrix of size q times q, with q = ", q, "."))
-          stop()
-        }
-        if(length(dim(Gamma)) > 2){
-          print(paste("The stationary covariance matrix Gamma should be an q times q matrix, with q = ", q, "."))
-          stop()
-        }
-      }else if(q != 1){
-        print(paste("The stationary covariance matrix Gamma should, like Phi (or Drift), be a scalar."))
-        stop()
-      }
+      Check_Gamma(Gamma, q)
 
     }
 
@@ -276,64 +239,51 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
   #
   #
   if(!is.null(WhichElements)){
-    if(length(WhichElements) == 1){
-      if(q != 1){
-        print(paste("The argument WhichElements is one element and not a matrix of size q times q, with q = ", q, "."))
-        stop()
-      }
-    } else if(dim(WhichElements)[1] != dim(WhichElements)[2] | length(dim(WhichElements)) != 2){
-      print(paste("The argument WhichElements is not a (square) matrix. It should be a matrix of size q times q, with q = ", q, "."))
-      stop()
-    } else if(dim(WhichElements)[1] != q){
-      print(paste("The argument WhichElements is not a matrix of size q times q, with q = ", q, "."))
-      stop()
-    }
-    if(any(WhichElements != 0 & WhichElements != 1)){
-      print(paste("The argument WhichElements should consist of solely 1s and 0s."))
-      stop()
-    }
+    # Check on WhichElements
+    Check_WhichElts(WhichElements, q)
     nrLines <- sum(WhichElements)
   } else{
     WhichElements <- matrix(1, ncol = q, nrow = q)
     nrLines <- q*q #<- sum(WhichElements)
   }
+  #
   if(!is.null(Labels)){
     if(length(Labels) != nrLines){
-      print(paste("The argument Labels should contain ", nrLines, " elements, that is, q*q or the number of 1s in WhichElements (or WhichElements is incorrectly specified)."))
+      print(paste0("The argument Labels should contain ", nrLines, " elements, that is, q*q or the number of 1s in WhichElements (or WhichElements is incorrectly specified); not ", length(Labels)))
       stop()
     }
     #if(any(!is.character(Labels))){ # Note: This does not suffice, since it could also be an expression
-    #  print(paste("The argument Labels should consist of solely characters."))
+    #  print(paste0("The argument Labels should consist of solely characters."))
     #  stop()
     #}
   }
   if(!is.null(Col)){
     if(length(Col) != nrLines){
-      print(paste("The argument Col should contain ", nrLines, " elements, that is, q*q or the number of 1s in WhichElements (or WhichElements is incorrectly specified)."))
+      print(paste0("The argument Col should contain ", nrLines, " elements, that is, q*q or the number of 1s in WhichElements (or WhichElements is incorrectly specified); not ", length(Col)))
       stop()
     }
     if(any(Col %% 1 != 0)){
-      print(paste("The argument Col should consist of solely integers."))
+      print(paste0("The argument Col should consist of solely integers."))
       stop()
     }
   }
   if(!is.null(Lty)){
     if(length(Lty) != nrLines){
-      print(paste("The argument Lty should contain ", nrLines, " elements, that is, q*q or the number of 1s in WhichElements (or WhichElements is incorrectly specified)."))
+      print(paste0("The argument Lty should contain ", nrLines, " elements, that is, q*q or the number of 1s in WhichElements (or WhichElements is incorrectly specified); not ", length(Lty)))
       stop()
     }
     if(any(Lty %% 1 != 0)){
-      print(paste("The argument Lty should consist of solely integers."))
+      print(paste0("The argument Lty should consist of solely integers."))
       stop()
     }
   }
   if(!is.null(Title)){
     if(length(Title) != 1 & !is.list(Title)){
-      print(paste("The argument Title should be a character or a list (containing at max 3 items)."))
+      print(paste0("The argument Title should be a character or a list (containing at max 2 items)."))
       stop()
     }
-    if(length(Title) > 3){
-      print(paste("The argument (list) Title should at max contain 3 items. Currently, it consists of ", length(Title), " items."))
+    if(length(Title) > 2){
+      print(paste0("The list Title should at max contain 2 items. Currently, it consists of ", length(Title), " items."))
       stop()
     }
     # Option: Also check whether each element in list either a "call" or a 'character' is...
@@ -346,7 +296,7 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
   if(is.null(Labels)){
     subscripts = NULL
     for(i in 1:q){
-      subscripts = c(subscripts, paste(i, 1:q, sep=""))
+      subscripts = c(subscripts, paste0(i, 1:q, sep=""))
     }
     legendT = NULL
     for(i in 1:(q*q)){
@@ -374,82 +324,36 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
   }
 
   if(is.null(Title)){
-    gg_title <- as.list(expression(paste(Phi(Delta[t]), " plot:"), "How do the lagged parameters vary as a function of the time-interval"))
-  }else{
-    gg_title <- Title
-    #if(length(Title) == 1){
-    #  if(is.list(Title)){gg_title <- Title[[1]]}
-    #  else {gg_title <- list(Title, " ")}
-    #}
-    #if(length(Title) == 2){
-    #  title1 <- Title[[1]]
-    #  title2 <- Title[[2]]
-    #  gg_title <- list(title1, title2)
-    #}
-    #if(length(Title) == 3){
-    #  title1 <- Title[[1]]
-    #  title2 <- Title[[2]]
-    #  title3 <- Title[[3]]
-    #  gg_title <- list(title1, title2, title3)
-    #}
-  }
-  if(is.null(Title)){
-    #Title <- as.list(expression(paste(Phi(Delta[t]), " plot:"), "How do the overall lagged parameters vary", "as a function of the time-interval"))
-    Title <- as.list(expression(paste(Phi(Delta[t]), " plot:"), "How do the lagged parameters vary", "as a function of the time-interval"))
+    Title_1 <- expression(Phi(Delta[t])~plot)
+    Title_2 <- "How do the lagged parameters vary as a function of the time-interval"
   }else{
     if(length(Title) == 1){
-      if(is.list(Title)){Title <- Title[[1]]}
-      Title <- list(" ", " ", Title)
-    }
-    if(length(Title) == 2){
-      title1 <- Title[[1]]
-      title2 <- Title[[2]]
-      Title <- list("", title1, title2)
+      if(is.list(Title)){
+        Title_1 <- Title[[1]]
+      }else{
+        Title_1 <- Title
+      }
+      Title_2 <- NULL
+    }else if(length(Title) == 2){
+      Title_1 <- Title[[1]]
+      Title_2 <- Title[[2]]
     }
   }
 
+###############################################################################################
+
+
+  while (!is.null(dev.list()))  dev.off()  # to reset the graphics pars to defaults
 
 
   if(any(is.complex(eigen(Drift)$val))){
-    while (!is.null(dev.list()))  dev.off()  # to reset the graphics pars to defaults
-    # Multiple solutions, then 2x2 plots
-    op <- par(mfrow=c(2,2))
     complex <- TRUE
-    nf <- layout(matrix(c(1,2,5,3,4,6),2,3,byrow = TRUE), c(3,3,1), c(2,2,1), TRUE)
-    #layout.show(nf)
   } else{
-    op <- par(mfrow=c(1,1))
     complex <- FALSE
-    #
-    while (!is.null(dev.list()))  dev.off()  # to reset the graphics pars to defaults
-    par(mar=c(par('mar')[1:3], 0)) # optional, removes extraneous right inner margin space
-    plot.new()
-    l <- legend(0, 0,
-                legend = legendT, #cex=CEX,
-                bty = "n",
-                lty=Lty, # gives the legend appropriate symbols (lines)
-                lwd=rep(2, q*q),
-                col=Col # gives the legend lines the correct color and width
-    )
-    # calculate right margin width in ndc
-    w <- 1.5 *( grconvertX(l$rect$w, to='ndc') - grconvertX(0, to='ndc') )
-    par(omd=c(0, 1-w, 0, 1))
-    #
   }
 
 
   DeltaTs<-seq(Min,Max,by=Step)
-
-  PhiDeltaTs<-array(data=NA,dim=c(q,q,length(DeltaTs)))
-  if(length(Drift) == 1){
-    for(i in 1:length(DeltaTs)){
-      PhiDeltaTs[,,i]<-exp(Drift*DeltaTs[i])
-    }
-  }else{
-    for(i in 1:length(DeltaTs)){
-      PhiDeltaTs[,,i]<-expm(Drift*DeltaTs[i])
-    }
-  }
 
   PhiDeltaTsDF <- map(DeltaTs, function(x) {
     if(length(Drift) == 1) {exp(Drift * x)}
@@ -464,65 +368,36 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
               LineType = rep(as.character(Lty), length(DeltaTs)),
               Labels = rep(as.character(legendT), length(DeltaTs)))
 
+  Xlab <- expression(Time-interval (Delta[t]))
+  Ylab <- expression(Phi(Delta[t])~values)
+  #
   phi_plot <- ggplot(PhiDeltaTsDF, aes(DeltaTs, Values, color = Labels, linetype = Labels)) +
     geom_line(lwd = 0.75) +
     geom_abline(intercept = 0, slope = 0, alpha = .5) +
     scale_linetype_manual(name = " ", values = Lty, labels = legendT) +
     scale_color_manual(name = " ", values = Col, labels = legendT) +
-    ylab(expression(paste(Phi(Delta[t]), " values"))) +
-    xlab(expression(paste("Time-interval (", Delta[t], ")", sep = ""))) +
-    labs(title = as.expression(gg_title[1]),
-         subtitle = as.expression(gg_title[-1])) +
+    ylab(Ylab) +
+    xlab(Xlab) +
+    labs(title = as.expression(Title_1),
+         subtitle = as.expression(Title_2)) +
     theme_classic() +
     theme(plot.title = element_text(margin = margin(t = 20))) +
-    ylim(0,1)
-
-  plot_list <- list(phi_plot + theme(legend.position = "none"))
-
-  #show(phi_plot)
-
-  #wd <- getwd()
-  #dev.copy(png, filename = paste0(wd, "/www/PhiPlot.png"))
-  teller <- 1
-  plot(y=rep(0, length(DeltaTs)), x=DeltaTs, type="l", ylim=c(min(PhiDeltaTs), max(PhiDeltaTs)),
-       #ylab = expression(paste("Overall ", Phi(Delta[t]), " values")),
-       ylab = expression(paste(Phi(Delta[t]), " values")),
-       xlab = expression(paste("Time-interval (", Delta[t], ")", sep="")),
-       col=1000, lwd=2, lty=1,
-       main=mtext(do.call(expression, Title), side=3, line = c(2,1,0), cex = 1 )
-       #"Effect lag curve: \n How do the VAR(1) parameters Phi vary \n as a function of the time-interval"
-  )
+    ylim(0,1) +
+    theme(
+      legend.key.width = unit(2, "lines"),
+      legend.spacing.x = unit(1.5, "lines"),
+      legend.text = element_text(size = 12)
+    ) #; phi_plot
 
 
-  teller <- 0
-  for(j in 1:q){
-    for(i in 1:q){
-      if(WhichElements[j,i] == 1){
-        teller <- teller + 1
-        lines(y=PhiDeltaTs[j,i,], x=DeltaTs, col=Col[teller], lwd=2, lty=Lty[teller])
-      }
-    }
-  }
-
-  if(complex == FALSE){
-    if(q<4){CEX = 1}else{CEX = (1.4-q/10)} # Check for optimal values!
-    #
-    #legend("topright",
-    legend(par('usr')[2], par('usr')[4], xpd=NA,
-           legend = legendT, cex=CEX,
-           bty = "n",
-           lty=Lty, # gives the legend appropriate symbols (lines)
-           lwd=rep(2, q*q),
-           col=Col # gives the legend lines the correct color and width
-    )
-  }
-
-  if(is.complex(eigen(Drift)$val)){
+  if(complex){
     # Multiple solutions and add 3 plots (2 for 2 different solutions and one scatter plot)
+    Title_2_N <- "using an 'aliasing' matrix (i.e., another solution for A)"
+    Title_1_N2 <- expression(Phi(Delta[t])~scatter~plot~'for'~multiples~of~Delta[t])
+    Title_2_N2 <- expression(Note~that~'for'~multiples~of~Delta[t]~Phi(Delta[t])~is~unique)
+
     EigenDrift <- eigen(Drift)
     V <- EigenDrift$vector
-    title_N <- as.list(expression(paste(Phi(Delta[t]), " plot"), "using an 'aliasing' matrix", "(i.e., another solution for A)"))
-    gg_title_N <- as.list(expression(paste(Phi(Delta[t]), " plot"), "\nusing an 'aliasing' matrix \n(i.e., another solution for A)"))
 
     PhiDeltaTsDF_L <- list(NULL)
 
@@ -545,11 +420,7 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
       #A_N
       #print(A_N)
       Drift_N <- Re(A_N)
-      PhiDeltaTs_N<-array(data=NA,dim=c(q,q,length(DeltaTs)))
-      for(i in 1:length(DeltaTs)){
-        PhiDeltaTs_N[,,i]<-expm(Drift_N*DeltaTs[i])
-      }
-
+      #
       PhiDeltaTsDF_N <- map(DeltaTs, function(x) {
         expm(Drift_N * x)
         }) %>%
@@ -564,33 +435,13 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
 
       PhiDeltaTsDF_L[[N]] <- PhiDeltaTsDF_N
       #
-      plot(y=rep(0, length(DeltaTs)), x=DeltaTs, type="l", ylim=c(min(PhiDeltaTs_N), max(PhiDeltaTs_N)),
-           ylab = expression(paste(Phi(Delta[t]), " values")), xlab = expression(paste("Time-interval (", Delta[t], ")", sep="")),
-           col=1000, lwd=2, lty=1,
-           main=mtext(do.call(expression, title_N), side=3, line = c(2,1,0), cex = 1 )
-           #"Effect lag curve: \n How do the VAR(1) parameters Phi vary \n as a function of the time-interval"
-      )
-      #
-      teller <- 0
-      for(j in 1:q){
-        for(i in 1:q){
-          if(WhichElements[j,i] == 1){
-            teller <- teller + 1
-            lines(y=PhiDeltaTs_N[j,i,], x=DeltaTs, col=Col[teller], lwd=2, lty=Lty[teller])
-          }
-        }
-      }
     }
     # In case last plot is scatter plot
     # In last plot a scatter plot, for multiples of DeltaT, from Min to Max.
     Min_ <- Min + Min%%DeltaT # last part is remainder after integer division
     Max_ <- Max - Max%%DeltaT # last part is remainder after integer division
     DeltaTs <- seq(Min_, Max_, by=DeltaT)
-    PhiDeltaTs_N<-array(data=NA,dim=c(q,q,length(DeltaTs)))
-    for(i in 1:length(DeltaTs)){
-      PhiDeltaTs_N[,,i]<-expm(Drift_N*DeltaTs[i])
-    }
-
+    #
     PhiDeltaTsDF_4 <- map(DeltaTs, function(x) {
       expm(Drift_N * x)
     }) %>%
@@ -602,103 +453,78 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
                 Color = rep(as.character(Col), length(DeltaTs)),
                 LineType = rep(as.character(Lty), length(DeltaTs)),
                 Labels = rep(as.character(legendT), length(DeltaTs)))
-    #
-    title_N <- as.list(
-      expression(paste(Phi(Delta[t]), " scatter plot for multiples of ", Delta ["t"]),
-                 paste("(Note: For multiples of ", Delta ["t"], ", "),
-                 paste(Phi(Delta[t]), " is unique)")
-      )
-    )
-    gg_title_N2 <- as.list(
-      expression(paste(Phi(Delta[t]), " scatter plot for multiples of ", Delta ["t"]),
-                 paste("\n(Note: For multiples of ", Delta ["t"], ", "),
-                 paste(Phi(Delta[t]), " is unique)")
-      )
-    )
 
-    plot(y=rep(0, length(DeltaTs)), x=DeltaTs, type="l", ylim=c(min(PhiDeltaTs_N), max(PhiDeltaTs_N)),
-         ylab = expression(paste(Phi(Delta[t]), " values")), xlab = expression(paste("Time-interval (", Delta[t], ")", sep="")),
-         col=1000, lwd=2, lty=1,
-         main=mtext(do.call(expression, title_N), side=3, line = c(2,1,0), cex = 1 )
-         #"Effect lag curve: \n How do the VAR(1) parameters Phi vary \n as a function of the time-interval"
-    )
-    #
-    teller <- 0
-    for(j in 1:q){
-      for(i in 1:q){
-        if(WhichElements[j,i] == 1){
-          teller <- teller + 1
-          points(y=PhiDeltaTs_N[j,i,], x=DeltaTs, col=Col[teller], lwd=2, pch=Lty[teller])
-        }
-      }
+    for (i in 1:2) {
+      p.plot <- ggplot(PhiDeltaTsDF_L[[i]], aes(DeltaTs, Values, color = Labels, linetype = Labels)) +
+        geom_line(lwd = 0.75) +
+        geom_abline(intercept = 0, slope = 0, alpha = .5) +
+        scale_linetype_manual(name = " ", values = Lty, labels = legendT) +
+        scale_color_manual(name = " ", values = Col, labels = legendT) +
+        ylab(Ylab) +
+        xlab(Xlab) +
+        labs(title = as.expression(Title_1),
+             subtitle = Title_2_N) +
+        theme_classic() +
+        theme(plot.title = element_text(margin = margin(t = 20))) +
+        ylim(0,1) +
+        theme(
+          legend.key.width = unit(2, "lines"),
+          legend.spacing.x = unit(1.5, "lines"),
+          legend.text = element_text(size = 12)
+        )
+
+      # TO DO pas overal legends aan, meer afstand en ws gortere lettertype
+      #
+      # TO DO Die plotten ws in Shiny te gebruiken en in vignette.
+      # Check sowieso eerst vignette met PhiPlot niet ggPhiPlot, laat het plots zien? Zet dan eerst files op github!
+      PlotName <- paste0("Plot_", i)
+      assign(PlotName, p.plot)
+      #Plot_1
+      #Plot_2
     }
 
-  for (i in 1:2) {
-    plot_list[[length(plot_list) + 1]] <- ggplot(PhiDeltaTsDF_L[[i]], aes(DeltaTs, Values, color = Labels, linetype = Labels)) +
-      geom_line(lwd = 0.75) +
-      geom_abline(intercept = 0, slope = 0, alpha = .5) +
-      scale_linetype_manual(name = " ", values = Lty, labels = legendT) +
-      scale_color_manual(name = " ", values = Col, labels = legendT) +
-      ylab(expression(paste(Phi(Delta[t]), " values"))) +
-      xlab(expression(paste("Time-interval (", Delta[t], ")", sep = ""))) +
-      labs(title = as.expression(gg_title_N[1]),
-           subtitle = as.expression(gg_title_N[-1])) +
-      theme_classic() +
-      theme(plot.title = element_text(margin = margin(t = 20))) +
-      ylim(0,1)
-
-    if (i == 2) {
-      plot_list[[length(plot_list)]] <- plot_list[[length(plot_list)]] + theme(legend.position = "none")
-    }
-  }
-
-  plot_list[[length(plot_list) + 1]] <- ggplot(PhiDeltaTsDF_4, aes(DeltaTs, Values, color = Labels, shape = Labels)) +
+    Plot_3 <- ggplot(PhiDeltaTsDF_4, aes(DeltaTs, Values, color = Labels, shape = Labels)) +
     geom_point(show.legend = ) +
     geom_abline(intercept = 0, slope = 0, alpha = .5) +
     scale_shape_manual(name = " ", values = Lty, labels = legendT) +
     scale_color_manual(name = " ", values = Col, labels = legendT) +
-    ylab(expression(paste(Phi(Delta[t]), " values"))) +
-    xlab(expression(paste("Time-interval (", Delta[t], ")", sep = ""))) +
-    labs(title = as.expression(gg_title_N2[1]),
-         subtitle = as.expression(gg_title_N2[-1])) +
+    ylab(Ylab) +
+    xlab(Xlab) +
+    labs(title = as.expression(Title_1_N2),
+         subtitle = as.expression(Title_2_N2)) +
     theme_classic() +
     theme(plot.title = element_text(margin = margin(t = 20))) +
-    ylim(0,1)
-
-  ggarrange(plotlist = plot_list, ncol = 2, nrow = 2,
-            widths = c(3,4)) %>% show
-  }
-
-  if(complex == TRUE){
-    if(q<4){CEX = 1}else{CEX = (1.4-q/10)} # Check for optimal values!
-    par(mar = c(0,0,0,0))
-    plot.new()
-    legend("center",
-           legend = legendT, cex=CEX,
-           bty = "n",
-           lty=Lty, # gives the legend appropriate symbols (lines)
-           lwd=rep(2, q*q),
-           col=Col # gives the legend lines the correct color and width
+    ylim(0,1) +
+    theme(
+      legend.key.width = unit(2, "lines"),
+      legend.spacing.x = unit(1, "lines"),
+      legend.text = element_text(size = 12)
     )
-    plot.new()
-    legend("center",
-           legend = legendT, cex=CEX,
-           bty = "n",
-           pch=Lty, # gives the legend appropriate symbols (lines)
-           #lwd=rep(2, q*q),
-           col=Col # gives the legend lines the correct color and width
-    )
+    # Plot_3
+
+    Plot <- phi_plot + theme(legend.position = "none")
+    Plot_2_ <- Plot_2 + theme(legend.position = "none")
+    Plot_complex <- ggarrange(plotlist = list(Plot, Plot_1, Plot_2_, Plot_3), ncol = 2, nrow = 2,
+              widths = c(3,4)) %>% show
+
+    final <- list(PhiPlot = phi_plot,
+                  complex = complex,
+                  PhiPlot_aliasing_1 = Plot_1,
+                  PhiPlot_aliasing_2 = Plot_2,
+                  PhiPlot_scatter = Plot_3,
+                  PhiPlot_all = Plot_complex)
+
+  }else{ # if not complex, then only one plot
+    final <- list(PhiPlot = phi_plot,
+                  complex = complex)
+    print(phi_plot)
   }
-
-  #dev.off()
-
-  par(op)
 
 
   ############################################################################################################
 
   #final <- list(.. = ...)
-  #return(final)
+  return(invisible(final))
 
 }
 

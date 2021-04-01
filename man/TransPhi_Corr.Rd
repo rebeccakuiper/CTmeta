@@ -26,6 +26,8 @@ Calculates the (vectorized) transformed standardized Phi, their covariance matri
 }
 \examples{
 
+# library(CTmeta)
+
 # In the examples below, the following values are used:
 DeltaTStar <- 12
 DeltaT <- 24

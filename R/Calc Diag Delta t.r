@@ -17,6 +17,9 @@
 #' @importFrom nleqslv nleqslv
 #' @export
 #' @examples
+#'
+#' # library(CTmeta)
+#'
 #' ## Example 1 ##
 #' # Here, DeltaT_diag = 0
 #'
@@ -26,7 +29,8 @@
 #' DeltaT <- 1
 #' Phi <- myPhi[1:2, 1:2]
 #' #SigmaVAR <- diag(2) # Then, DeltaT_diag = DeltaT = 1
-#' Gamma <- matrix(c(1, 0.5, 0.4, 1), byrow = T, nrow = 2, ncol = 2)
+#' q <- dim(Phi)[1]
+#' Gamma <- matrix(c(1, 0.5, 0.4, 1), byrow = T, nrow = q, ncol = q)
 #' SigmaVAR <- Gamma - Phi %*% Gamma %*% t(Phi)
 #'
 #' # If you would use the drift matrix Drift as input, then use:
@@ -73,164 +77,122 @@ DiagDeltaT <- function(Phi = NULL, Drift = NULL, SigmaVAR = NULL, Sigma = NULL, 
   if(any(class(Phi) == "varest")){
     SigmaVAR <- cov(resid(Phi))
     Phi <- Acoef(Phi)[[1]]
-    CTparam <- CTMparam (DeltaT, Phi, SigmaVAR)
-    Drift <- CTparam$Drift
-    Sigma <- CTparam$Sigma
     #
-    if(length(Phi) == 1){
-      q <- 1
-    }else{
-      q <- dim(Phi)[1]
-    }
+    Gamma <- Gamma.fromVAR(Phi_VARest, SigmaVAR)
+    #
+    #CTparam <- CTMparam (DeltaT, Phi, SigmaVAR)
+    #Drift <- CTparam$Drift
+    #Sigma <- CTparam$Sigma
   } else if(any(class(Phi) == "ctsemFit")){
     Drift <- summary(Phi)$DRIFT
     Sigma <- summary(Phi)$DIFFUSION
     #
-    Phi <- expm(Drift*DeltaT)
+    Gamma <- Gamma.fromCTM(Drift, Sigma)
+    #
+    VarEst <- VARparam(DeltaT, Drift, Sigma)
+    Phi <- VarEst$Phi
+    #SigmaVAR <- VarEst$SigmaVAR
+  } else{
+
+    # Drift = A = -B
+    # B is drift matrix that is pos def, so Phi(DeltaT) = expm(-B*DeltaT)
+    if(is.null(Phi)){
+      if(!is.null(Drift)){
+
+        B <- -Drift
+
+        # Check on B
+        if(length(B) > 1){
+          Check_B_or_Phi(B)
+          if(all(eigen(B)$val < 0)){
+            #("All the eigenvalues of the drift matrix B are negative; therefore. I assume the input was A=-B instead of B. I will use -A=B in the calculation.")
+            #("Note that Phi(DeltaT) = expm(-B*DeltaT).")
+            ("All the eigenvalues of the drift matrix Drift are positive. Therefore. I assume the input for Drift was B = -A instead of A. I will use Drift = -B = A.")
+            ("Note that Phi(DeltaT) = expm(-B*DeltaT) = expm(A*DeltaT) = expm(Drift*DeltaT).")
+            B = -B
+          }
+          if(any(eigen(B)$val <= 0)){
+            #("The function stopped, since some of the eigenvalues of the drift matrix B are negative or zero.")
+            ("The function stopped, since some of the eigenvalues of the drift matrix Drift are positive or zero.")
+            stop()
+          }
+        }
+        #
+        Drift <- -B
+
+        if(length(Drift) == 1){
+          Phi <- exp(Drift*DeltaT)
+        }else{
+          Phi <- expm(Drift*DeltaT)
+        }
+      }else{ # is.null(Drift)
+        ("Either the drift matrix Drift or the autoregressive matrix Phi should be input to the function.")
+        #("Note that Phi(DeltaT) = expm(-B*DeltaT).")
+        stop()
+      }
+    }else{ # Phi not NULL
+      if(length(Phi) != 1){
+        Check_Phi_or_B(Phi)
+      }
+    }
+    #
     if(length(Phi) == 1){
       q <- 1
     }else{
       q <- dim(Phi)[1]
     }
-  } else{
 
-    if(is.null(Drift)){
-      if(!is.null(Phi)){
-        Drift <- logm(Phi)/DeltaT
-      }else{ # is.null(Phi)
-        ("Either the drift matrix Drift or the autoregressive matrix Phi should be input to the function.")
-        ("Note that Phi(DeltaT) = expm(Drift*DeltaT).")
-        stop()
-      }
-    }else{ # !is.null(Drift)
-      Phi <- expm(Drift*DeltaT)
-      if(all(eigen(Drift)$val > 0)){
-        ("All the eigenvalues of the drift matrix Drift are positive; therefore. I assume the input was B=-A instead of A. I will use -Drift in the calculation.")
-        ("Note that Phi(DeltaT) = expm(-B*DeltaT) = expm(A*DeltaT) = expm(Drift*DeltaT).")
-        Drift = -Drift
-      }
-    }
-
-    if(length(Drift) == 1){
-      q <- 1
-    }else{
-      #
-      if(is.null(dim(Drift))){
-        if(!is.null(length(Drift))){
-          print(paste("The argument Drift (or Phi) is not a matrix of size q times q."))
-          stop()
-        }else{
-          print(paste("The argument Drift (or Phi) is not found: The lagged effects matrix Drift is unknown, but should be part of the input."))
-          stop()
-        }
-      }else{
-        if(dim(Drift)[1] != dim(Drift)[2] | length(dim(Drift)) != 2){
-          print(paste("The argument Drift (or Phi) is not a matrix of size q times q."))
-          stop()
-        }
-        q <- dim(Drift)[1]
-      }
-    }
-  }
-  #
-  #
-  # Check on SigmaVAR, Sigma, and Gamma
-  if(is.null(SigmaVAR) & is.null(Gamma) & is.null(Sigma)){ # All three unknown
-    print(paste("The arguments SigmaVAR, Sigma, or Gamma are not found: one should be part of the input. Notably, in case of the first matrix, specify 'SigmaVAR = SigmaVAR'."))
-    stop()
-  }else if(is.null(Gamma)){ # Gamma unknown
-
-    if(!is.null(SigmaVAR)){ # SigmaVAR known, use SigmaVAR and Phi or Drift
-
-      # Checks on SigmaVAR
-      if(length(SigmaVAR) != 1){
-        if(dim(SigmaVAR)[1] != dim(SigmaVAR)[2]){
-          print(paste("The residual covariance matrix SigmaVAR should be a square matrix of size q times q, with q = ", q, "."))
-          stop()
-        }
-        if(dim(SigmaVAR)[1] != q){
-          print(paste("The residual covariance matrix SigmaVAR should, like Phi (or Drift), be a matrix of size q times q, with q = ", q, "."))
-          stop()
-        }
-        if(length(dim(SigmaVAR)) > 2){
-          print(paste("The residual covariance matrix SigmaVAR should be an q times q matrix, with q = ", q, "."))
-          stop()
-        }
-      }else if(q != 1){
-        print(paste("The residual covariance matrix SigmaVAR should, like Phi (or Drift), be a scalar."))
-        stop()
-      }
-
-      # Calculate Sigma
-      CTparam <- CTMparam (DeltaT, Phi, SigmaVAR)
-      Drift <- CTparam$Drift
-      Sigma <- CTparam$Sigma
-      #
-      # CHECKs and calculate corresponding Gamma (Check all matrices pos def and B=-Drift also not complex)
-      outcome.GammaAndChecks <- ChecksCTM(Drift, Sigma)
-      Gamma <- outcome.GammaAndChecks$Gamma
-      ChecksAreFine <- outcome.GammaAndChecks$ChecksAreFine
-      errorMatrices <- outcome.GammaAndChecks$error
-
-
-    }else if(!is.null(Sigma)){ # Sigma known
-
-      # Checks on Sigma
-      if(length(Sigma) != 1){
-        if(dim(Sigma)[1] != dim(Sigma)[2]){
-          print(paste("The residual covariance matrix Sigma should be a square matrix of size q times q, with q = ", q, "."))
-          stop()
-        }
-        if(dim(Sigma)[1] != q){
-          print(paste("The residual covariance matrix Sigma should, like Phi (or Drift), be a matrix of size q times q, with q = ", q, "."))
-          stop()
-        }
-        if(length(dim(Sigma)) > 2){
-          print(paste("The residual covariance matrix Sigma should be an q times q matrix, with q = ", q, "."))
-          stop()
-        }
-      }else if(q != 1){
-        print(paste("The residual covariance matrix Sigma should, like Phi (or Drift), be a scalar."))
-        stop()
-      }
-
-      # CHECKs and calculate corresponding Gamma (Check all matrices pos def and B=-Drift also not complex)
-      outcome.GammaAndChecks <- ChecksCTM(Drift, Sigma)
-      Gamma <- outcome.GammaAndChecks$Gamma
-      ChecksAreFine <- outcome.GammaAndChecks$ChecksAreFine
-      errorMatrices <- outcome.GammaAndChecks$error
-
-    }
-
-  }else if(!is.null(Gamma)){ # Gamma known
-
-    # Checks on Gamma
-    if(length(Gamma) != 1){
-      if(dim(Gamma)[1] != dim(Gamma)[2]){
-        print(paste("The stationary covariance matrix Gamma should be a square matrix of size q times q, with q = ", q, "."))
-        stop()
-      }
-      if(dim(Gamma)[1] != q){
-        print(paste("The stationary covariance matrix Gamma should, like Phi (or Drift), be a matrix of size q times q, with q = ", q, "."))
-        stop()
-      }
-      if(length(dim(Gamma)) > 2){
-        print(paste("The stationary covariance matrix Gamma should be an q times q matrix, with q = ", q, "."))
-        stop()
-      }
-    }else if(q != 1){
-      print(paste("The stationary covariance matrix Gamma should, like Phi (or Drift), be a scalar."))
+    # Check on SigmaVAR, Sigma, and Gamma
+    if(is.null(SigmaVAR) & is.null(Gamma) & is.null(Sigma)){ # All three unknown
+      print(paste0("The arguments SigmaVAR, Sigma, or Gamma are not found: one should be part of the input. Notably, in case of the first matrix, specify 'SigmaVAR = SigmaVAR'."))
       stop()
+    }else if(is.null(Gamma)){ # Gamma unknown
+
+      if(!is.null(SigmaVAR)){ # SigmaVAR known, use SigmaVAR and Phi or Drift
+
+        # Check on SigmaVAR
+        Check_SigmaVAR(SigmaVAR, q)
+
+        # Calculate Gamma
+        Gamma <- Gamma.fromVAR(Phi, SigmaVAR)
+
+      }else if(!is.null(Sigma)){ # Sigma known
+
+        # Check on Sigma
+        Check_Sigma(Sigma, q)
+
+        # Calculate Gamma
+        if(is.null(Drift)){
+          if(q == 1){
+            Drift <- log(Phi)/DeltaT
+          }else{
+            Drift <- logm(Phi)/DeltaT # Phi = expm(Drift * DeltaT)
+          }
+        }
+        Gamma <- Gamma.fromCTM(Drift, Sigma)
+
+      }
+
+    }else if(!is.null(Gamma)){ # Gamma known
+
+      # Checks on Gamma
+      Check_Gamma(Gamma, q)
+
     }
 
-    # CHECKs and calculate corresponding Gamma (Check all matrices pos def and B=-Drift also not complex)
-    outcome.GammaAndChecks <- ChecksCTM(Drift, Gamma = Gamma)
-    #Gamma <- outcome.GammaAndChecks$Gamma
-    ChecksAreFine <- outcome.GammaAndChecks$ChecksAreFine
-    errorMatrices <- outcome.GammaAndChecks$error
-
+  }
+  #
+  if(length(Phi) == 1){
+    q <- 1
+  }else{
+    q <- dim(Phi)[1]
   }
 
+  # CHECKs and calculate corresponding Gamma (Check all matrices pos def and B=-Drift also not complex)
+  outcome.GammaAndChecks <- ChecksCTM(Drift, Gamma = Gamma)
+  #Gamma <- outcome.GammaAndChecks$Gamma
+  ChecksAreFine <- outcome.GammaAndChecks$ChecksAreFine
+  errorMatrices <- outcome.GammaAndChecks$error
 
 
   message_start <- "No message / warning / error. Hence, there is positive DeltaT for which the diagonals/variances in SigmaVAR are positive (and off-diagonals 0)."

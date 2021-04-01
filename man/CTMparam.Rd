@@ -24,6 +24,9 @@ The output renders the continuous-time equivalent matrices of the discrete-times
 The continuous-time lagged-effects model matrices correspoding to the discrete-time ones. The interactive web application 'Phi-and-Psi-Plots and Find DeltaT' also contains this functionality, you can find it on my website: \url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}.
 }
 \examples{
+
+# library(CTmeta)
+
 ## Example 1 ##
 
 ##################################################################################################
@@ -31,7 +34,8 @@ The continuous-time lagged-effects model matrices correspoding to the discrete-t
 # I will use the example matrices stored in the package:
 Phi <- myPhi[1:2, 1:2]
 #
-SigmaVAR <- diag(2) # for ease
+q <- dim(Phi)[1]
+SigmaVAR <- diag(q) # for ease
 #
 Gamma <- Gamma.fromVAR(Phi, SigmaVAR)
 ##################################################################################################

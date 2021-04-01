@@ -22,6 +22,9 @@ The output renders the conclusions from the checks on the continuous-time lagged
 Checks on the continuous-time lagged-effects model matrices (like check whether matrices are positive-definite). The interactive web application 'Phi-and-Psi-Plots and Find DeltaT' also contains this functionality, you can find it on my website: \url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}.
 }
 \examples{
+
+# library(CTmeta)
+
 ## Example 1 ##
 
 ##################################################################################################
@@ -32,7 +35,8 @@ if (!require("expm")) install.packages("expm") # Use expm package for function l
 library(expm)
 Drift <- logm(Phi)/DeltaT
 #
-Sigma <- diag(2) # for ease
+q <- dim(Phi)[1]
+Sigma <- diag(q) # for ease
 #
 Gamma <- Gamma.fromCTM(Drift, Sigma)
 ##################################################################################################

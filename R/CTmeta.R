@@ -8,20 +8,22 @@
 #' @param Phi Stacked matrix of size S*q times q or array with dimensions q times q times S of (un)standardized lagged effects matrices for all S primary studies in the meta-analysis; with q the number of variables (leading to an q times q lagged effects matrix in a single primary study). Note: In case primary studies report (lagged) correlation matrices, one can use the function 'TransPhi_Corr' to transform those to the corresponding standardized lagged effects matrices (see ?TransPhi_Corr and examples below).
 #' @param SigmaVAR Stacked matrix of size S*q times q or array with dimensions q times q times S of residual covariance matrices of the first-order discrete-time vector autoregressive (DT-VAR(1)) model.
 #' @param Gamma Optional (either SigmaVAR or Gamma). Stacked matrix of size S*q times q or array with dimensions q times q times S of stationary covariance matrices, that is, the contemporaneous covariance matrices of the data sets.
-#' Note that if Phi and Gamma are known, SigmaVAR can be calculated; hence, only SigmaVAR or Gamma is needed as input (if only Gamma, then use 'Gamma = Gamma' or set SigmaVAR to NULL, see examples below).
-#' @param Moderators Optional. Indicator whether there are moderators to be included (1) or not (0; default).
-#' @param Mod Optional. Matrix of moderators to be included in the analysis when Moderators == 1. By default, Mod = NULL.
-#' @param FEorRE Optional. Indicator whether continuous-time meta-analysis should use a fixed-effects model (1; default) or random-effects model (2).
+#' Note that if Phi and Gamma are known, SigmaVAR can be calculated. Hence, only SigmaVAR or Gamma is needed as input (if only Gamma, then use 'Gamma = Gamma' or set SigmaVAR to NULL, see examples below).
+#' @param Moderators Optional. Indicator (TRUE/FALSE or 1/0) whether there are moderators to be included (TRUE or 1) or not (FALSE or 0). By default, Moderators = 0.
+#' @param Mod Optional. An S x m matrix of m moderators to be included in the analysis when Moderators == 1. By default, Mod = NULL.
+#' @param FEorRE Optional. Indicator (2/1) whether continuous-time meta-analysis should use a fixed-effects model (1) or random-effects model (2). By default, FEorRE = 1.
 #' @param alpha Optional. The alpha level in determining the (1-alpha)*100\% confidence interval (CI). By default, alpha = 0.05; resulting in a 95\% CI.
-#' @param Plot Optional. Indicator for rendering a Phi-plot (TRUE) or not (FALSE). By default, Plot = FALSE.
+#' @param PrintPlot Optional. Indicator (TRUE/FALSE or 1/0) for rendering a Phi-plot (TRUE or 1) or not (FALSE or 0). By default, PrintPlot = FALSE.
 #'
-#' @return The output comprises, among others, the overall vectorized transformed standardized lagged effects, their covariance matrix, and the corresponding elleptical/multivariate 95\% CI.
+#' @return The output comprises, among others, the overall vectorized transformed standardized lagged effects, their covariance matrix, and the corresponding elliptical/multivariate 95\% CI.
 #' @importFrom expm expm
 #' @importFrom fastDummies dummy_cols
 #' @importFrom metafor rma.mv
 #' @importFrom metafor rma.uni
 #' @export
 #' @examples
+#'
+#' # library(CTmeta)
 #'
 #' ##################################################################################################
 #' # Input needed in examples below with q=2 variables and S=3 primary studies
@@ -80,18 +82,20 @@
 #'
 #' ## Make customized Phi-plot of resulting overall Phi ##
 #'
-#' # Note: The customized Phi-plot can be made using the function 'PhiPlot' (see below) or by using the interactive web app from my website (\url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}).
+#' # Option 1: Using the plot option in the function:
+#' CTmeta(N, DeltaT, DeltaTStar, Phi, Gamma = Gamma, PrintPlot = TRUE)
+#'
+#'
+#' # Option 2: A customized Phi-plot can be made using the function 'PhiPlot' (see below) or by using the interactive web app from my website (\url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}).
 #' # Alternatively, one can use the function 'ggPhiPlot' instead of 'PhiPlot'.
 #'
-#' # Extract the q times q overall Phi matrix
+#' # Extract the (q times q) overall Phi matrix
 #' out_CTmeta <- CTmeta(N, DeltaT, DeltaTStar, Phi, Gamma = Gamma)
-#' q <- sqrt(length(out_CTmeta$Overall_standPhi_DeltaTStar))
 #' # resulting overall Phi:
-#' overallPhi <- matrix(out_CTmeta$Overall_standPhi_DeltaTStar, byrow = T, ncol = q)
-#'
+#' overallPhi <- out_CTmeta$Overall_standPhi
 #'
 #' # Make Phi-plot:
-#' Title <- as.list(expression(paste(Phi(Delta[t]), " plot:"),
+#' Title <- as.list(expression(paste0(Phi(Delta[t]), " plot:"),
 #'    "How do the overall lagged parameters vary", "as a function of the time-interval"))
 #' PhiPlot(DeltaTStar, overallPhi, Min = 0, Max = 40, Step = 0.5, Title = Title)
 #'
@@ -162,7 +166,7 @@
 #'
 
 
-CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Moderators = 0, Mod = NULL, FEorRE = 1, alpha=0.05, Plot = FALSE) {
+CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Moderators = 0, Mod = NULL, FEorRE = 1, alpha=0.05, PrintPlot = FALSE) {
 
 #  #######################################################################################################################
 #  #if (!require("expm")) install.packages("expm")
@@ -176,32 +180,95 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
   S <- length(N) #dim(N)[1]
   # Check
   if(S != length(DeltaT)){
-    print(paste("The length of the arguments N and DeltaT are not the same, while they should both equate to S, the number of primary studies included in the meta-analysis."))
+    print(paste0("The length of the arguments N and DeltaT are not the same, while they should both equate to S, the number of primary studies included in the meta-analysis.
+                Notably, the length of N is ", S, " and the length of DeltaT is ", length(DeltaT)))
     stop()
   }
-
+  #
   # Make sure N and DeltaT are matrices
-  N <- matrix(N, nrow = S, ncol = 1)
-  DeltaT <- matrix(DeltaT, nrow = S, ncol = 1)
+  if(length(dim(N)) < 2){
+    N <- matrix(N, nrow = S, ncol = 1)
+  }
+  if(length(dim(DeltaT)) < 2){
+    DeltaT <- matrix(DeltaT, nrow = S, ncol = 1)
+  }
+  #
+  if(length(dim(N)) == 2){
+    if(dim(N)[1] == 1 & dim(N)[2] != 1){
+      N <- matrix(N, nrow = S, ncol = 1)
+    }
+    if(dim(N)[1] != 1 & dim(N)[2] != 1){
+      print(paste0("The argument N should be a S x 1 matrix or an S-vector. Currently, it is of size ", dim(N)))
+      stop()
+    }
+  }
+  if(length(dim(DeltaT)) == 2){
+    if(dim(DeltaT)[1] == 1 & dim(DeltaT)[2] != 1){
+      DeltaT <- matrix(DeltaT, nrow = S, ncol = 1)
+    }
+    if(dim(DeltaT)[1] != 1 & dim(DeltaT)[2] != 1){
+      print(paste0("The argument DeltaT should be a S x 1 matrix or an S-vector. Currently, it is of size ", dim(DeltaT)))
+      stop()
+    }
+  }
+  #
+  if(length(dim(N)) > 3){
+    print(paste0("The argument N should be a S x 1 matrix or an S-vector. Currently, it is of size ", dim(N)))
+    stop()
+  }
+  if(length(dim(DeltaT)) > 3){
+    print(paste0("The argument DeltaT should be a S x 1 matrix or an S-vector. Currently, it is of size ", dim(DeltaT)))
+    stop()
+  }
 
   # Check DeltaTStar
   if(length(DeltaTStar) != 1){
-    print(paste("The argument DeltaTStar should be a scalar, that is, one number, that is, a vector with one element. If you want to inspect multiple DeltaTStar values, you should do the analysis for each value seperately."))
+    print(paste0("The argument DeltaTStar should be a scalar, that is, one number, that is, a vector with one element. If you want to inspect multiple DeltaTStar values, you should do the analysis for each value seperately. Notably, currently, DeltaTStar = ", DeltaTStar))
     stop()
   }
 
+  # Check other arguments
+  #
+  if(length(alpha) != 1){
+    print(paste0("The argument alpha should be a scalar, that is, one number, that is, a vector with one element. Currently, alpha = ", alpha))
+    stop()
+  }
+  #
+  if(!is.logical(Moderators) & Moderators != FALSE & Moderators != TRUE){
+    print(paste0("The argument Moderators should be logical, that is, have the value T(RUE) or F(ALSE); or 1 or 0; not ", Moderators))
+    stop()
+  }
+  if(Moderators == TRUE){
+    if(dim(Mod)[1] != S){
+      print(paste0("The argument Mod should be a S times m matrix, with m the number of moderators to be included in the model.
+                   Thus, the number of rows of Mod should equal S = ", S, " not ", dim(Mod)[1]))
+      stop()
+    }
+  }
+  #
+  if(FEorRE != 1 & FEorRE != 2){
+    print(paste0("The argument FEorRE should be 1 or 2; not ", FEorRE))
+    stop()
+  }
+  #
+  if(!is.logical(PrintPlot) & PrintPlot != FALSE & PrintPlot != TRUE){
+    print(paste0("The argument 'PrintPlot' should be T(RUE) or F(ALSE); or 1 or 0; not ", PrintPlot))
+    stop()
+  }
+
+
   # Check on Phi
   if(length(Phi) == 1){
-    print(paste("The argument Phi should not consist of one element: a meta-analysis on one single element is not meaningfull. It should be a stacked matrix of size S*q times q or array with dimensions q times q times S, with S = ", S, " the number of primary studies."))
+    print(paste0("The argument Phi should not consist of one element: a meta-analysis on one single element is not meaningfull. Notably, it should be a stacked matrix of size S*q times q or array with dimensions q times q times S, with S = ", S, " the number of primary studies and q = ", q, " the number of variables."))
     stop()
   }
   #
   if(is.null(dim(Phi))){
     if(!is.null(length(Phi))){
-      print(paste("The argument Phi is not a stacked matrix of size S*q times q or array with dimensions q times q times S, with q = ", q, " and S = ", S, "."))
+      print(paste0("The argument Phi is not a stacked matrix of size S*q times q or array with dimensions q times q times S, with q = ", q, " and S = ", S, ". Currently, it is a vector with ", length(Phi), "elements."))
       stop()
     }else{
-      print(paste("The argument Phi is not found: The lagged effects matrix Phi is unknown, but should be part of the input."))
+      print(paste0("The argument Phi is not found: The lagged effects matrix Phi is unknown, but should be part of the input."))
       stop()
     }
   }
@@ -213,6 +280,10 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
   }
 
   # Phi
+  if(length(dim(Phi)) < 2){
+    print(paste0("The lagged effects matrix Phi should be an S*q times q matrix or a q times q times S array, with S = ", S, " and q = ", q))
+    stop()
+  }
   if(length(dim(Phi)) == 2){
     Phi_studies <- array(data=NA, dim=c(q,q,S))
     teller <- 0
@@ -222,24 +293,28 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
       teller <- teller + q*q
     }
     Phi <- Phi_studies
-  }else if(length(dim(Phi))  > 3){
-    print(paste("The lagged effects matrix Phi should be an S*q times q matrix or a q times q times S array, with S = ", S, " and q = ", q, "."))
+  }else if(length(dim(Phi)) > 3){
+    print(paste0("The lagged effects matrix Phi should be an S*q times q matrix or a q times q times S array, with S = ", S, " and q = ", q, ". Currently, it is of size ", dim(Phi)))
     stop()
   }
 
   if(is.null(SigmaVAR) & is.null(Gamma)){ # Both SigmaVAR and Gamma unknown
-    print(paste("The arguments SigmaVAR and Gamma are not found: Both SigmaVAR and Gamma are unknown; either one (or both) should be part of the input. In case of first matrix, specify 'SigmaVAR = SigmaVAR'."))
+    print(paste0("The arguments SigmaVAR and Gamma are not found: Both SigmaVAR and Gamma are unknown; either one (or both) should be part of the input. In case of first matrix, specify 'SigmaVAR = SigmaVAR'."))
     stop()
   }else if(is.null(Gamma)){ # Gamma unknown, calculate Gamma from SigmaVAR and Phi
 
     # Check on SigmaVAR
     if(length(SigmaVAR) == 1){
-      print(paste("The argument SigmaVAR should not consist of one element. It should be a stacked matrix of size S*q times q or array with dimensions q times q times S, with q = ", q, " and S = ", S, "."))
+      print(paste0("The argument SigmaVAR should not consist of one element. Notably, it should be a stacked matrix of size S*q times q or array with dimensions q times q times S, with S = ", S, " the number of primary studies and q = ", q, " the number of variables."))
       stop()
     }
 
     # SigmaVAR
-    if(length(dim(SigmaVAR))  == 2){
+    if(length(dim(SigmaVAR)) < 2){
+      print(paste0("The residual covariance matrix SigmaVAR should be an S*q times q matrix or a q times q times S array, with S = ", S, " and q = ", q))
+      stop()
+    }
+    if(length(dim(SigmaVAR)) == 2){
       SigmaVAR_studies <- array(data=NA, dim=c(q,q,S))
       teller <- 0
       for(s in 1:S){
@@ -247,8 +322,8 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
         teller <- teller + q
       }
       SigmaVAR <- SigmaVAR_studies
-    }else if(length(dim(SigmaVAR))  > 3){
-      print(paste("The residual covariance matrix SigmaVAR should be an S*q times q matrix or a q times q times S array, with S = ", S, " and q = ", q, "."))
+    }else if(length(dim(SigmaVAR)) > 3){
+      print(paste0("The residual covariance matrix SigmaVAR should be an S*q times q matrix or a q times q times S array, with S = ", S, " and q = ", q, ". Currently, it is of size ", dim(SigmaVAR)))
       stop()
     }
 
@@ -270,12 +345,16 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
 
     # Check on Gamma
     if(length(Gamma) == 1){
-      print(paste("The argument Gamma should not consist of one element. It should be a stacked matrix of size S*q times q or array with dimensions q times q times S, with q = ", q, " and S = ", S, "."))
+      print(paste0("The argument Gamma should not consist of one element. Notably, it should be a stacked matrix of size S*q times q or array with dimensions q times q times S, with S = ", S, " the number of primary studies and q = ", q, " the number of variables."))
       stop()
     }
 
     # Gamma
-    if(length(dim(Gamma))  == 2){
+    if(length(dim(Gamma)) < 2){
+      print(paste0("The covariance matrix Gamma should be an S*q times q matrix or a q times q times S array, with S = ", S, " and q = ", q))
+      stop()
+    }
+    if(length(dim(Gamma)) == 2){
       Gamma_studies <- array(data=NA, dim=c(q,q,S))
       teller <- 0
       for(s in 1:S){
@@ -283,8 +362,8 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
         teller <- teller + q
       }
       Gamma <- Gamma_studies
-    }else if(length(dim(Gamma))  > 3){
-      print(paste("The covariance matrix Gamma should be an S*q times q matrix or a q times q times S array, with S = ", S, " and q = ", q, "."))
+    }else if(length(dim(Gamma)) > 3){
+      print(paste0("The covariance matrix Gamma should be an S*q times q matrix or a q times q times S array, with S = ", S, " and q = ", q, ". Currently, it is of size ", dim(Gamma)))
       stop()
     }
 
@@ -308,17 +387,21 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
 
     # Check on SigmaVAR
     if(length(SigmaVAR) == 1){
-      print(paste("The argument SigmaVAR should not consist of one element. It should be a stacked matrix of size S*q times q or array with dimensions q times q times S, with q = ", q, " and S = ", S, "."))
+      print(paste0("The argument SigmaVAR should not consist of one element. It should be a stacked matrix of size S*q times q or array with dimensions q times q times S, with S = ", S, " the number of primary studies and q = ", q, " the number of variables."))
       stop()
     }
     # Check on Gamma
     if(length(Gamma) == 1){
-      print(paste("The argument Gamma should not consist of one element. It should be a stacked matrix of size S*q times q or array with dimensions q times q times S, with q = ", q, " and S = ", S, "."))
+      print(paste0("The argument Gamma should not consist of one element. It should be a stacked matrix of size S*q times q or array with dimensions q times q times S, with S = ", S, " the number of primary studies and q = ", q, " the number of variables."))
       stop()
     }
 
     # SigmaVAR
-    if(length(dim(SigmaVAR))  == 2){
+    if(length(dim(SigmaVAR)) < 2){
+      print(paste0("The residual covariance matrix SigmaVAR should be an S*q times q matrix or a q times q times S array, with S = ", S, " and q = ", q))
+      stop()
+    }
+    if(length(dim(SigmaVAR)) == 2){
       SigmaVAR_studies <- array(data=NA, dim=c(q,q,S))
       teller <- 0
       for(s in 1:S){
@@ -326,13 +409,17 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
         teller <- teller + q
       }
       SigmaVAR <- SigmaVAR_studies
-    }else if(length(dim(SigmaVAR))  > 3){
-      print(paste("The residual covariance matrix SigmaVAR should be an S*q times q matrix or a q times q times S array, with S = ", S, " and q = ", q, "."))
+    }else if(length(dim(SigmaVAR)) > 3){
+      print(paste0("The residual covariance matrix SigmaVAR should be an S*q times q matrix or a q times q times S array, with S = ", S, " and q = ", q, ". Currently, it is of size ", dim(SigmaVAR)))
       stop()
     }
 
     # Gamma
-    if(length(dim(Gamma))  == 2){
+    if(length(dim(Gamma)) < 2){
+      print(paste0("The covariance matrix Gamma should be an S*q times q matrix or a q times q times S array, with S = ", S, " and q = ", q))
+      stop()
+    }
+    if(length(dim(Gamma)) == 2){
       Gamma_studies <- array(data=NA, dim=c(q,q,S))
       teller <- 0
       for(s in 1:S){
@@ -340,8 +427,8 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
         teller <- teller + q
       }
       Gamma <- Gamma_studies
-    }else if(length(dim(Gamma))  > 3){
-      print(paste("The covariance matrix Gamma should be an S*q times q matrix or a q times q times S array, with S = ", S, " and q = ", q, "."))
+    }else if(length(dim(Gamma)) > 3){
+      print(paste0("The covariance matrix Gamma should be an S*q times q matrix or a q times q times S array, with S = ", S, " and q = ", q, ". Currently, it is of size ", dim(Gamma)))
       stop()
     }
 
@@ -363,7 +450,7 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
       #Warning <- array(data=NA, dim=c(S))
       #
       # Studies where Phi has complex eigenvalues or at least one negative eigenvalue
-      messageTrans <- "All eigenvalues are positive and real; hence, the Phi's are transformed to Phi(DeltaT*) to account for the time-interval dependency and standardized (to make comparison of effects meaningful)."
+      messageTrans <- "All eigenvalues are positive and real. Hence, the Phi's are transformed to Phi(DeltaT*) to account for the time-interval dependency and standardized (to make comparison of effects meaningful)."
       for(s in 1:S){
         EV <- eigen(Phi[,,s])$values
         if(any(is.complex(EV))){ StudiesComplexEV <- c(StudiesComplexEV, s) }
@@ -373,24 +460,24 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
       ratioDeltaT <- DeltaTStar / DeltaT
       # If the studies for which the EV are neg or complex have integer ratioDeltaT then it is fine, otherwise it is not
       if(!is.null(StudiesComplexEV) | !is.null(StudiesNegEV)){
-        messageTrans <- "Some studies have eigenvalues of Phi that are negative and/or real, but for those studies the ratio DeltaT*/DeltaT is integer; therefore, the Phi's are transformed to Phi(DeltaT*) to account for the time-interval dependency."
+        messageTrans <- "Some studies have eigenvalues of Phi that are negative and/or real, but for those studies the ratio DeltaT*/DeltaT is integer. Therefore, the Phi's are transformed to Phi(DeltaT*) to account for the time-interval dependency."
         #if(any(!is.integer(ratioDeltaT[StudiesComplexEV]))){ # NB ik moet checken of als ik deel door hoogste geheel getal er dan geen rest waarde is!!
         if( any( (ratioDeltaT[StudiesComplexEV] %% 1) == 0 ) ){
           Trans <- 0
-          messageTrans <- "There is at least one study for which the eigenvalues of Phi are complex and for which the ratio DeltaT*/DeltaT is not integer; therefore, dummy variables are used to account for the time-interval dependency."
+          messageTrans <- "There is at least one study for which the eigenvalues of Phi are complex and for which the ratio DeltaT*/DeltaT is not integer. Therefore, dummy variables are used to account for the time-interval dependency."
         }
         if( any( (ratioDeltaT[StudiesNegEV] %% 1) == 0 ) ){
           Trans <- 0
-          messageTrans <- "There is at least one study for which the eigenvalues of Phi are negative and for which the ratio DeltaT*/DeltaT is not integer; therefore, dummy variables are used to account for the time-interval dependency."
+          messageTrans <- "There is at least one study for which the eigenvalues of Phi are negative and for which the ratio DeltaT*/DeltaT is not integer. Therefore, dummy variables are used to account for the time-interval dependency."
         }
         if( any( (ratioDeltaT[StudiesComplexEV] %% 1) == 0 ) & any( (ratioDeltaT[StudiesNegEV] %% 1) == 0 ) ){
           Trans <- 0
-          messageTrans <- "There is at least one study for which the eigenvalues of Phi are complex and/or negative and for which the ratio DeltaT*/DeltaT is not integer; therefore, dummy variables are used to account for the time-interval dependency."
+          messageTrans <- "There is at least one study for which the eigenvalues of Phi are complex and/or negative and for which the ratio DeltaT*/DeltaT is not integer. Therefore, dummy variables are used to account for the time-interval dependency."
         }
       }
       #
       #
-      messageMultivar <- "For each study, the covariance matrix is positive definite; hence, a multivariate approach is used."
+      messageMultivar <- "For each study, the covariance matrix is positive definite. Hence, a multivariate approach is used."
       if(Trans == 1){
         # Calculate standardized transformed Phi
         #s = 0
@@ -410,11 +497,11 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
           }
         }
         if(!is.null(StudiesCovMxNotPosDef)){
-          messageMultivar <- "There is at least one study for which the covariance matrix is not positive definite; therefore, a univariate approach is used."
+          messageMultivar <- "There is at least one study for which the covariance matrix is not positive definite. Therefore, a univariate approach is used."
         }
       }
       #
-      if(Trans == 0){ # then we cannot transform all the Phi's (uniquely), so use dummy methode
+      if(Trans == 0){ # then we cannot transform all the Phi's (uniquely), so use dummy method
         # Calculate standardized Phi
         for(s in 1:S){
           out <- StandPhi(N[s], Phi[,,s], Gamma[,,s], SigmaVAR[,,s])
@@ -427,7 +514,7 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
             Multivar <- 0 # we need to conduct a univariate meta-analysis now
           }
           if(!is.null(StudiesCovMxNotPosDef)){
-            messageMultivar <- "There is at least one study for which the covariance matrix is not positive definite; therefore, a univariate approach is used."
+            messageMultivar <- "There is at least one study for which the covariance matrix is not positive definite. Therefore, a univariate approach is used."
           }
         }
         # Calculate dummy variables
@@ -459,7 +546,7 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
       }else{ # if multivar, then we need to add an overallPhi variable and 'copy' the moderators and grouping variables
         sub = NULL
         for(i in 1:q){
-          sub = c(sub, paste(i, 1:q, sep=""))
+          sub = c(sub, paste0(i, 1:q, sep=""))
         }
         overallPhi <- rep(sub, S)
         #
@@ -734,7 +821,7 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
       # Output
       #
       # Plot
-      if(Plot == TRUE){
+      if(PrintPlot == TRUE){
         # Extract the q times q overall Phi matrix
         q <- sqrt(length(vecPhi))
         overallPhi <- matrix(vecPhi, byrow = T, ncol = q) # resulting overall Phi
@@ -744,7 +831,7 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
         overallDrift <- logm(overallPhi)/DeltaTStar
         #
         # Make Phi-plot:
-        Title <- as.list(expression(paste(Phi(Delta[t]), " plot:"), "How do the overall lagged parameters vary", "as a function of the time-interval"))
+        Title <- as.list(expression(paste0(Phi(Delta[t]), " plot:"), "How do the overall lagged parameters vary", "as a function of the time-interval"))
         min <- min(DeltaT)
         max <- max(DeltaT)
         step <- (max - min + 1)/10
@@ -762,7 +849,7 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
       if(!is.null(StudiesCovMxNotPosDef)) names(StudiesCovMxNotPosDef) <- "Study indices for which the covariance matrix is not positive definite"
       ratioDeltaT <- matrix(ratioDeltaT)
       colnames(ratioDeltaT) <- "Ratio DeltaT*/DeltaT"
-      rownames(ratioDeltaT) <- paste("Study ", rep(1:S))
+      rownames(ratioDeltaT) <- paste0("Study ", rep(1:S))
       # Multivar and Trans
       if(Multivar == 1 & Trans == 1){
         if(FEorRE == 1){ # FE

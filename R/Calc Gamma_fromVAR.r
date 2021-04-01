@@ -11,6 +11,9 @@
 #' @importFrom expm expm
 #' @export
 #' @examples
+#'
+#' # library(CTmeta)
+#'
 #' ## Example 1 ##
 #' #
 #' Phi <- myPhi[1:2,1:2]
@@ -31,9 +34,11 @@
 
 Gamma.fromVAR <- function(Phi, SigmaVAR) {
 
+  # Check on Phi
   if(any(class(Phi) == "varest")){
     SigmaVAR <- cov(resid(Phi))
     Phi <- Acoef(Phi)[[1]]
+    #
     if(length(Phi) == 1){
       q <- 1
     }else{
@@ -42,64 +47,29 @@ Gamma.fromVAR <- function(Phi, SigmaVAR) {
   } else if(any(class(Phi) == "ctsemFit")){
     B <- -1 * summary(Phi)$DRIFT
     Sigma <- summary(Phi)$DIFFUSION
-    #Phi <- summary(Phi)$discreteDRIFT # Is no longer output in ctsem...
-    Phi <- expm(-B*DeltaT)
-    # Use "Calc VARparam from CTMparam.r", but do it here myself:
-    #VarEst <- VARparam(DeltaT, B, Sigma)
-    #Phi <- VarEst$Phi
+    #
+    VarEst <- VARparam(DeltaT, -B, Sigma)
+    Phi <- VarEst$Phi
+    SigmaVAR <- VarEst$SigmaVAR
+    #
     if(length(Phi) == 1){
       q <- 1
     }else{
       q <- dim(Phi)[1]
     }
-    #SigmaVAR <- VarEst$SigmaVAR
-    kronsum <- kronecker(diag(q),B) + kronecker(B,diag(q))
-    SigmaVAR <- matrix((solve(kronsum) %*% (diag(q*q) - expm(-kronsum * DeltaT)) %*% as.vector(Sigma)), ncol=q, nrow=q)
   } else{
-
-    # Check on Phi
+    #
     if(length(Phi) == 1){
       q <- 1
     }else{
-      #
-      if(is.null(dim(Phi))){
-        if(!is.null(length(Phi))){
-          print(paste("The argument Phi is not a matrix of size q times q."))
-          stop()
-        }else{
-          print(paste("The argument Phi is not found: The discrete-time lagged effects matrix Phi is unknown, but should be part of the input."))
-          stop()
-        }
-      }else{
-        if(dim(Phi)[1] != dim(Phi)[2] | length(dim(Phi)) != 2){
-          print(paste("The argument Phi is not a matrix of size q times q."))
-          stop()
-        }
-        q <- dim(Phi)[1]
-      }
+      Check_Phi(Phi)
+      q <- dim(Phi)[1]
     }
 
     # Checks on SigmaVAR
-    if(length(SigmaVAR) != 1){
-      if(dim(SigmaVAR)[1] != dim(SigmaVAR)[2]){ # Should be square
-        print(paste("The residual covariance matrix SigmaVAR should be a square matrix of size q times q, with q = ", q, "."))
-        stop()
-      }
-      if(dim(SigmaVAR)[1] != q){ # Should have same dimension as Phi
-        print(paste("The residual covariance matrix SigmaVAR should, like Phi, be a matrix of size q times q, with q = ", q, "."))
-        stop()
-      }
-      if(length(dim(SigmaVAR)) > 2){ # Should be matrix, not array
-        print(paste("The residual covariance matrix SigmaVAR should be an q times q matrix, with q = ", q, "."))
-        stop()
-      }
-    }else if(q != 1){
-      print(paste("The residual covariance matrix SigmaVAR should, like Phi, be a scalar."))
-      stop()
-    }
+    Check_SigmaVAR(SigmaVAR, q)
 
   }
-
 
 
 if(q > 1){
