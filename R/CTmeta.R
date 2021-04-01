@@ -16,7 +16,6 @@
 #' @param PrintPlot Optional. Indicator (TRUE/FALSE or 1/0) for rendering a Phi-plot (TRUE or 1) or not (FALSE or 0). By default, PrintPlot = FALSE.
 #'
 #' @return The output comprises, among others, the overall vectorized transformed standardized lagged effects, their covariance matrix, and the corresponding elliptical/multivariate 95\% CI.
-#' @importFrom expm expm
 #' @importFrom fastDummies dummy_cols
 #' @importFrom metafor rma.mv
 #' @importFrom metafor rma.uni
@@ -171,8 +170,6 @@
 CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Moderators = 0, Mod = NULL, FEorRE = 1, alpha=0.05, PrintPlot = FALSE) {
 
 #  #######################################################################################################################
-#  #if (!require("expm")) install.packages("expm")
-#  library(expm)
 #  if (!require("fastDummies")) install.packages("fastDummies")
 #  library(fastDummies)
 #  if (!require("metafor")) install.packages("metafor")
@@ -827,17 +824,12 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
         # Extract the q times q overall Phi matrix
         q <- sqrt(length(vecPhi))
         overallPhi <- matrix(vecPhi, byrow = T, ncol = q) # resulting overall Phi
-        # Determine the q times q Drift matrix which is the continuous-time equivalent of the overall Phi matrix
-        # if (!require("expm")) install.packages("expm") # Use expm package for function logm()
-        # library(expm)
-        overallDrift <- logm(overallPhi)/DeltaTStar
-        #
         # Make Phi-plot:
         Title <- as.list(expression(Phi(Delta[t])~plot), "How do the overall lagged parameters vary as a function of the time-interval")
         min <- min(DeltaT)
         max <- max(DeltaT)
         step <- (max - min + 1)/10
-        PhiPlot(DeltaTStar, overallDrift, Min = min, Max = max, Step = step, Title = Title)
+        PhiPlot(DeltaTStar, overallPhi, Min = min, Max = max, Step = step, Title = Title)
       }
       #
       #

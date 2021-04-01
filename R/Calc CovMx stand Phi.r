@@ -38,24 +38,6 @@
 #' # or
 #' StandPhi(N, Phi, Gamma = Gamma)
 #'
-#' # Note: In case of a Drift matrix, this gives the standardized Drift
-#' # BUT not all output is accurate then.
-#' if (!require("expm")) install.packages("expm") # Use expm package for function logm()
-#' library(expm)
-#' Drift <- logm(Phi)/DeltaT
-#' q <- dim(Drift)[1]
-#' Sigma <- diag(q)
-#' #
-#' standCT <- StandPhi(N, Phi = Drift, SigmaVAR = Sigma)
-#' standCT$StandPhi_DeltaT # standardized Drift
-#' standCT$standGamma # standardized Gamma
-#' # Do not inspect the rest of the output
-#' #
-#' standCT <- StandPhi(N, Phi = Drift, Gamma = Gamma)
-#' standCT$StandPhi_DeltaT # standardized Drift
-#' standCT$standSigmaVAR_DeltaT # standardized Sigma
-#' # Do not inspect the rest of the output
-#'
 #'
 #' ## Example 2: input from fitted object of class "varest" ##
 #' #
