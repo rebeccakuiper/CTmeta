@@ -20,7 +20,7 @@
 #' @param Labels Optional. Vector with (character) labels of the lines to be plotted. The length of this vector equals the number of 1s in WhichElements (or equals q*(q+1)/2). Note, if AddGamma = 1, then twice this number is needed. By default, Labels = NULL, which renders labels with Greek letter of SigmaVAR (as a function of the time-interval); and, if AddGamma, also for Gamma.
 #' @param Col Optional. Vector with color values (integers) of the lines to be plotted. The length of this vector equals the number of 1s in WhichElements (or equals q*(q+1)/2, the unique elements in the symmetric matrix SigmaVAR). By default, Col = NULL, which renders the same color for effects that belong to the same outcome variable (i.e. a row in the SigmaVAR matrix). See \url{https://www.statmethods.net/advgraphs/parameters.html} for more information about the values.
 #' @param Lty Optional. Vector with line type values (integers) of the lines to be plotted. The length of this vector equals the number of 1s in WhichElements (or equals q*(q+1)/2). By default, Lty = NULL, which renders solid lines for the variances and the same type of dashed line for the covariances. See \url{https://www.statmethods.net/advgraphs/parameters.html} for more information about the values.
-#' @param Title Optional. A character or a list consisting of maximum 3 characters or 'call' class objects, like from the paste0() function, that together represent the title of the Phi-plot. By default, Title = NULL, then the following code will be used for the title: as.list(expression(paste0(Sigma[VAR](Delta[t]), " plot:"), "How do the VAR(1) (co)variance parameters vary", "as a function of the time-interval")).
+#' @param Title Optional. A character or a list consisting of maximum 3 character-strings or 'expression' class objects that together represent the title of the Phi-plot. By default, Title = NULL, then the following code will be used for the title: as.list(expression(Sigma[VAR](Delta[t])~plot), "How do the VAR(1) (co)variance parameters vary", "as a function of the time-interval").
 #'
 #' @return This function returns a Psi/SigmaVAR-plot for a range of time intervals.
 #' @importFrom expm expm
@@ -49,7 +49,7 @@
 #'
 #' # Example 1.1: unstandardized Phi&SigmaVAR #
 #' #
-#' # Make plot of SigmaVAR
+#' # Make plot of SigmaVAR (3 examples):
 #' SigmaVARPlot(DeltaT, Phi, SigmaVAR)
 #' SigmaVARPlot(DeltaT, Phi, SigmaVAR, Min = 0, Max = 10, Step = 0.01)
 #' SigmaVARPlot(DeltaT, Drift = Drift, Sigma = Sigma, Min = 0, Max = 10, Step = 0.01)
@@ -98,6 +98,8 @@
 
 
 SigmaVARPlot <- function(DeltaT = 1, Phi = NULL, SigmaVAR = NULL, Drift = NULL, Sigma = NULL, Gamma = NULL, AddGamma = 1, Stand = 0, Min = 0, Max = 10, Step = 0.05, WhichElements = NULL, Labels = NULL, Col = NULL, Lty = NULL, Title = NULL) {
+#DeltaT = 1; Phi = NULL; SigmaVAR = NULL; Drift = NULL; Sigma = NULL; Gamma = NULL; AddGamma = 1; Stand = 0; Min = 0; Max = 10; Step = 0.05; WhichElements = NULL; Labels = NULL; Col = NULL; Lty = NULL; Title = NULL
+#library(CTmeta); Phi <- myPhi[1:2,1:2]; SigmaVAR <- diag(2)
 
   #  #######################################################################################################################
   #
@@ -154,17 +156,17 @@ SigmaVARPlot <- function(DeltaT = 1, Phi = NULL, SigmaVAR = NULL, Drift = NULL, 
       }
     }
     #
-    # Check on B
-    if(length(B) > 1){
+    # Check on B=-Drift
+    if(length(Drift) > 1){
       Check_B_or_Phi(B=-Drift)
-      if(all(eigen(Drift)$val < 0)){
+      if(all(eigen(-Drift)$val < 0)){
         #("All the eigenvalues of the drift matrix B are negative; therefore. I assume the input was A=-B instead of B. I will use -A=B in the calculation.")
         #("Note that Phi(DeltaT) = expm(-B*DeltaT).")
         ("All the eigenvalues of the drift matrix Drift are positive. Therefore. I assume the input for Drift was B = -A instead of A. I will use Drift = -B = A.")
         ("Note that Phi(DeltaT) = expm(-B*DeltaT) = expm(A*DeltaT) = expm(Drift*DeltaT).")
         Drift = -Drift
       }
-      if(any(eigen(Drift)$val <= 0)){
+      if(any(eigen(-Drift)$val <= 0)){
         #("The function stopped, since some of the eigenvalues of the drift matrix B are negative or zero.")
         ("The function stopped, since some of the eigenvalues of the drift matrix Drift are positive or zero.")
         stop()
@@ -193,9 +195,9 @@ SigmaVARPlot <- function(DeltaT = 1, Phi = NULL, SigmaVAR = NULL, Drift = NULL, 
       # Calculate Gamma
       if(is.null(Phi)){
         if(q == 1){
-          Phi <- exp(-B*DeltaT)
+          Phi <- exp(Drift*DeltaT)
         }else{
-          Phi <- expm(-B*DeltaT)
+          Phi <- expm(Drift*DeltaT)
         }
       }
       Gamma <- Gamma.fromVAR(Phi, SigmaVAR)
@@ -300,7 +302,7 @@ SigmaVARPlot <- function(DeltaT = 1, Phi = NULL, SigmaVAR = NULL, Drift = NULL, 
       stop()
     }
     if(length(Title) > 3){
-      print(paste0("The argument (list) Title should at max contain 3 items. Currently, it consists of ", length(Title), " items."))
+      print(paste0("The list Title should at max contain 3 items. Currently, it consists of ", length(Title), " items."))
       stop()
     }
     # Option: Also check whether each element in list either a "call" or a 'character' is...
@@ -347,16 +349,25 @@ SigmaVARPlot <- function(DeltaT = 1, Phi = NULL, SigmaVAR = NULL, Drift = NULL, 
   }
 
   if(is.null(Title)){
-    Title <- as.list(expression(paste0(Sigma[VAR](Delta[t]), " plot:"), "How do the VAR(1) (co)variance parameters vary", "as a function of the time-interval"))
+    Title_1 <- expression(Sigma[VAR](Delta[t])~plot)
+    Title_2 <- "How do the VAR(1) (co)variance parameters vary"
+    Title_3 <- "as a function of the time-interval"
   }else{
+    Title_1 <- NULL
+    Title_2 <- NULL
     if(length(Title) == 1){
-      if(is.list(Title)){Title <- Title[[1]]}
-      Title <- list(" ", " ", Title)
-    }
-    if(length(Title) == 2){
-      title1 <- Title[[1]]
-      title2 <- Title[[2]]
-      Title <- list("", title1, title2)
+      if(is.list(Title)){
+        Title_3 <- Title[[1]]
+      }else{
+        Title_3 <- Title
+      }
+    }else if(length(Title) == 2){
+      Title_2 <- Title[[1]]
+      Title_3 <- Title[[2]]
+    }else if(length(Title) == 3){
+      Title_1 <- Title[[1]]
+      Title_2 <- Title[[2]]
+      Title_3 <- Title[[3]]
     }
   }
 
@@ -406,16 +417,19 @@ SigmaVARPlot <- function(DeltaT = 1, Phi = NULL, SigmaVAR = NULL, Drift = NULL, 
     }
   }
 
+  Xlab <- expression(Time-interval (Delta[t]))
+  Ylab <- expression(Phi(Delta[t])~values)
+  #
   #wd <- getwd()
   #dev.copy(png, filename = paste0(wd, "/www/PhiPlot.png"))
   teller <- 1
   YLIM=c(min(SigmaVARDeltaTs, Gamma), max(SigmaVARDeltaTs, Gamma))
   plot(y=rep(0, length(DeltaTs)), x=DeltaTs, type="l", ylim=YLIM,
-       ylab = expression(paste0(Sigma[VAR](Delta[t]), " values")),
-       xlab = expression(paste0("Time-interval (", Delta[t], ")", sep="")),
+       ylab = Ylab,
+       xlab = Xlab,
        col=1000, lwd=2, lty=1,
-       main=mtext(do.call(expression, Title), side=3, line = c(2,1,0), cex = 1 )
-       #"Effect lag curve: \n How do the VAR(1) parameters Phi vary \n as a function of the time-interval"
+       main = mtext(side=3, line=2, adj=0, as.expression(Title_1)),
+       sub = mtext(side=3, line=c(1,0), adj=0, c(as.expression(Title_2), as.expression(Title_3)))
   )
   #
   teller <- 0

@@ -830,6 +830,8 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
         max <- max(DeltaT)
         step <- (max - min + 1)/10
         PhiPlot(DeltaTStar, overallPhi, Min = min, Max = max, Step = step, Title = Title)
+        #phi_plot <- ggPhiPlot(DeltaTStar, overallPhi, Min = min, Max = max, Step = step, Title = Title)
+        #phi_plot$PhiPlot
       }
       #
       #

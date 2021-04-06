@@ -17,7 +17,7 @@
 #' @param Labels Optional. Vector with (character) labels of the lines to be plotted. The length of this vector equals the number of 1s in WhichElements (or equals q*q). By default, Labels = NULL, which renders labels with Greek letter of Phi (as a function of the time-interval) together with the indices (of outcome and predictor variables).
 #' @param Col Optional. Vector with color values (integers) of the lines to be plotted. The length of this vector equals the number of 1s in WhichElements (or equals q*q). By default, Col = NULL, which renders the same color for effects that belong to the same outcome variable (i.e. a row in the Drift matrix). See \url{https://www.statmethods.net/advgraphs/parameters.html} for more information about the values.
 #' @param Lty Optional. Vector with line type values (integers) of the lines to be plotted. The length of this vector equals the number of 1s in WhichElements (or equals q*q). By default, Lty = NULL, which renders solid lines for the autoregressive effects and the same type of dashed line for reciprocal effects (i.e., same type for Phi_ij as for Phi_ji). See \url{https://www.statmethods.net/advgraphs/parameters.html} for more information about the values.
-#' @param Title Optional. A character or a list consisting of maximum 2 character-strings or 'expression' class objects that together represent the title of the Phi-plot. By default, Title = NULL, then the following code will be used for the title: as.list(expression(Phi(Delta[t])~plot), "How do the lagged parameters vary as a function of the time-interval")).
+#' @param Title Optional. A character or a list consisting of maximum 2 character-strings or 'expression' class objects that together represent the title of the Phi-plot. By default, Title = NULL, then the following code will be used for the title: as.list(expression(Phi(Delta[t])~plot), "How do the lagged parameters vary \n as a function of the time-interval")). Note that the default 2-items list will result in 3 lines because of the use of '\n'.
 #'
 #' @return This function returns a Phi-plot for a range of time intervals.
 #' @importFrom expm expm
@@ -326,7 +326,7 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
 
   if(is.null(Title)){
     Title_1 <- expression(Phi(Delta[t])~plot)
-    Title_2 <- "How do the lagged parameters vary as a function of the time-interval"
+    Title_2 <- "How do the lagged parameters vary \n as a function of the time-interval"
   }else{
     if(length(Title) == 1){
       if(is.list(Title)){
@@ -379,8 +379,9 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
     scale_color_manual(name = " ", values = Col, labels = legendT) +
     ylab(Ylab) +
     xlab(Xlab) +
-    labs(title = as.expression(Title_1),
-         subtitle = as.expression(Title_2)) +
+    #labs(title = as.expression(Title_1),
+    #     subtitle = as.expression(Title_2)) +
+    ggtitle(as.expression(Title_1), subtitle = Title_2) +
     theme_classic() +
     theme(plot.title = element_text(margin = margin(t = 20))) +
     ylim(0,1) +
@@ -393,9 +394,10 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
 
   if(complex){
     # Multiple solutions and add 3 plots (2 for 2 different solutions and one scatter plot)
-    Title_2_N <- "using an 'aliasing' matrix (i.e., another solution for A)"
+    Title_2_N <- "using an 'aliasing' matrix \n (i.e., another solution for A)"
     Title_1_N2 <- expression(Phi(Delta[t])~scatter~plot~'for'~multiples~of~Delta[t])
     Title_2_N2 <- expression(Note~that~'for'~multiples~of~Delta[t]~Phi(Delta[t])~is~unique)
+    #Title_2_N2 <- expression(paste("Note that for multiples of ", Delta[t], "\n", Phi(Delta[t]), "is unique"))
 
     EigenDrift <- eigen(Drift)
     V <- EigenDrift$vector
@@ -463,8 +465,9 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
         scale_color_manual(name = " ", values = Col, labels = legendT) +
         ylab(Ylab) +
         xlab(Xlab) +
-        labs(title = as.expression(Title_1),
-             subtitle = Title_2_N) +
+        #labs(title = as.expression(Title_1),
+        #     subtitle = Title_2_N) +
+        ggtitle(as.expression(Title_1), subtitle = Title_2_N) +
         theme_classic() +
         theme(plot.title = element_text(margin = margin(t = 20))) +
         ylim(0,1) +
@@ -487,8 +490,9 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
     scale_color_manual(name = " ", values = Col, labels = legendT) +
     ylab(Ylab) +
     xlab(Xlab) +
-    labs(title = as.expression(Title_1_N2),
-         subtitle = as.expression(Title_2_N2)) +
+    #labs(title = as.expression(Title_1_N2),
+    #     subtitle = as.expression(Title_2_N2)) +
+    ggtitle(as.expression(Title_1_N2), subtitle = Title_2_N2) +
     theme_classic() +
     theme(plot.title = element_text(margin = margin(t = 20))) +
     ylim(0,1) +

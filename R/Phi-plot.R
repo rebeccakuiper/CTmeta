@@ -17,7 +17,7 @@
 #' @param Labels Optional. Vector with (character) labels of the lines to be plotted. The length of this vector equals the number of 1s in WhichElements (or equals q*q). By default, Labels = NULL, which renders labels with Greek letter of Phi (as a function of the time-interval) together with the indices (of outcome and predictor variables).
 #' @param Col Optional. Vector with color values (integers) of the lines to be plotted. The length of this vector equals the number of 1s in WhichElements (or equals q*q). By default, Col = NULL, which renders the same color for effects that belong to the same outcome variable (i.e. a row in the Drift matrix). See \url{https://www.statmethods.net/advgraphs/parameters.html} for more information about the values.
 #' @param Lty Optional. Vector with line type values (integers) of the lines to be plotted. The length of this vector equals the number of 1s in WhichElements (or equals q*q). By default, Lty = NULL, which renders solid lines for the autoregressive effects and the same type of dashed line for reciprocal effects (i.e., same type for Phi_ij as for Phi_ji). See \url{https://www.statmethods.net/advgraphs/parameters.html} for more information about the values.
-#' @param Title Optional. A character or a list consisting of maximum 2 character-strings or 'expression' class objects that together represent the title of the Phi-plot. By default, Title = NULL, then the following code will be used for the title: as.list(expression(Phi(Delta[t])~plot), "How do the lagged parameters vary as a function of the time-interval")).
+#' @param Title Optional. A character or a list consisting of maximum 3 character-strings or 'expression' class objects that together represent the title of the Phi-plot. By default, Title = NULL, then the following code will be used for the title: as.list(expression(Phi(Delta[t])~plot), "How do the lagged parameters vary", "as a function of the time-interval").
 #'
 #' @return This function returns a Phi-plot for a range of time intervals.
 #' @importFrom expm expm
@@ -270,11 +270,11 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
   }
   if(!is.null(Title)){
     if(length(Title) != 1 & !is.list(Title)){
-      print(paste0("The argument Title should be a character or a list (containing at max 2 items)."))
+      print(paste0("The argument Title should be a character or a list (containing at max 3 items)."))
       stop()
     }
-    if(length(Title) > 2){
-      print(paste0("The list Title should at max contain 2 items. Currently, it consists of ", length(Title), " items."))
+    if(length(Title) > 3){
+      print(paste0("The list Title should at max contain 3 items. Currently, it consists of ", length(Title), " items."))
       stop()
     }
   # Option: Also check whether each element in list either a "call" or a 'character' is...
@@ -314,24 +314,27 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
     Lty <- as.vector(t(Lty))
   }
 
-  #expr_PhiPlot <- expression(Phi(Delta[t])~plot)
-  #
   if(is.null(Title)){
     Title_1 <- expression(Phi(Delta[t])~plot)
-    Title_2 <- "How do the lagged parameters vary as a function of the time-interval"
-    #Title_2 <- "How do the overall lagged parameters vary as a function of the time-interval"
-    Title <- list("", Title_1, Title_2)
+    Title_2 <- "How do the lagged parameters vary"
+    #Title_2 <- "How do the overall lagged parameters"
+    Title_3 <- "as a function of the time-interval"
   }else{
+    Title_1 <- NULL
+    Title_2 <- NULL
     if(length(Title) == 1){
       if(is.list(Title)){
-        Title_1 <- Title[[1]]
+        Title_3 <- Title[[1]]
       }else{
-        Title_1 <- Title
+        Title_3 <- Title
       }
-      Title_2 <- NULL
     }else if(length(Title) == 2){
+      Title_2 <- Title[[1]]
+      Title_3 <- Title[[2]]
+    }else if(length(Title) == 3){
       Title_1 <- Title[[1]]
       Title_2 <- Title[[2]]
+      Title_3 <- Title[[3]]
     }
   }
 
@@ -389,9 +392,8 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
        ylab = Ylab,
        xlab = Xlab,
        col=1000, lwd=2, lty=1,
-       main = mtext(side=3, line=1, adj=0, as.expression(Title_1)),
-       sub = mtext(side=3, line=0, adj=0, as.expression(Title_2))
-       #"Effect lag curve: \n How do the VAR(1) parameters Phi vary \n as a function of the time-interval"
+       main = mtext(side=3, line=2, adj=0, as.expression(Title_1)),
+       sub = mtext(side=3, line=c(1,0), adj=0, c(as.expression(Title_2), as.expression(Title_3)))
   )
   #
   teller <- 0
@@ -423,9 +425,11 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
 
   if(complex){
     # Multiple solutions and add 3 plots (2 for 2 different solutions and one scatter plot)
-    Title_2_N <- "using an 'aliasing' matrix (i.e., another solution for A)"
+    Title_2_N <- "using an 'aliasing' matrix"
+    Title_3_N <- "(i.e., another solution for A)"
     Title_1_N2 <- expression(Phi(Delta[t])~scatter~plot~'for'~multiples~of~Delta[t])
-    Title_2_N2 <- expression(Note~that~'for'~multiples~of~Delta[t]~Phi(Delta[t])~is~unique)
+    Title_2_N2 <- expression(Note~that~'for'~multiples~of~Delta[t])
+    Title_3_N2 <- expression(Phi(Delta[t])~is~unique)
 
     EigenDrift <- eigen(Drift)
     V <- EigenDrift$vector
@@ -457,8 +461,8 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
       plot(y=rep(0, length(DeltaTs)), x=DeltaTs, type="l", ylim=c(min(PhiDeltaTs_N), max(PhiDeltaTs_N)),
            ylab = Ylab, xlab = Xlab,
            col=1000, lwd=2, lty=1,
-           main = mtext(side=3, line=1, adj=0, as.expression(Title_1)),
-           sub = mtext(side=3, line=0, adj=0, as.expression(Title_2_N))
+           main = mtext(side=3, line=2, adj=0, as.expression(Title_1)),
+           sub = mtext(side=3, line=c(1,0), adj=0, c(as.expression(Title_2_N), as.expression(Title_3_N)))
       )
       #
       teller <- 0
@@ -484,8 +488,8 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
     plot(y=rep(0, length(DeltaTs)), x=DeltaTs, type="l", ylim=c(min(PhiDeltaTs_N), max(PhiDeltaTs_N)),
          ylab = Ylab, xlab = Xlab,
          col=1000, lwd=2, lty=1,
-         main = mtext(side=3, line=1, adj=0, as.expression(Title_1_N2)),
-         sub = mtext(side=3, line=0, adj=0, as.expression(Title_2_N2))
+         main = mtext(side=3, line=2, adj=0, as.expression(Title_1_N2)),
+         sub = mtext(side=3, line=c(1,0), adj=0, c(as.expression(Title_2_N2), as.expression(Title_3_N2)))
     )
     #
     teller <- 0

@@ -57,7 +57,7 @@ Note that SigmaVAR converges to Gamma, so the time-interval dependent curves of 
 
 \item{Lty}{Optional. Vector with line type values (integers) of the lines to be plotted. The length of this vector equals the number of 1s in WhichElements (or equals q*(q+1)/2). By default, Lty = NULL, which renders solid lines for the variances and the same type of dashed line for the covariances. See \url{https://www.statmethods.net/advgraphs/parameters.html} for more information about the values.}
 
-\item{Title}{Optional. A character or a list consisting of maximum 3 characters or 'call' class objects, like from the paste0() function, that together represent the title of the Phi-plot. By default, Title = NULL, then the following code will be used for the title: as.list(expression(paste0(Sigma[VAR](Delta[t]), " plot:"), "How do the VAR(1) (co)variance parameters vary", "as a function of the time-interval")).}
+\item{Title}{Optional. A character or a list consisting of maximum 3 character-strings or 'expression' class objects that together represent the title of the Phi-plot. By default, Title = NULL, then the following code will be used for the title: as.list(expression(Sigma[VAR](Delta[t])~plot), "How do the VAR(1) (co)variance parameters vary", "as a function of the time-interval").}
 }
 \value{
 This function returns a Psi/SigmaVAR-plot for a range of time intervals.
@@ -88,7 +88,7 @@ Sigma <- diag(q) # for ease. Note that this is not the CT-equivalent of SigmaVAR
 
 # Example 1.1: unstandardized Phi&SigmaVAR #
 #
-# Make plot of SigmaVAR
+# Make plot of SigmaVAR (3 examples):
 SigmaVARPlot(DeltaT, Phi, SigmaVAR)
 SigmaVARPlot(DeltaT, Phi, SigmaVAR, Min = 0, Max = 10, Step = 0.01)
 SigmaVARPlot(DeltaT, Drift = Drift, Sigma = Sigma, Min = 0, Max = 10, Step = 0.01)
