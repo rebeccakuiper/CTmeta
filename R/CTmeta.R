@@ -19,6 +19,8 @@
 #' @importFrom fastDummies dummy_cols
 #' @importFrom metafor rma.mv
 #' @importFrom metafor rma.uni
+#' @export print.CTmeta
+#' @export summary.CTmeta
 #' @export
 #' @examples
 #'
@@ -62,6 +64,16 @@
 #' # Note: Do NOT use
 #' #CTmeta(N, DeltaT, DeltaTStar, Phi, Gamma)
 #' # Then, CTmeta incorrectly uses SigmaVAR = Gamma.
+#'
+#' # Different types of output options are possible:
+#' CTm <- CTmeta(N, DeltaT, DeltaTStar, Phi, Gamma = Gamma)
+#' CTm
+#' print(CTm)
+#' summary(CTm)
+#' print(CTm, digits = 4)
+#' summary(CTm, digits = 4)
+#' # In Rstudio, use 'CTm$' to see what output there is. For example:
+#' CTm$summaryMetaAnalysis
 #'
 #'
 #' # Random effects model #
@@ -852,7 +864,9 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
           final <- list(DeltaTStar = dT_star,
                         Overall_standPhi_DeltaTStar = matrix(Phi_metaan_MV, byrow = T, ncol = q),
                         Overall_vecStandPhi_DeltaTStar = Phi_metaan_MV,
-                        elliptical_CI = multiCI,
+                        #elliptical_CI = multiCI,
+                        LB_elliptical_CI = multiCI[1,],
+                        UB_elliptical_CI = multiCI[2,],
                         alpha_CI = alpha,
                         CovMx_OverallPhi_DeltaTStar = CovMxPhi_metaan,
                         messageTrans = messageTrans, messageMultivar = messageMultivar,
@@ -863,7 +877,9 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
           final <- list(DeltaTStar = dT_star,
                         Overall_standPhi_DeltaTStar = matrix(Phi_metaan_MV, byrow = T, ncol = q),
                         Overall_vecStandPhi_DeltaTStar = Phi_metaan_MV,
-                        elliptical_CI = multiCI,
+                        #elliptical_CI = multiCI,
+                        LB_elliptical_CI = multiCI[1,],
+                        UB_elliptical_CI = multiCI[2,],
                         alpha_CI = alpha,
                         CovMx_OverallPhi_DeltaTStar = CovMxPhi_metaan,
                         tau2 = tau2_metaan_MV,
@@ -961,5 +977,6 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
                         ratioDeltaT = ratioDeltaT)
         }
       }
-      return(final)
+      class(final) <- c("CTmeta", "list")
+      final
     }
