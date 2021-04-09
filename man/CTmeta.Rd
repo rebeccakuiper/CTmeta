@@ -143,9 +143,10 @@ ggPhiPlot(DeltaTStar, overallPhi, Min = 0, Max = 40, Step = 0.5, Title = Title)
 ## Evaluate dominance of cross-lagged effects ##
 
 # Extract the vectorized overall standardized overallPhi matrix and its covariance matrix
+# using the functions coef() and vcov()
 out_CTmeta <- CTmeta(N, DeltaT, DeltaTStar, Phi, Gamma = Gamma)
-est <- out_CTmeta$Overall_vecStandPhi_DeltaTStar
-VCOV <- out_CTmeta$CovMx_OverallPhi_DeltaTStar
+est <- coef(out_CTmeta) # or: est <- out_CTmeta$Overall_vecStandPhi_DeltaTStar
+VCOV <- vcov(out_CTmeta) # or: VCOV <- out_CTmeta$CovMx_OverallPhi_DeltaTStar
 # Specify hypothesis
 H1 <- "overallPhi12 < overallPhi21"
 #H2 <- "overallPhi12 > overallPhi21"

@@ -21,6 +21,8 @@
 #' @importFrom metafor rma.uni
 #' @export print.CTmeta
 #' @export summary.CTmeta
+#' @export coef.CTmeta
+#' @export vcov.CTmeta
 #' @export
 #' @examples
 #'
@@ -117,9 +119,10 @@
 #' ## Evaluate dominance of cross-lagged effects ##
 #'
 #' # Extract the vectorized overall standardized overallPhi matrix and its covariance matrix
+#' # using the functions coef() and vcov()
 #' out_CTmeta <- CTmeta(N, DeltaT, DeltaTStar, Phi, Gamma = Gamma)
-#' est <- out_CTmeta$Overall_vecStandPhi_DeltaTStar
-#' VCOV <- out_CTmeta$CovMx_OverallPhi_DeltaTStar
+#' est <- coef(out_CTmeta) # or: est <- out_CTmeta$Overall_vecStandPhi_DeltaTStar
+#' VCOV <- vcov(out_CTmeta) # or: VCOV <- out_CTmeta$CovMx_OverallPhi_DeltaTStar
 #' # Specify hypothesis
 #' H1 <- "overallPhi12 < overallPhi21"
 #' #H2 <- "overallPhi12 > overallPhi21"
@@ -921,7 +924,7 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
         if(FEorRE == 1){ # FE
           final <- list(DeltaTStar = dT_star,
                         Overall_standPhi_DeltaTStar = matrix(Phi_metaan, byrow = T, ncol = q),
-                        Overall_vecSstandPhi_DeltaTStar = Phi_metaan,
+                        Overall_vecStandPhi_DeltaTStar = Phi_metaan,
                         LB_CI = minPhi,
                         UB_CI = maxPhi,
                         alpha_CI = alpha,
@@ -934,7 +937,7 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
         } else{ # RE
           final <- list(DeltaTStar = dT_star,
                         Overall_standPhi_DeltaTStar = matrix(Phi_metaan, byrow = T, ncol = q),
-                        Overall_vecSstandPhi_DeltaTStar = Phi_metaan,
+                        Overall_vecStandPhi_DeltaTStar = Phi_metaan,
                         LB_CI = minPhi,
                         UB_CI = maxPhi,
                         alpha_CI = alpha,
