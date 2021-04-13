@@ -28,7 +28,8 @@ print.CTmeta <- function(x, digits = NULL)
 
   if(!is.null(x$tau2)){
     cat("\n")
-    cat(paste0("An random-effects model is used. The tau^2 values can be obtained via '$tau2'; see '$summaryMetaAnalysis' for more information."))
+    cat(paste0("Note: An random-effects model is used. The tau^2 values can be obtained via '$tau2'; see '$summaryMetaAnalysis' for more information."))
+    cat("\n")
   }
 
   cat("\n")
