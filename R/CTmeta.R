@@ -68,14 +68,14 @@
 #' # Then, CTmeta incorrectly uses SigmaVAR = Gamma.
 #'
 #' # Different types of output options are possible:
-#' CTm <- CTmeta(N, DeltaT, DeltaTStar, Phi, Gamma = Gamma)
-#' CTm
-#' print(CTm)
-#' summary(CTm)
-#' print(CTm, digits = 4)
-#' summary(CTm, digits = 4)
-#' # In Rstudio, use 'CTm$' to see what output there is. For example:
-#' CTm$summaryMetaAnalysis
+#' CTma <- CTmeta(N, DeltaT, DeltaTStar, Phi, Gamma = Gamma)
+#' CTma
+#' print(CTma)
+#' summary(CTma)
+#' print(CTma, digits = 4)
+#' summary(CTma, digits = 4)
+#' # In Rstudio, use 'CTma$' to see what output there is. For example:
+#' CTma$summaryMetaAnalysis
 #'
 #'
 #' # Random effects model #
