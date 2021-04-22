@@ -2,7 +2,7 @@
 % Please edit documentation in R/CTmeta.R
 \name{CTmeta}
 \alias{CTmeta}
-\title{Continuous-time meta-analysis on standarized lagged effects}
+\title{Continuous-time meta-analysis on standardized lagged effects}
 \usage{
 CTmeta(
   N,
@@ -46,7 +46,7 @@ Note that if Phi and Gamma are known, SigmaVAR can be calculated. Hence, only Si
 The output comprises, among others, the overall vectorized transformed standardized lagged effects, their covariance matrix, and the corresponding elliptical/multivariate 95\% CI.
 }
 \description{
-Continuous-time meta-analysis (CTmeta) on standarized lagged effects (Phi) taking into account the various time-intervals used in the primary studies. There is also an interactive web application on my website to perform CTmeta: \url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}.
+Continuous-time meta-analysis (CTmeta) on standardized lagged effects (Phi) taking into account the various time-intervals used in the primary studies. There is also an interactive web application on my website to perform CTmeta: \url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}.
 }
 \examples{
 
@@ -93,8 +93,7 @@ CTmeta(N, DeltaT, DeltaTStar, Phi, NULL, Gamma)
 
 # Different types of output options are possible:
 CTma <- CTmeta(N, DeltaT, DeltaTStar, Phi, Gamma = Gamma)
-CTma
-print(CTma)
+CTma # gives same as print(CTma)
 summary(CTma)
 print(CTma, digits = 4)
 summary(CTma, digits = 4)
