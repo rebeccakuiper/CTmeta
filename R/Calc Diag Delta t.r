@@ -26,30 +26,24 @@
 #' ##################################################################################################
 #' # Input needed in examples below with q=2 variables.
 #' # I will use the example matrices stored in the package:
-#' Phi <- myPhi[1:2, 1:2]
+#' Phi <- myPhi[1:2, 1:2] # = Phi(1), that is, Phi when DeltaT = 1
 #' q <- dim(Phi)[1]
-#' #SigmaVAR <- diag(q) # Then, DeltaT_diag = DeltaT = 1
+#' #SigmaVAR <- diag(q) # Then, DeltaT_diag = 1 (since, implicitly, DeltaT = 1)
 #' Gamma <- matrix(c(1, 0.5, 0.4, 1), byrow = T, nrow = q, ncol = q)
 #' SigmaVAR <- Gamma - Phi %*% Gamma %*% t(Phi)
-#'
-#' # If you would use the drift matrix Drift as input, then use:
-#' if (!require("expm")) install.packages("expm") # Use expm package for function logm()
-#' library(expm)
-#' DeltaT <- 1
-#' Drift <- logm(Phi)/DeltaT
+#' # or:
+#' Drift <- myDrift
 #' Sigma <- diag(2) # for ease. Note that this is not the CT-equivalent of SigmaVAR.
 #' ##################################################################################################
 #'
-#' DiagDeltaT(Phi = Phi, SigmaVAR = SigmaVAR)
-#' # or
-#' DiagDeltaT(Phi, SigmaVAR = SigmaVAR)
+#' DiagDeltaT(Phi, SigmaVAR)
 #'
 #' # If you would use the drift matrix Drift as input, then use:
 #' DiagDeltaT(Drift = Drift, Sigma = Sigma)
 #'
 #'
 #' # Note that the function 'SigmaVARPlot' can help to see whether there is a DeltaT for which SigmaVAr(DeltaT) is diagonal.
-#' SigmaVARPlot(DeltaT, Phi, SigmaVAR = SigmaVAR)
+#' SigmaVARPlot(DeltaT, Phi, SigmaVAR)
 #'
 #'
 #'
@@ -68,8 +62,11 @@
 #'
 
 
-DiagDeltaT <- function(Phi = NULL, Drift = NULL, SigmaVAR = NULL, Sigma = NULL, Gamma = NULL, xstart_DeltaT = 1) {
+DiagDeltaT <- function(Phi = NULL, SigmaVAR = NULL, Drift = NULL, Sigma = NULL, Gamma = NULL, xstart_DeltaT = 1) {
   #xstart_DeltaT <- 1
+
+  DeltaT <- 1 # Needed for determining B/Drift.
+  # Btw Cannot use it as option, yet, then I have to change code such that DeltaT_diag is adjusted accordingly (by transfarming Phi).
 
   # Needed: check on CTM param, Phi, and Gamma
 
@@ -281,7 +278,7 @@ DiagDeltaT <- function(Phi = NULL, Drift = NULL, SigmaVAR = NULL, Sigma = NULL, 
   #SolveForSigmaAndDelta_first(xstart)
   fstart_first <- SolveForSigmaAndDelta_first(xstart)
   if(all(is.nan(fstart_first) == FALSE) == FALSE){
-    message_nan = "For the first (q+1) equations, the starting values for the q variances and for DeltaT_diag do not render values from the function."
+    message_nan <- "For the first (q+1) equations, the starting values for the q variances and for DeltaT_diag do not render values from the function."
     #cat(message_nan)
   }
 
@@ -317,10 +314,10 @@ DiagDeltaT <- function(Phi = NULL, Drift = NULL, SigmaVAR = NULL, Sigma = NULL, 
   fstart_last <- SolveForSigmaAndDelta_last(xstart)
   if(all(is.nan(fstart_last) == FALSE) == FALSE){
     if(all(is.nan(fstart_first) == FALSE) == FALSE){
-      message_nan = "For the first and last (q+1) equations, the starting values for the q variances and for DeltaT_diag do not render values from the function."
+      message_nan <- "For the first and last (q+1) equations, the starting values for the q variances and for DeltaT_diag do not render values from the function."
       #cat(message_nan)
     }else{
-      message_nan = "For the last (q+1) equations, the starting values for the q variances and for DeltaT_diag do not render values from the function."
+      message_nan <- "For the last (q+1) equations, the starting values for the q variances and for DeltaT_diag do not render values from the function."
       #cat(message_nan)
     }
   }
@@ -349,18 +346,18 @@ DiagDeltaT <- function(Phi = NULL, Drift = NULL, SigmaVAR = NULL, Sigma = NULL, 
   #
   # Function terminated if sol_first$termcd does not equal 1 (and 1 is "Function criterion is near zero. Convergence of function values has been achieved.")
   if(sol_first$termcd != 1 & sol_last$termcd != 1){ # Both terminated
-    message_termcd = "The nleqslv-function terminated (for the first and last q+1 equations)."
+    message_termcd <- "The nleqslv-function terminated (for the first and last q+1 equations)."
     #cat(message_termcd)
     Terminated = 3 # = both terminated
   }else{ # Not both terminated, but one or none
     Terminated = 0 # = none terminated
     if(sol_first$termcd != 1){
-      message_termcd = "The nleqslv-function terminated (for the first q+1 equations)."
+      message_termcd <- "The nleqslv-function terminated (for the first q+1 equations)."
       #cat(message_termcd)
       Terminated = 1 # = first terminated
     }
     if(sol_last$termcd != 1){
-      message_termcd = "The nleqslv-function terminated (for the last q+1 equations)."
+      message_termcd <- "The nleqslv-function terminated (for the last q+1 equations)."
       #cat(message_termcd)
       Terminated = 2 # = last terminated
     }
@@ -397,7 +394,7 @@ DiagDeltaT <- function(Phi = NULL, Drift = NULL, SigmaVAR = NULL, Sigma = NULL, 
       if(abs(DiagAndDelta_first[q+1] - DiagAndDelta_last[q+1]) < 0.0001){ # Then, same solution for DeltaT
         DiagAndDelta <- DiagAndDelta_first
         #
-        message_DiagAndDelta = "There are two solutions and they are the same."
+        message_DiagAndDelta <- "There are two solutions and they are the same."
         #cat(message_DiagAndDelta)
       }else{ # Note same solution
         if(DiagAndDelta_first[q+1] > 0.0001 & DiagAndDelta_last[q+1] > 0.0001){ # Then, both positive solution and highest may be infinity, so take lowest one.
@@ -406,7 +403,7 @@ DiagDeltaT <- function(Phi = NULL, Drift = NULL, SigmaVAR = NULL, Sigma = NULL, 
             DiagAndDelta <- DiagAndDelta_first
           }
           #
-          message_DiagAndDelta = "There are two positive solutions, the lowest DeltaT is used."
+          message_DiagAndDelta <- "There are two positive solutions, the lowest DeltaT is used."
           #cat(message_DiagAndDelta)
         }else{ # Then, only one positive and thus take highest one.
           DiagAndDelta <- DiagAndDelta_last
@@ -414,19 +411,19 @@ DiagDeltaT <- function(Phi = NULL, Drift = NULL, SigmaVAR = NULL, Sigma = NULL, 
             DiagAndDelta <- DiagAndDelta_first
           }
           #
-          message_DiagAndDelta = "There are two solutions, but only one positive DeltaT."
+          message_DiagAndDelta <- "There are two solutions, but only one positive DeltaT."
           #cat(message_DiagAndDelta)
         }
       }
       if(any(DiagAndDelta[1:q] < 0)){ # All variances should be positive
-        message = "There is no positive DeltaT such that SigmaVAR is a 'positive diagonal' matrix. \n That is, the solution contains one or more negative variances."
+        message <- "There is no positive DeltaT such that SigmaVAR is a 'positive diagonal' matrix. \n That is, the solution contains one or more negative variances."
         #cat(message)
       }
     }else{ # Then, both < 0.0001 and probably (at least one) near 0.
-      message = "There is no non-negative DeltaT such that SigmaVAR is a diagonal matrix. \n Only for DeltaT approximately 0, it is (approximately) a 0-matrix."
+      message <- "There is no non-negative DeltaT such that SigmaVAR is a diagonal matrix. \n Only for DeltaT approximately 0, it is (approximately) a 0-matrix."
       #cat(message)
       #
-      message_DiagAndDelta = "There are two solutions and both are negative. At least one of them is probaly near zero."
+      message_DiagAndDelta <- "There are two solutions and both are negative. At least one of them is probaly near zero."
       #cat(message_DiagAndDelta)
       #
       # If q > 4, inspect the (q+1)*(q-4)/2 not seen equations. See how many sets of q+1 needed.
@@ -441,19 +438,19 @@ DiagDeltaT <- function(Phi = NULL, Drift = NULL, SigmaVAR = NULL, Sigma = NULL, 
 
     # Check positive DeltaT and positive variances/diagonals:
     if(DiagAndDelta[q+1] < 0.0001 & any(DiagAndDelta[1:q] < 0)){
-      message = "There is no non-negative DeltaT such that SigmaVAR is a 'positive diagonal' matrix. \n Only for DeltaT approximately 0, it is (approximately) a 0-matrix."
+      message <- "There is no non-negative DeltaT such that SigmaVAR is a 'positive diagonal' matrix. \n Only for DeltaT approximately 0, it is (approximately) a 0-matrix."
       #cat(message)
       #
       # If q > 4, inspect the (q+1)*(q-4)/2 not seen equations. See how many sets of q+1 needed.
       # Notably, using other subsets or other starting values can help as well.
     }else if(DiagAndDelta[q+1] < 0.0001){
-      message = "There is no non-negative DeltaT such that SigmaVAR is a diagonal matrix. \n Only for DeltaT approximately 0, it is (approximately) a 0-matrix."
+      message <- "There is no non-negative DeltaT such that SigmaVAR is a diagonal matrix. \n Only for DeltaT approximately 0, it is (approximately) a 0-matrix."
       #cat(message)
       #
       # If q > 4, inspect the (q+1)*(q-4)/2 not seen equations. See how many sets of q+1 needed.
       # Notably, using other subsets or other starting values can help as well.
     }else if(any(DiagAndDelta[1:q] < 0)){ # All variants should be positive
-      message = "There is no positive DeltaT such that SigmaVAR is a 'positive diagonal' matrix. \n That is, the solution contains one or more negative variances."
+      message <- "There is no positive DeltaT such that SigmaVAR is a 'positive diagonal' matrix. \n That is, the solution contains one or more negative variances."
       #cat(message)
     }
 
@@ -491,10 +488,10 @@ DiagDeltaT <- function(Phi = NULL, Drift = NULL, SigmaVAR = NULL, Sigma = NULL, 
 
     if(q > 4){
       final <- list(final,
-                    Warning=cat("Since q > 4, some equations in calculating DeltaT_diag were not used. \n
+                    Warning <- "Since q > 4, some equations in calculating DeltaT_diag were not used. \n
                     When from the Psi-plot/SigmaVAR-plot it is clear that there exist a positive (non-zero) 'DeltaT_diag' solution and \n
                     adjusting the starting value accordingly does not help, please contact me (r.m.kuiper@uu.nl). \n
-                    Then, I will add a part to the code where the currently un-used equations are inspected.")
+                    Then, I will add a part to the code where the currently un-used equations are inspected."
                     # Note that in theory the starting values for the q variances can be a problem as well:
                     # I may want to adjust that first 9depending on the solution and message obtained).
       )
@@ -505,8 +502,8 @@ DiagDeltaT <- function(Phi = NULL, Drift = NULL, SigmaVAR = NULL, Sigma = NULL, 
                   message = message,
                   Phi_DeltaT_diag = diag(q),
                   SigmaVAR_DeltaT_diag = matrix(0,q,q),
-                  errorMatrices=errorMatrices,
-                  message_startvalues=message_startvalues)
+                  errorMatrices = errorMatrices,
+                  message_startvalues = message_startvalues)
   }
 
   return(final)

@@ -15,14 +15,9 @@
 #'
 #' ## Example 1 ##
 #' #
-#' Phi <- myPhi[1:2,1:2]
-#' #Phi <- matrix(c(0.50, 0.15, 0.25, 0.40), byrow=T, ncol = 2)
-#' if (!require("expm")) install.packages("expm") # Use expm package for function logm()
-#' library(expm)
-#' DeltaT <- 1
-#' Drift <- logm(Phi)/DeltaT
+#' Drift <- myDrift
 #' #
-#' q <- dim(Phi)[1]
+#' q <- dim(Drift)[1]
 #' Sigma <- diag(q) # for ease
 #' #
 #' Gamma.fromCTM(Drift, Sigma)

@@ -21,13 +21,10 @@
 #' ##################################################################################################
 #' # Input needed in examples below with q=2 variables.
 #' # I will use the example matrices stored in the package:
-#' Phi <- myPhi[1:2, 1:2]
 #' DeltaT <- 1
-#'
-#' # If you would use the drift matrix Drift as input, then use:
-#' if (!require("expm")) install.packages("expm") # Use expm package for function logm()
-#' library(expm)
-#' Drift <- logm(Phi)/DeltaT
+#' Phi <- myPhi[1:2, 1:2]
+#' # or: Drift
+#' Drift <- myDrift
 #' ##################################################################################################
 #'
 #' MaxDeltaT(DeltaT = DeltaT, Phi = Phi)
@@ -35,7 +32,7 @@
 #' MaxDeltaT(DeltaT, Phi)
 #'
 #' # Note that the DeltaT for which Phi_ij reaches its maximum or minimum ('DeltaT_MinOrMaxPhi') differs per Phi_ij.
-#' # Therefore, the matrix 'MinOrMaxPhi' is not a Phi-matrix, but each element should be inspected seperately.
+#' # Therefore, the matrix 'MinOrMaxPhi' is not a Phi-matrix, but each element should be inspected separately.
 #' # To obtain the full Phi-matrix for a specific DeltaT one can use:
 #' DeltaT_MinOrMaxPhi <- MaxDeltaT(DeltaT, Phi)$DeltaT_MinOrMaxPhi
 #' StandTransPhi(DeltaTStar = DeltaT_MinOrMaxPhi[1,2], DeltaT, N = NULL, Phi)
@@ -46,6 +43,8 @@
 #'
 #' # Note that the function 'PhiPlot' can help to see (per element) whether a minimum or maximum is reached.
 #' PhiPlot(DeltaT, Phi)
+#' # or:
+#' ggPhiPlot(DeltaT, Phi)
 #'
 #'
 #' ## Example 2: input from fitted object of class "varest" ##
@@ -54,7 +53,10 @@
 #' if (!require("vars")) install.packages("vars")
 #' library(vars)
 #' out_VAR <- VAR(data, p = 1)
+#' DeltaT <- 1
 #' MaxDeltaT(DeltaT, out_VAR)
+#' #
+#' ggPhiPlot(DeltaT, out_VAR)
 #'
 
 MaxDeltaT <- function(DeltaT = 1, Phi = NULL, Drift = NULL) {

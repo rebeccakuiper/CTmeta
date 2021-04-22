@@ -6,8 +6,8 @@
 \usage{
 DiagDeltaT(
   Phi = NULL,
-  Drift = NULL,
   SigmaVAR = NULL,
+  Drift = NULL,
   Sigma = NULL,
   Gamma = NULL,
   xstart_DeltaT = 1
@@ -17,9 +17,9 @@ DiagDeltaT(
 \item{Phi}{Matrix of size q times q of (un)standardized lagged effects of the first-order discrete-time vector autoregressive (DT-VAR(1)) model.
 It also takes a fitted object from the classes "varest" (from the VAR() function in vars package) and "ctsemFit" (from the ctFit() function in the ctsem package); see example below. From such an object, the (standardized) Drift matrix is calculated/extracted.}
 
-\item{Drift}{Optional (either Phi or Drift). Underling first-order continuous-time lagged effects matrix (i.e., Drift matrix) of the discrete-time lagged effects matrix Phi(DeltaT). By default, input for Phi is used; only when Phi = NULL, Drift will be used.}
-
 \item{SigmaVAR}{Residual covariance matrix of the first-order discrete-time vector autoregressive (DT-VAR(1)) model.}
+
+\item{Drift}{Optional (either Phi or Drift). Underling first-order continuous-time lagged effects matrix (i.e., Drift matrix) of the discrete-time lagged effects matrix Phi(DeltaT). By default, input for Phi is used; only when Phi = NULL, Drift will be used.}
 
 \item{Sigma}{Optional (either SigmaVAR, Sigma or Gamma). Residual covariance matrix of the first-order continuous-time (CT-VAR(1)) model, that is, the diffusion matrix. By default, input for SigmaVAR is used; only when SigmaVAR = NULL, Sigma will be used.}
 
@@ -44,30 +44,24 @@ Time-interval (DeltaT) for which the (discrete-time) residual covariance matrix 
 ##################################################################################################
 # Input needed in examples below with q=2 variables.
 # I will use the example matrices stored in the package:
-Phi <- myPhi[1:2, 1:2]
+Phi <- myPhi[1:2, 1:2] # = Phi(1), that is, Phi when DeltaT = 1
 q <- dim(Phi)[1]
-#SigmaVAR <- diag(q) # Then, DeltaT_diag = DeltaT = 1
+#SigmaVAR <- diag(q) # Then, DeltaT_diag = 1 (since, implicitly, DeltaT = 1)
 Gamma <- matrix(c(1, 0.5, 0.4, 1), byrow = T, nrow = q, ncol = q)
 SigmaVAR <- Gamma - Phi \%*\% Gamma \%*\% t(Phi)
-
-# If you would use the drift matrix Drift as input, then use:
-if (!require("expm")) install.packages("expm") # Use expm package for function logm()
-library(expm)
-DeltaT <- 1
-Drift <- logm(Phi)/DeltaT
+# or:
+Drift <- myDrift
 Sigma <- diag(2) # for ease. Note that this is not the CT-equivalent of SigmaVAR.
 ##################################################################################################
 
-DiagDeltaT(Phi = Phi, SigmaVAR = SigmaVAR)
-# or
-DiagDeltaT(Phi, SigmaVAR = SigmaVAR)
+DiagDeltaT(Phi, SigmaVAR)
 
 # If you would use the drift matrix Drift as input, then use:
 DiagDeltaT(Drift = Drift, Sigma = Sigma)
 
 
 # Note that the function 'SigmaVARPlot' can help to see whether there is a DeltaT for which SigmaVAr(DeltaT) is diagonal.
-SigmaVARPlot(DeltaT, Phi, SigmaVAR = SigmaVAR)
+SigmaVARPlot(DeltaT, Phi, SigmaVAR)
 
 
 

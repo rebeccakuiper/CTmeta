@@ -54,14 +54,13 @@
 #' CTmeta(N, DeltaT, DeltaTStar, Phi, Gamma = Gamma)
 #'
 #' # There are multiple options; use one of the following:
-#' CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR, Gamma, Moderators, Mod, 1)
-#' CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR, Gamma, Moderators, Mod)
+#' CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR, Gamma, Moderators, Mod, 1) # The 1, here, says FEorRE = 1
+#' CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR, Gamma, Moderators, Mod)    # Notably, if Moderators = 0, 'Mod' is not inspected.
 #' CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR, Gamma, Moderators)
 #' CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR, Gamma)
-#' CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR)
-#' CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR = SigmaVAR)
-#' CTmeta(N, DeltaT, DeltaTStar, Phi, Gamma = Gamma)
-#' CTmeta(N, DeltaT, DeltaTStar, Phi, NULL, Gamma)
+#' CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR)        # Says, implicitly, Gamma = NULL
+#' CTmeta(N, DeltaT, DeltaTStar, Phi, Gamma = Gamma)   # Says, implicitly, SigmaVAR = NULL
+#' CTmeta(N, DeltaT, DeltaTStar, Phi, NULL, Gamma)     # Says SigmaVAR = NULL
 #'
 #' # Note: Do NOT use
 #' #CTmeta(N, DeltaT, DeltaTStar, Phi, Gamma)
@@ -87,15 +86,18 @@
 #'
 #' Mod <- matrix(c(64,65,47)) # 1 moderator
 #' #q <- dim(Phi)[2]; Mod <- matrix(cbind(c(64,65,47), c(78,89,34)), ncol = q); colnames(Mod) <- c("Mod1", "Mod2") # two moderators, in each column 1
-#' CTmeta(N, DeltaT, DeltaTStar, Phi, Gamma = Gamma, Moderators = 1, Mod = Mod) # fixed effects model
-#' #CTmeta(N, DeltaT, DeltaTStar, Phi, Gamma = Gamma, Moderators = 1, Mod = Mod, FEorRE = 2) # random effects model
-#'
+#' CTma <- CTmeta(N, DeltaT, DeltaTStar, Phi, Gamma = Gamma, Moderators = 1, Mod = Mod) # fixed effects model
+#' #CTma <- CTmeta(N, DeltaT, DeltaTStar, Phi, Gamma = Gamma, Moderators = 1, Mod = Mod, FEorRE = 2); CTma$tau2 # random effects model
+#' summary(CTma)
 #'
 #'
 #' ## Make customized Phi-plot of resulting overall Phi ##
 #'
 #' # Option 1: Using the plot option in the function:
 #' CTmeta(N, DeltaT, DeltaTStar, Phi, Gamma = Gamma, PrintPlot = TRUE)
+#' # The plot can be stored and retrieved as an object as follows:
+#' # CTma <- CTmeta(N, DeltaT, DeltaTStar, Phi, Gamma = Gamma, PrintPlot = TRUE)
+#' # CTma$PhiPlot
 #'
 #'
 #' # Option 2: A customized Phi-plot can be made using the function 'PhiPlot' (see below) or by using the interactive web app from my website (\url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}).
@@ -112,33 +114,41 @@
 #' PhiPlot(DeltaTStar, overallPhi, Min = 0, Max = 40, Step = 0.5, Title = Title)
 #' # or
 #' ggPhiPlot(DeltaTStar, overallPhi, Min = 0, Max = 40, Step = 0.5, Title = Title)
+#' # The plot can be stored and retrieved as an object as follows:
+#' # ggPhiPlot <- ggPhiPlot(DeltaTStar, overallPhi, Min = 0, Max = 40, Step = 0.5, Title = Title)
+#' # ggPhiPlot$PhiPlot
 #'
 #'
-#'
-#' ## Evaluate dominance of cross-lagged effects ##
+#' ## Evaluate dominance of (absolute values of) cross-lagged effects ##
 #'
 #' # Extract the vectorized overall standardized overallPhi matrix and its covariance matrix
 #' # using the functions coef() and vcov()
 #' out_CTmeta <- CTmeta(N, DeltaT, DeltaTStar, Phi, Gamma = Gamma)
-#' est <- coef(out_CTmeta) # or: est <- out_CTmeta$Overall_vecStandPhi_DeltaTStar
+#' est <- coef(out_CTmeta)  # or: est  <- out_CTmeta$Overall_vecStandPhi_DeltaTStar
 #' VCOV <- vcov(out_CTmeta) # or: VCOV <- out_CTmeta$CovMx_OverallPhi_DeltaTStar
+#' #
+#' # Example 1: dominance of (absolute values of) cross-lagged effects
 #' # Specify hypothesis
-#' H1 <- "overallPhi12 < overallPhi21"
-#' #H2 <- "overallPhi12 > overallPhi21"
+#' H1 <- "abs(overallPhi12) < abs(overallPhi21)"
+#' #H2 <- "abs(overallPhi12) > abs(overallPhi21)" # = complement of H1 and does not need to be specified, see below.
 #' # Evaluate dominance of cross-lagged effects via AIC-type criterion called the GORICA (Altinisik, Nederhof, Hoijtink, Oldehinkel, Kuiper, conditionally accepted).
 #' if (!require("restriktor")) install.packages("restriktor")
 #' # Use restriktor package for function goric().
 #' # Authors of goric(): Vanbrabant and Kuiper.
 #' library(restriktor)
 #' #goric(est, VCOV = VCOV, H1, H2, type = "gorica", comparison = "none")
-#' # or equivalently:
+#' # or, since H2 is complement of H1, equivalently:
 #' goric(est, VCOV = VCOV, H1, type = "gorica", comparison = "complement")
-#'
+#' #
+#' # Example 1: dominance of (absolute values of) cross-lagged effects and autoregressive effects
+#' H1 <- "abs(overallPhi12) < abs(overallPhi21); abs(overallPhi11) < abs(overallPhi22)"
+#' # Note that, now, specification of complement 'by hand' harder.
+#' goric(est, VCOV = VCOV, H1, type = "gorica", comparison = "complement")
 #'
 #'
 #' ## What if primary studies report a (lagged) correlation matrix ##
 #'
-#' # Supose all S=3 primary studies reported the following lagged correlation matrix:
+#' # Suppose, for ease, that all S=3 primary studies reported the following lagged correlation matrix:
 #' q <- 2
 #' corr_YXYX <- matrix(c(1.00, 0.40, 0.63, 0.34,
 #'                       0.40, 1.00, 0.31, 0.63,
@@ -843,9 +853,9 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
         min <- min(DeltaT)
         max <- max(DeltaT)
         step <- (max - min + 1)/10
-        PhiPlot(DeltaTStar, overallPhi, Min = min, Max = max, Step = step, Title = Title)
-        #phi_plot <- ggPhiPlot(DeltaTStar, overallPhi, Min = min, Max = max, Step = step, Title = Title)
-        #phi_plot$PhiPlot
+        #PhiPlot(DeltaTStar, overallPhi, Min = min, Max = max, Step = step, Title = Title)
+        phi_plot <- ggPhiPlot(DeltaTStar, overallPhi, Min = min, Max = max, Step = step, Title = Title)
+        PhiPlot <- phi_plot$PhiPlot
       }
       #
       #
@@ -979,6 +989,12 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
                         ratioDeltaT = ratioDeltaT)
         }
       }
+
+      if(PrintPlot == T){
+        final[["PhiPlot"]] <- PhiPlot
+        print(PhiPlot)
+      }
+
       class(final) <- c("CTmeta", "list")
       final
     }

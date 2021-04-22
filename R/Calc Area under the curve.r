@@ -20,16 +20,13 @@
 #' ##################################################################################################
 #' # Input needed in examples below with q=2 variables.
 #' # I will use the example matrices stored in the package:
-#' Phi <- myPhi[1:2, 1:2]
-#'
-#' # If you would use the drift matrix Drift as input, then use:
-#' if (!require("expm")) install.packages("expm") # Use expm package for function logm()
-#' library(expm)
 #' DeltaT <- 1
-#' Drift <- logm(Phi)/DeltaT
+#' Phi <- myPhi[1:2, 1:2]
+#' # or: Drift
+#' DeltaT <- 1
+#' Drift <- myDrift
 #' ##################################################################################################
 #'
-#' DeltaT <- 1
 #' Area(DeltaT = DeltaT, Phi = Phi)
 #' # or
 #' Area(DeltaT, Phi)

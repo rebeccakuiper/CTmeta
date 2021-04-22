@@ -1,6 +1,11 @@
 
 Check_SigmaVAR <- function(SigmaVAR, q){
 
+  if(q == 0){
+    print(paste0("The argument q = 0, it should be larger than 0. Notably, SigmaVAR (and Phi) is a q times q matrix."))
+    stop()
+  }
+
   # Checks on SigmaVAR
   if(length(SigmaVAR) != 1){
     if(length(dim(SigmaVAR)) < 2){

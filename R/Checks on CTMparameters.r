@@ -19,14 +19,10 @@
 #'
 #' ##################################################################################################
 #' # Input needed in examples below with q=2 variables.
-#' # I will use the example matrices stored in the package:
-#' Phi <- myPhi[1:2, 1:2]
-#' if (!require("expm")) install.packages("expm") # Use expm package for function logm()
-#' library(expm)
-#' DeltaT <- 1
-#' Drift <- logm(Phi)/DeltaT
+#' # I will use the example matrix stored in the package:
+#' Drift <- myDrift
 #' #
-#' q <- dim(Phi)[1]
+#' q <- dim(Drift)[1]
 #' Sigma <- diag(q) # for ease
 #' #
 #' Gamma <- Gamma.fromCTM(Drift, Sigma)
@@ -61,6 +57,11 @@ ChecksCTM <- function(Drift, Sigma = NULL, Gamma = NULL) {
     B <- -1 * summary(Drift)$DRIFT
     Sigma <- summary(Drift)$DIFFUSION
     #
+    if(length(B) > 1){
+      eigenvalDrift <- eigen(B)$val
+    }else{
+      eigenvalDrift <- B
+    }
     if(length(B) == 1){
       q <- 1
     }else{
@@ -86,30 +87,33 @@ ChecksCTM <- function(Drift, Sigma = NULL, Gamma = NULL) {
     # Check on B
     if(length(B) > 1){
       Check_B(B)
-      if(all(eigen(B)$val < 0)){
-        #("All the eigenvalues of the drift matrix B are negative; therefore. I assume the input was A=-B instead of B. I will use -A=B in the calculation.")
-        #("Note that Phi(DeltaT) = expm(-B*DeltaT).")
-        ("All the eigenvalues of the drift matrix Drift are positive. Therefore. I assume the input for Drift was B = -A instead of A. I will use Drift = -B = A.")
-        ("Note that Phi(DeltaT) = expm(-B*DeltaT) = expm(A*DeltaT) = expm(Drift*DeltaT).")
-        B = -B
-      }
-      if(any(eigen(B)$val <= 0)){
-        #("The function stopped, since some of the eigenvalues of the drift matrix B are negative or zero.")
-        ("The function stopped, since some of the eigenvalues of the drift matrix Drift are positive or zero.")
-        stop()
-      }
+      eigenvalDrift <- eigen(B)$val
+    }else{
+      eigenvalDrift <- B
     }
+    #
+    if(all(eigen(B)$val < 0)){
+      #("All the eigenvalues of the drift matrix B are negative; therefore. I assume the input was A=-B instead of B. I will use -A=B in the calculation.")
+      #("Note that Phi(DeltaT) = expm(-B*DeltaT).")
+      ("All the eigenvalues of the drift matrix Drift are positive. Therefore. I assume the input for Drift was B = -A instead of A. I will use Drift = -B = A.")
+      ("Note that Phi(DeltaT) = expm(-B*DeltaT) = expm(A*DeltaT) = expm(Drift*DeltaT).")
+      B = -B
+    }
+    #if(any(eigen(B)$val <= 0)){
+    #  #("The function stopped, since some of the eigenvalues of the drift matrix B are negative or zero.")
+    #  ("The function stopped, since some of the eigenvalues of the drift matrix Drift are positive or zero.")
+    #  stop()
+    #}
 
     # Check on Sigma and Gamma - need Sigma
     if(is.null(Sigma) & is.null(Gamma)){ # Both Sigma and Gamma unknown
       print(paste0("The arguments Sigma and Gamma are not found: Both Sigma and Gamma are unknown; one should be part of the input."))
       stop()
-    }else if(!is.null(Sigma)){ # Sigma known
+    }
+    if(!is.null(Sigma)){ # Sigma known
       # Check on Sigma
       Check_Sigma(Sigma, q)
     }else{ # Sigma unknown and Gamma known, calculate Sigma
-      # Checks on Gamma
-      Check_Gamma(Gamma, q)
       # Calculate Sigma
       if(q != 1){
         Sigma <- B %*% Gamma + t(B %*% Gamma)
@@ -123,15 +127,7 @@ ChecksCTM <- function(Drift, Sigma = NULL, Gamma = NULL) {
   if(!is.null(Gamma)){ # Gamma known
     # Checks on Gamma
     Check_Gamma(Gamma, q)
-    if(!is.null(Sigma)){ # Sigma unknow, calculate it
-      # Calculate Sigma
-      if(q != 1){
-        SigmaVAR <- Gamma - Phi %*% Gamma %*% t(Phi)
-      }else{
-        SigmaVAR <- Gamma - Phi * Gamma * Phi
-      }
-    }
-  }else{ # Gamma unknown, calculate Gamma from Sigma and Phi
+  }else{ # Gamma unknown, calculate Gamma from Sigma and -B=Drift
     # Calculate Gamma
     # Sigma <- B %*% Gamma + Gamma %*% t(B)
     Gamma <- Gamma.fromCTM(-B, Sigma)
@@ -144,18 +140,16 @@ append(error, "Checks on the matrices Drift, Sigma, and Gamma are inspected, the
 
 
 # Eigenvalues positive (or at least real part)
-diagD_B <- eigen(B, symmetric=FALSE)$val
-if (any(Re(diagD_B) <= 0)){
+if (any(Re(eigenvalDrift) <= 0)){
   cat("The (real parts of the) eigenvalues of the drift matrix 'Drift' are positive. \n Hence, the process is not stable. \n")
   ChecksAreFine <- FALSE
   error <- append(error, "Not all (real parts of the) eigenvalues of the drift matrix 'Drift' are negative. \n Hence, the process is not stable.")
 }
 #
 # CHECK on complex
-Eigen_ParamCTM <- eigen(B)$val
-if (is.complex(Eigen_ParamCTM) == TRUE){
-  if(all(Im(Eigen_ParamCTM) > -base::pi/1)){
-    if(all(Im(Eigen_ParamCTM) < base::pi/1)){
+if (is.complex(eigenvalDrift) == TRUE){
+  if(all(Im(eigenvalDrift) > -base::pi/1)){
+    if(all(Im(eigenvalDrift) < base::pi/1)){
       cat("The drift matrix 'Drift' has complex eigenvalues and -vectors, but is a unique solution for Phi(1). \n (nl imaginary part of the complex eigenvalues of drift matrix lie in (-pi/1, pi/1)). \n")
       ChecksAreFine <- FALSE
       error <- append(error, "Note: The drift matrix 'Drift' has complex eigenvalues and -vectors, but is a unique solution for Phi(1). \n (nl imaginary part of the complex eigenvalues of drift matrix lie in (-pi/1, pi/1)).")
@@ -170,9 +164,9 @@ if (is.complex(Eigen_ParamCTM) == TRUE){
 
 # CHECK pos def
 #Decomp_Sigma <- eigen(Sigma, sym=TRUE)
-#diagDSigma <- Decomp_Sigma$values
-diagDSigma <- eigen(Sigma, symmetric=T)$val
-if (any(diagDSigma <= 0)){
+#eigenvalSigma <- Decomp_Sigma$values
+eigenvalSigma <- eigen(Sigma, symmetric=T)$val
+if (any(eigenvalSigma <= 0)){
   cat("'Sigma' is not positive definite. \n")
   ChecksAreFine <- FALSE
   error <- append(error, "'Sigma' is not positive definite.")
@@ -180,9 +174,9 @@ if (any(diagDSigma <= 0)){
 
 # CHECK pos def
 #Decomp_Gamma <- eigen(Gamma, sym=TRUE)
-#diagDGamma <- Decomp_Gamma$values
-diagDGamma <- eigen(Gamma, symmetric=T)$val
-if (any(diagDGamma <= 0)){
+#eigenvalGamma <- Decomp_Gamma$values
+eigenvalGamma <- eigen(Gamma, symmetric=T)$val
+if (any(eigenvalGamma <= 0)){
   cat("The stationary covariance matrix ('Gamma'), corresponding to 'Drift' and 'Sigma', is not positive definite. \n")
   ChecksAreFine <- FALSE
   error <- append(error, "'Gamma' (stationary covariance matrix) is not positive definite.")
@@ -190,13 +184,15 @@ if (any(diagDGamma <= 0)){
 
 
   if(ChecksAreFine){
-    error <- "All matrices (Drift, Sigma, and Gamma) are fine."
+    error <- "No error: All matrices (Drift, Sigma, and Gamma) are fine."
   }
 
 
 ############################################################################################################
 
-final <- list(ChecksAreFine = ChecksAreFine, Gamma = Gamma, error = error)
+final <- list(ChecksAreFine = ChecksAreFine, error = error,
+              Drift = -B, Sigma = Sigma, Gamma = Gamma,
+              EigenVal_Drift = eigenvalDrift, EigenVal_Sigma = eigenvalSigma, EigenVal_Gamma = eigenvalGamma)
 return(final)
 
 }

@@ -1,6 +1,11 @@
 
 Check_Gamma <- function(Gamma, q){
 
+  if(q == 0){
+    print(paste0("The argument q = 0, it should be larger than 0. Notably, Gamma is a q times q matrix."))
+    stop()
+  }
+
   # Checks on Gamma
   if(length(Gamma) != 1){
     if(length(dim(Gamma)) < 2){

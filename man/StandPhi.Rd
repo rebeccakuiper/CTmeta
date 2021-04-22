@@ -2,7 +2,7 @@
 % Please edit documentation in R/Calc CovMx stand Phi.r
 \name{StandPhi}
 \alias{StandPhi}
-\title{StandPhi}
+\title{Calculate standardized lagged effects matrix and accompanying matrices}
 \usage{
 StandPhi(N = NULL, Phi, SigmaVAR = NULL, Gamma = NULL, alpha = 0.05)
 }
@@ -41,10 +41,10 @@ SigmaVAR <- diag(q) # for ease
 # Calculate the Gamma corresponding to Phi and SigmaVAR - used in the second example
 Gamma <- Gamma.fromVAR(Phi, SigmaVAR) # ?Gamma.fromVAR
 
-#Example where only SigmaVAR is known and not Gamma
+#Example where SigmaVAR is known and Gamma unknown
 StandPhi(N, Phi, SigmaVAR)
 
-#Example where only Gamma is known and not SigmaVAR
+#Example where Gamma is known and SigmaVAR unknown
 StandPhi(N, Phi, NULL, Gamma)
 # or
 StandPhi(N, Phi, Gamma = Gamma)
@@ -61,7 +61,10 @@ StandPhi(N, out_VAR)
 
 
 ## Example 3: obtain only standardized lagged effects ##
-# Note: Use Phi and SigmaVAR from Example 1
+Phi <- myPhi[1:2,1:2]
+q <- dim(Phi)[1]
+SigmaVAR <- diag(q) # for ease
+#
 StandPhi(N = NULL, Phi, SigmaVAR)
 # or
 StandPhi(Phi = Phi, SigmaVAR = SigmaVAR)

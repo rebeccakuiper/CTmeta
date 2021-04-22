@@ -15,6 +15,9 @@ Check_Phi_or_B <- function(Phi){
   }else if(length(dim(Phi)) > 2){
     print(paste0("The lagged effects matrix Phi or Drift should be an q times q matrix. Currently, it is of size ", dim(Phi)))
     stop()
+  }else if(dim(Phi)[1] == 0 | dim(Phi)[2] == 0){
+    print(paste0("The lagged effects matrix Phi or Drift should be a square matrix of size q times q, with q > 0. Currently, it is of size ", dim(Phi)[1], " times ", dim(Phi)[2]))
+    stop()
   }else if(dim(Phi)[1] != dim(Phi)[2]){
     print(paste0("The lagged effects matrix Phi or Drift should be a square matrix of size q times q. Currently, it is of size ", dim(Phi)[1], " times ", dim(Phi)[2]))
     stop()

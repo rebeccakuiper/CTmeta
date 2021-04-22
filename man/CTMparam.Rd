@@ -18,10 +18,10 @@ It also takes a fitted object from the class "varest" (from the VAR() function i
 Note that if Phi and SigmaVAR are known, Gamma can be calculated; hence, either SigmaVAR or Gamma is needed as input.}
 }
 \value{
-The output renders the continuous-time equivalent matrices of the discrete-times ones.
+The output renders the continuous-time equivalent matrices of the discrete-times ones, together with some checks (namely, the stability of the process and uniqueness of the solution; see the function 'ChecksCTM' for checks on all matrices).
 }
 \description{
-The continuous-time lagged-effects model matrices correspoding to the discrete-time ones. The interactive web application 'Phi-and-Psi-Plots and Find DeltaT' also contains this functionality, you can find it on my website: \url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}.
+The continuous-time lagged-effects model matrices corresponding to the discrete-time ones. The interactive web application 'Phi-and-Psi-Plots and Find DeltaT' also contains this functionality, you can find it on my website: \url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}.
 }
 \examples{
 
@@ -31,7 +31,8 @@ The continuous-time lagged-effects model matrices correspoding to the discrete-t
 
 ##################################################################################################
 # Input needed in examples below with q=2 variables.
-# I will use the example matrices stored in the package:
+# I will use the example matrix stored in the package:
+DeltaT <- 1
 Phi <- myPhi[1:2, 1:2]
 #
 q <- dim(Phi)[1]
@@ -40,7 +41,6 @@ SigmaVAR <- diag(q) # for ease
 Gamma <- Gamma.fromVAR(Phi, SigmaVAR)
 ##################################################################################################
 
-DeltaT <- 1
 CTMparam(DeltaT, Phi, SigmaVAR)
 # or
 CTMparam(DeltaT, Phi, Gamma = Gamma)

@@ -71,18 +71,15 @@ This function makes a Phi-plot of Phi(DeltaT) for a range of time intervals base
 # Phi(DeltaT)
 DeltaT <- 1
 Phi <- myPhi[1:2,1:2]
-#
-# Determine the continuous-time equivalent, that is, the drift matrix
-if (!require("expm")) install.packages("expm") # Use expm package for function logm()
-library(expm)
-Drift <- logm(Phi)/DeltaT
+# or: Drift
+Drift <- myDrift
 
 # Example 1.1: unstandardized Phi #
 #
 # Make plot of Phi
 ggPhiPlot(DeltaT, Phi)
-ggPhiPlot(DeltaT, Phi, Min = 0, Max = 10, Step = 0.01)
-ggPhiPlot(DeltaT, Drift = Drift, Min = 0, Max = 10, Step = 0.01)
+ggPhiPlot(DeltaT, Phi, Min = 0, Max = 10, Step = 0.01)           # Specifying range x-axis and precision
+ggPhiPlot(DeltaT, Drift = Drift, Min = 0, Max = 10, Step = 0.01) # Using Drift instead of Phi
 
 
 # Example 1.2: standardized Phi #
@@ -107,8 +104,11 @@ ggPhiPlot(DeltaT, out_VAR, Stand = 1)
 
 
 ## Example 3: Change plot options ##
-# Note: use Phi or Drift from Example 1
+DeltaT <- 1
+Phi <- myPhi[1:2,1:2]
 q <- dim(Phi)[1]
+SigmaVAR <- diag(q) # for ease
+#
 WhichElements <- matrix(1, ncol = q, nrow = q) # Now, all elements are 1
 diag(WhichElements) <- 0 # Now, the autoregressive parameters are excluded by setting the diagonals to 0.
 Lab <- c("12", "21")

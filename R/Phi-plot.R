@@ -34,18 +34,15 @@
 #' # Phi(DeltaT)
 #' DeltaT <- 1
 #' Phi <- myPhi[1:2,1:2]
-#' #
-#' # Determine the continuous-time equivalent, that is, the drift matrix
-#' if (!require("expm")) install.packages("expm") # Use expm package for function logm()
-#' library(expm)
-#' Drift <- logm(Phi)/DeltaT
+#' # or: Drift
+#' Drift <- myDrift
 #'
 #' # Example 1.1: unstandardized Phi #
 #' #
 #' # Make plot of Phi
 #' PhiPlot(DeltaT, Phi)
-#' PhiPlot(DeltaT, Phi, Min = 0, Max = 10, Step = 0.01)
-#' PhiPlot(DeltaT, Drift = Drift, Min = 0, Max = 10, Step = 0.01)
+#' PhiPlot(DeltaT, Phi, Min = 0, Max = 10, Step = 0.01)           # Specifying range x-axis and precision
+#' PhiPlot(DeltaT, Drift = Drift, Min = 0, Max = 10, Step = 0.01) # Using Drift instead of Phi
 #'
 #'
 #' # Example 1.2: standardized Phi #
@@ -70,8 +67,11 @@
 #'
 #'
 #' ## Example 3: Change plot options ##
-#' # Note: use Phi or Drift from Example 1
+#' DeltaT <- 1
+#' Phi <- myPhi[1:2,1:2]
 #' q <- dim(Phi)[1]
+#' SigmaVAR <- diag(q) # for ease
+#' #
 #' WhichElements <- matrix(1, ncol = q, nrow = q) # Now, all elements are 1
 #' diag(WhichElements) <- 0 # Now, the autoregressive parameters are excluded by setting the diagonals to 0.
 #' Lab <- c("12", "21")

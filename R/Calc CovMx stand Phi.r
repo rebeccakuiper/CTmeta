@@ -1,5 +1,5 @@
 
-#' StandPhi
+#' Calculate standardized lagged effects matrix and accompanying matrices
 #'
 #' This function calculates the (vectorized) standardized lagged effects matrix, their covariance matrix, and corresponding elliptical 95\% confidence interval (CI). There is also an interactive web application on my website: Standardizing and/or transforming lagged regression estimates (\url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}).
 #'
@@ -30,10 +30,10 @@
 #' # Calculate the Gamma corresponding to Phi and SigmaVAR - used in the second example
 #' Gamma <- Gamma.fromVAR(Phi, SigmaVAR) # ?Gamma.fromVAR
 #'
-#' #Example where only SigmaVAR is known and not Gamma
+#' #Example where SigmaVAR is known and Gamma unknown
 #' StandPhi(N, Phi, SigmaVAR)
 #'
-#' #Example where only Gamma is known and not SigmaVAR
+#' #Example where Gamma is known and SigmaVAR unknown
 #' StandPhi(N, Phi, NULL, Gamma)
 #' # or
 #' StandPhi(N, Phi, Gamma = Gamma)
@@ -50,7 +50,10 @@
 #'
 #'
 #' ## Example 3: obtain only standardized lagged effects ##
-#' # Note: Use Phi and SigmaVAR from Example 1
+#' Phi <- myPhi[1:2,1:2]
+#' q <- dim(Phi)[1]
+#' SigmaVAR <- diag(q) # for ease
+#' #
 #' StandPhi(N = NULL, Phi, SigmaVAR)
 #' # or
 #' StandPhi(Phi = Phi, SigmaVAR = SigmaVAR)
@@ -184,12 +187,14 @@ if(!is.null(N)){
 ############################################################################################################
 
 if(!is.null(N)){
-  final <- list(StandPhi_DeltaT = Phi_s,
+  final <- list(Phi_DeltaT = Phi, StandPhi_DeltaT = Phi_s,
                 vecStandPhi_DeltaT = vecPhi, CovMx_vecStandPhi_DeltaT = CovMx, multiCI_vecStandPhi_DeltaT = multiCI,
-                standSigmaVAR_DeltaT = SigmaVAR_s, standGamma = Gamma_s)
+                SigmaVAR_DeltaT = SigmaVAR, standSigmaVAR_DeltaT = SigmaVAR_s,
+                Gamma = Gamma, standGamma = Gamma_s)
 }else{
-  final <- list(StandPhi_DeltaT = Phi_s,
-                standSigmaVAR_DeltaT = SigmaVAR_s, standGamma = Gamma_s)
+  final <- list(Phi_DeltaT = Phi, StandPhi_DeltaT = Phi_s,
+                SigmaVAR_DeltaT = SigmaVAR, standSigmaVAR_DeltaT = SigmaVAR_s,
+                Gamma = Gamma, standGamma = Gamma_s)
 }
 
 return(final)

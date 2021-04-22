@@ -25,33 +25,42 @@ print.CTmeta <- function(x, digits = NULL)
   }
   cat("\n")
   print(DF, digits = NrDigits, right = F)
+  cat("\n")
 
   if(!is.null(x$tau2)){
+    cat(paste0("Note: A random-effects model is used. The tau^2 values can be obtained via '$tau2'; see '$summaryMetaAnalysis' for more information."))
     cat("\n")
-    cat(paste0("Note: An random-effects model is used. The tau^2 values can be obtained via '$tau2'; see '$summaryMetaAnalysis' for more information."))
     cat("\n")
   }
 
-  cat("\n")
   cat("CTmeta Messages: \n")
   cat("- ")
   cat(x$messageTrans)
   cat("\n")
   cat("- ")
   cat(x$messageMultivar)
+  cat("\n")
 
   if(!is.null(x$StudiesComplexEV)){
-    cat("\n")
+    cat("The studies with compex eigenvalues: \n")
     cat(x$StudiesComplexEV)
+    cat("\n")
+    cat("\n")
   }
   if(!is.null(x$StudiesNegEV)) {
-    cat("\n")
+    cat("The studies with negative (real parts of the) eigenvalues: \n")
     cat(x$StudiesNegEV)
+    cat("\n")
+    cat("\n")
   }
   if(!is.null(x$StudiesCovMxNotPosDef)) {
-    cat("\n")
+    cat("The studies with not-positive definite (i.e., negative semidefinite) covariance matrices: \n")
     cat(x$StudiesCovMxNotPosDef)
+    cat("\n")
+    cat("\n")
   }
+
+
 
 
   return(invisible(x))

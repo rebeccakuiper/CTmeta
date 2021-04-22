@@ -1,6 +1,6 @@
 #' Discrete-time estimates from continuous-time estimates
 #'
-#' The discrete-time lagged-effects model matrices correspoding to the continuous-time ones. The interactive web application 'Phi-and-Psi-Plots and Find DeltaT' also contains this functionality, you can find it on my website: \url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}.
+#' The discrete-time lagged-effects model matrices corresponding to the continuous-time ones. The interactive web application 'Phi-and-Psi-Plots and Find DeltaT' also contains this functionality, you can find it on my website: \url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}.
 #'
 #' @param DeltaT Optional. The time interval used. By default, DeltaT = 1.
 #' @param Drift Matrix of size q times q of (un)standardized continuous-time lagged effects, called drift matrix. Note that Phi(DeltaT) = expm(Drift*DeltaT). By default, input for Phi is used; only when Phi = NULL, Drift will be used.
@@ -20,14 +20,10 @@
 #'
 #' ##################################################################################################
 #' # Input needed in examples below with q=2 variables.
-#' # I will use the example matrices stored in the package:
-#' Phi <- myPhi[1:2, 1:2]
-#' if (!require("expm")) install.packages("expm") # Use expm package for function logm()
-#' library(expm)
+#' # I will use the example matrix stored in the package:
 #' DeltaT <- 1
-#' Drift <- logm(Phi)/DeltaT
-#' #
-#' q <- dim(Phi)[1]
+#' Drift <- myDrift
+#' q <- dim(Drift)[1]
 #' Sigma <- diag(q) # for ease
 #' #
 #' Gamma <- Gamma.fromCTM(Drift, Sigma)

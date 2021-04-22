@@ -1,6 +1,11 @@
 
 Check_WhichElts <- function(WhichElements, q){
 
+  if(q == 0){
+    print(paste0("The argument q = 0, it should be larger than 0. Notably, WhichElements is a q times q matrix."))
+    stop()
+  }
+
   # Checks on WhichElements
   if(length(WhichElements) != 1){
     if(length(dim(WhichElements)) < 2){

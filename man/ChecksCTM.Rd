@@ -29,14 +29,10 @@ Checks on the continuous-time lagged-effects model matrices (like check whether 
 
 ##################################################################################################
 # Input needed in examples below with q=2 variables.
-# I will use the example matrices stored in the package:
-Phi <- myPhi[1:2, 1:2]
-if (!require("expm")) install.packages("expm") # Use expm package for function logm()
-library(expm)
-DeltaT <- 1
-Drift <- logm(Phi)/DeltaT
+# I will use the example matrix stored in the package:
+Drift <- myDrift
 #
-q <- dim(Phi)[1]
+q <- dim(Drift)[1]
 Sigma <- diag(q) # for ease
 #
 Gamma <- Gamma.fromCTM(Drift, Sigma)

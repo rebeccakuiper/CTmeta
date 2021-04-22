@@ -119,7 +119,7 @@ StandTransPhi <- function(DeltaTStar, DeltaT = 1, N = NULL, Phi, SigmaVAR = NULL
     #
     # Check on SigmaVAR and Gamma
     if(is.null(SigmaVAR) & is.null(Gamma)){ # Both SigmaVAR and Gamma unknown
-      print("Just to be sure:")
+      print("Just to be sure:") # TO DO
       print(paste0("The arguments SigmaVAR and Gamma are not found: Both SigmaVAR and Gamma are NULL."))
       print(paste0("Now, only the (unstandardized) transformed Phi is calculated."))
       print(paste0("In case you want a standarized matrix or more: either SigmaVAR and/or Gamma should be part of the input. In case of first matrix, specify 'SigmaVAR = <insert your matrix name>'."))

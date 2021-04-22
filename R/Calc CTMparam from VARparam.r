@@ -1,6 +1,6 @@
 #' Continuous-time estimates from discrete-time estimates
 #'
-#' The continuous-time lagged-effects model matrices correspoding to the discrete-time ones. The interactive web application 'Phi-and-Psi-Plots and Find DeltaT' also contains this functionality, you can find it on my website: \url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}.
+#' The continuous-time lagged-effects model matrices corresponding to the discrete-time ones. The interactive web application 'Phi-and-Psi-Plots and Find DeltaT' also contains this functionality, you can find it on my website: \url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}.
 #'
 #' @param DeltaT Optional. The time interval used. By default, DeltaT = 1.
 #' @param Phi (Un)standardized lagged effects matrix. If necessary, it is standardized and for the standardized and vectorized Phi the covariance matrix is determined.
@@ -9,7 +9,7 @@
 #' @param Gamma Optional (either SigmaVAR or Gamma). Stationary covariance matrix, that is, the contemporaneous covariance matrix of the data.
 #' Note that if Phi and SigmaVAR are known, Gamma can be calculated; hence, either SigmaVAR or Gamma is needed as input.
 #'
-#' @return The output renders the continuous-time equivalent matrices of the discrete-times ones.
+#' @return The output renders the continuous-time equivalent matrices of the discrete-times ones, together with some checks (namely, the stability of the process and uniqueness of the solution; see the function 'ChecksCTM' for checks on all matrices).
 #' @importFrom expm expm
 #' @importFrom expm logm
 #' @export
@@ -21,7 +21,8 @@
 #'
 #' ##################################################################################################
 #' # Input needed in examples below with q=2 variables.
-#' # I will use the example matrices stored in the package:
+#' # I will use the example matrix stored in the package:
+#' DeltaT <- 1
 #' Phi <- myPhi[1:2, 1:2]
 #' #
 #' q <- dim(Phi)[1]
@@ -30,7 +31,6 @@
 #' Gamma <- Gamma.fromVAR(Phi, SigmaVAR)
 #' ##################################################################################################
 #'
-#' DeltaT <- 1
 #' CTMparam(DeltaT, Phi, SigmaVAR)
 #' # or
 #' CTMparam(DeltaT, Phi, Gamma = Gamma)
@@ -199,27 +199,27 @@ if(is.null(SigmaVAR) & is.null(Gamma)){
 
 
 
-Eigen_ParamCTM <- diag(eigen(B)$val) # = -log(Eigen_ParamVAR) / DeltaT
+Eigen_ParamCTM <- eigen(B)$val # = -log(Eigen_ParamVAR) / DeltaT
 
-StableProcess = FALSE
+StableProcess <- FALSE
+StableProcess_message <- "The process is NOT stable, it is exploding (since not all (real parts of) the eigenvalues of Drift are positive or, equivalenty, not all absolute values of the eigenvalues of Phi are smaller than one)."
 if(all(Re(Eigen_ParamCTM) > 0)){
   if(all(abs(Eigen_ParamVAR) < 1)){
-    StableProcess = TRUE
+    StableProcess <- TRUE
+    StableProcess_message <- "The process is stable, it is restore to its equilibrium (since all (real parts of) the eigenvalues of Drift are positive or, equivalenty, all absolute values of the eigenvalues of Phi are smaller than one)."
   }
 }
 
-UniqueSolution = "FALSE: The resulting drift matrix Drift is NOT unique, there exist multiple solutions (nl complex eigenvalues)."
+UniqueSolution <- FALSE
+UniqueSolution_message <- "The resulting drift matrix Drift is NOT unique, there exist multiple solutions (since the eigenvalues of Drift (and thus also Phi) are complex, that is, have a non-zero imaginary part)."
 if(all(Im(Eigen_ParamCTM) == 0)){
-  UniqueSolution = "TRUE: The resulting drift matrix Drift is unique (nl real eigenvalues)."
+  UniqueSolution <- TRUE
+  UniqueSolution_message <- "The resulting drift matrix Drift is unique (since the eigenvalues of Drift (and thus also Phi) are, that is, have a zero imaginary part)."
+}else if(all(abs(Im(Eigen_ParamCTM)) < base::pi/DeltaT)){
+  UniqueSolution <- TRUE
+  UniqueSolution_message <- "The resulting drift matrix Drift is unique for your sampling frequency, that is, for your used DeltaT (since the imaginary part of the complex eigenvalues of Drift lie in (-pi/DeltaT, pi/DeltaT)); i.e., you measured frequently enough to know that it is this drift matrix and not another solution (which do exist, as can be seen from the plots)."
 }
-#if(all(Im(Eigen_ParamCTM) > -base::pi/DeltaT)){
-#  if(all(Im(Eigen_ParamCTM) < base::pi/DeltaT)){
-if(all(abs(Im(Eigen_ParamCTM)) < base::pi/DeltaT)){
-    UniqueSolution = "TRUE for your sampling frequency: The resulting drift matrix Drift is unique for your used DeltaT (nl imaginary part of the complex eigenvalues of Drift lie in (-pi/DeltaT, pi/DeltaT)); i.e., you measured frequently enough to know that it is this drift matrix and not another solution (which do exist, as can be seen from the plots)."
-}
- #  }
-#}
-
+#
 ##Multiple solutions - only if q=2!
 #N = 1
 #for(N in 1:3){
@@ -238,16 +238,18 @@ if(all(abs(Im(Eigen_ParamCTM)) < base::pi/DeltaT)){
 
 ############################################################################################################
 
-final <- list(eigenvalueDrift = -Eigen_ParamCTM,
-              eigenvaluePhi_DeltaT = Eigen_ParamVAR,
-              StableProcess = StableProcess,
-              #UniqueSolution = UniqueSolution,
-              Drift = -B,
+final <- list(Drift = -B,
               Sigma = Sigma,
               Gamma = Gamma,
               standDrift = Drift_s,
               standSigma = Sigma_s,
-              standGamma = Gamma_s)
+              standGamma = Gamma_s,
+              UniqueSolutionDrift = UniqueSolution,
+              UniqueSolutionDrift_message = UniqueSolution_message,
+              StableProcess = StableProcess,
+              StableProcess_message = StableProcess_message,
+              eigenvalueDrift = -Eigen_ParamCTM,
+              eigenvaluePhi_DeltaT = Eigen_ParamVAR)
 
 return(final)
 

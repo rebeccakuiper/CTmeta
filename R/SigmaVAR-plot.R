@@ -15,7 +15,7 @@
 #' @param Stand Optional. Indicator for whether Phi (or Drift) and SigmaVAR (or Sigma) should be standardized (1) or not (0). By default, Stand = 0.
 #' @param Min Optional. Minimum time interval used in the Phi-plot. By default, Min = 0.
 #' @param Max Optional. Maximum time interval used in the Phi-plot. By default, Max = 10.
-#' @param Step Optional. The step-size taken in the time intervals. By default, Step = 0.05. Hence, using the defaults, the Phi-plots is based on the values of Phi(DeltaT) for DeltaT = 0, 0.05, 0.10, ..., 10. Note: Especially in case of complex eigenvalues, this step size should be very small (then, the oscillating behaviour can be seen best).
+#' @param Step Optional. The step-size taken in the time intervals. By default, Step = 0.05. Hence, using the defaults, the Phi-plots is based on the values of Phi(DeltaT) for DeltaT = 0, 0.05, 0.10, ..., 10. Note: Especially in case of complex eigenvalues, this step size should be very small (then, the oscillating behavior can be seen best).
 #' @param WhichElements Optional. Matrix of same size as Drift denoting which element/line should be plotted (1) or not (0). By default, WhichElements = NULL. Note that even though not all lines have to be plotted, the full Phi/Drift and Sigma(VAR)/Gamma matrices are needed to determine the selected lines.
 #' @param Labels Optional. Vector with (character) labels of the lines to be plotted. The length of this vector equals the number of 1s in WhichElements (or equals q*(q+1)/2). Note, if AddGamma = 1, then twice this number is needed. By default, Labels = NULL, which renders labels with Greek letter of SigmaVAR (as a function of the time-interval); and, if AddGamma, also for Gamma.
 #' @param Col Optional. Vector with color values (integers) of the lines to be plotted. The length of this vector equals the number of 1s in WhichElements (or equals q*(q+1)/2, the unique elements in the symmetric matrix SigmaVAR). By default, Col = NULL, which renders the same color for effects that belong to the same outcome variable (i.e. a row in the SigmaVAR matrix). See \url{https://www.statmethods.net/advgraphs/parameters.html} for more information about the values.
@@ -40,10 +40,8 @@
 #' q <- dim(Phi)[1]
 #' SigmaVAR <- diag(q) # for ease
 #' #
-#' # Determine the continuous-time equivalent, that is, the drift matrix
-#' if (!require("expm")) install.packages("expm") # Use expm package for function logm()
-#' library(expm)
-#' Drift <- logm(Phi)/DeltaT
+#' # or
+#' Drift <- myDrift
 #' q <- dim(Drift)[1]
 #' Sigma <- diag(q) # for ease. Note that this is not the CT-equivalent of SigmaVAR.
 #'
@@ -51,8 +49,8 @@
 #' #
 #' # Make plot of SigmaVAR (3 examples):
 #' SigmaVARPlot(DeltaT, Phi, SigmaVAR)
-#' SigmaVARPlot(DeltaT, Phi, SigmaVAR, Min = 0, Max = 10, Step = 0.01)
-#' SigmaVARPlot(DeltaT, Drift = Drift, Sigma = Sigma, Min = 0, Max = 10, Step = 0.01)
+#' SigmaVARPlot(DeltaT, Phi, SigmaVAR, Min = 0, Max = 10, Step = 0.01)                # Specifying range x-axis and precision
+#' SigmaVARPlot(DeltaT, Drift = Drift, Sigma = Sigma, Min = 0, Max = 10, Step = 0.01) # Using Drift&Sigma instead of Phi&SigmaVAR
 #'
 #'
 #' # Example 1.2: standardized Phi&SigmaVAR #
@@ -75,9 +73,11 @@
 #'
 #'
 #' ## Example 3: Change plot options ##
-#' # Note: use Phi & SigmaVAR or Drift and Sigma from Example 1
+#' DeltaT <- 1
+#' Phi <- myPhi[1:2,1:2]
 #' q <- dim(Phi)[1]
-#' # q <- 2
+#' SigmaVAR <- diag(q) # for ease
+#' #
 #' WhichElements <- matrix(1, ncol = q, nrow = q) # Now, all elements are 1
 #' diag(WhichElements) <- 0 # Now, the covariances are excluded by setting the diagonals to 0.
 #' Lab <- c("12", "21")
@@ -93,7 +93,7 @@
 #' Col <- c(1,2,1,2)
 #' Lty <- c(1,2,1,2)
 #' # Standardized Phi and SigmaVAR
-#' SigmaVARPlot(DeltaT = 1, Phi, SigmaVAR, Stand = 1, Min = 0, Max = 10, Step = 0.05, WhichElements = WhichElements, Labels = Labels, Col = Col, Lty = Lty)
+#' SigmaVARPlot(DeltaT, Phi, SigmaVAR, Stand = 1, Min = 0, Max = 10, Step = 0.05, WhichElements = WhichElements, Labels = Labels, Col = Col, Lty = Lty)
 #'
 
 

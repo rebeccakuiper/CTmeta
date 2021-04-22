@@ -1,6 +1,11 @@
 
 Check_Sigma <- function(Sigma, q){
 
+  if(q == 0){
+    print(paste0("The argument q = 0, it should be larger than 0. Notably, Sigma (and Drift) is a q times q matrix."))
+    stop()
+  }
+
   # Checks on Sigma
   if(length(Sigma) != 1){
     if(length(dim(Sigma)) < 2){
