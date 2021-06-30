@@ -24,7 +24,6 @@
 #'
 #' @return This function returns a Psi/SigmaVAR-plot for a range of time intervals.
 #' @importFrom expm expm
-#' @importFrom expm logm
 #' @export
 #' @examples
 #'
@@ -134,7 +133,7 @@ SigmaVARPlot <- function(DeltaT = 1, Phi = NULL, SigmaVAR = NULL, Drift = NULL, 
   if(any(class(Phi) == "varest")){
     SigmaVAR_VARest <- cov(resid(Phi))
     Phi <- Acoef(Phi)[[1]]
-    Drift <- logm(Phi)/DeltaT # Phi = expm(Drift * DeltaT)
+    Drift <- CTMparam(DeltaT, Phi)$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
     Gamma <- Gamma.fromVAR(Phi, SigmaVAR_VARest)
   } else if(any(class(Phi) == "ctsemFit")){
     Drift <- summary(Phi)$DRIFT
@@ -144,11 +143,7 @@ SigmaVARPlot <- function(DeltaT = 1, Phi = NULL, SigmaVAR = NULL, Drift = NULL, 
 
     if(is.null(Drift)){
       if(!is.null(Phi)){
-        if(length(Phi) == 1){
-          Drift <- log(Phi)/DeltaT
-        }else{
-          Drift <- logm(Phi)/DeltaT
-        }
+        Drift <- CTMparam(DeltaT, Phi)$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
       }else{ # is.null(Phi)
         ("Either the drift matrix Drift or the autoregressive matrix Phi should be input to the function.")
         #("Note that Phi(DeltaT) = expm(Drift*DeltaT).")
@@ -206,11 +201,7 @@ SigmaVARPlot <- function(DeltaT = 1, Phi = NULL, SigmaVAR = NULL, Drift = NULL, 
 
       # Calculate Gamma
       if(is.null(Drift)){
-        if(q == 1){
-          Drift <- log(Phi)/DeltaT
-        }else{
-          Drift <- logm(Phi)/DeltaT # Phi = expm(Drift * DeltaT)
-        }
+        Drift <- CTMparam(DeltaT, Phi)$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
       }
       Gamma <- Gamma.fromCTM(Drift, Sigma)
 

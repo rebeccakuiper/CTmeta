@@ -13,7 +13,6 @@
 #'
 #' @return The output renders the time-interval for which the (discrete-time) residual covariance matrix (SigmaVAR) is diagonal (DeltaT_diag), together with that diagonal SigmaVAR and corresponding lagged-effects matrix Phi (i.e., SigmaVAR(DeltaT_diag) and Phi(DeltaT_diag)).
 #' @importFrom expm expm
-#' @importFrom expm logm
 #' @importFrom nleqslv nleqslv
 #' @export
 #' @examples
@@ -80,11 +79,7 @@ DiagDeltaT <- function(Phi = NULL, SigmaVAR = NULL, Drift = NULL, Sigma = NULL, 
     #CTparam <- CTMparam (DeltaT, Phi, SigmaVAR)
     #Drift <- CTparam$Drift
     #Sigma <- CTparam$Sigma
-    if(length(Phi) == 1){
-      Drift <- log(Phi)/DeltaT
-    }else{
-      Drift <- logm(Phi)/DeltaT # Phi = expm(Drift * DeltaT)
-    }
+    Drift <- CTMparam(DeltaT, Phi)$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
   } else if(any(class(Phi) == "ctsemFit")){
     Drift <- summary(Phi)$DRIFT
     Sigma <- summary(Phi)$DIFFUSION
@@ -142,11 +137,7 @@ DiagDeltaT <- function(Phi = NULL, SigmaVAR = NULL, Drift = NULL, Sigma = NULL, 
     }
     #
     if(is.null(Drift)){
-      if(q == 1){
-        Drift <- log(Phi)/DeltaT
-      }else{
-        Drift <- logm(Phi)/DeltaT # Phi = expm(Drift * DeltaT)
-      }
+      Drift <- CTMparam(DeltaT, Phi)$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
     }
 
     # Check on SigmaVAR, Sigma, and Gamma

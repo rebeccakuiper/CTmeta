@@ -9,7 +9,6 @@
 #'
 #' @return The output renders, per element (i,j), the time-interval for which Phi_ij reaches its minimum/maximum together with this minimum/maximum Phi_ij. Note that even though a matrix is presented, the elements in it refer to different time-intervals when DeltaT differs per element (see in examples below).
 #' @importFrom expm expm
-#' @importFrom expm logm
 #' @importFrom nleqslv nleqslv
 #' @export
 #' @examples
@@ -70,7 +69,7 @@ MaxDeltaT <- function(DeltaT = 1, Phi = NULL, Drift = NULL) {
   # Check on Phi
   if(any(class(Phi) == "varest")){
     Phi <- Acoef(Phi)[[1]]
-    B <- -logm(Phi)/DeltaT # Phi = expm(Drift * DeltaT)
+    B <- -CTMparam(DeltaT, Phi)$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
   } else if(any(class(Phi) == "ctsemFit")){
     B <- -1 * summary(Phi)$DRIFT
   } else{
@@ -79,7 +78,7 @@ MaxDeltaT <- function(DeltaT = 1, Phi = NULL, Drift = NULL) {
     # B is drift matrix that is pos def, so Phi(DeltaT) = expm(-B*DeltaT)
     if(is.null(Drift)){
       if(!is.null(Phi)){
-        B <- -logm(Phi)/DeltaT
+        B <- -CTMparam(DeltaT, Phi)$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
       }else{ # is.null(Phi)
         ("Either the drift matrix Drift or the autoregressive matrix Phi should be input to the function.")
         #("Note that Phi(DeltaT) = expm(-B*DeltaT).")

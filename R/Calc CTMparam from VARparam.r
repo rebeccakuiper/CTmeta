@@ -5,7 +5,7 @@
 #' @param DeltaT Optional. The time interval used. By default, DeltaT = 1.
 #' @param Phi (Un)standardized lagged effects matrix. If necessary, it is standardized and for the standardized and vectorized Phi the covariance matrix is determined.
 #' It also takes a fitted object from the class "varest" (from the VAR() function in vars package); see example below. From such an object, the Phi and SigmaVAR matrices are extracted.
-#' @param SigmaVAR Residual covariance matrix of the first-order discrete-time vector autoregressive (DT-VAR(1)) model.
+#' @param SigmaVAR Optional (needed to also calculate continuous-time equivalent and to calculate standardized paramater matrices). Residual covariance matrix of the first-order discrete-time vector autoregressive (DT-VAR(1)) model.
 #' @param Gamma Optional (either SigmaVAR or Gamma). Stationary covariance matrix, that is, the contemporaneous covariance matrix of the data.
 #' Note that if Phi and SigmaVAR are known, Gamma can be calculated; hence, either SigmaVAR or Gamma is needed as input.
 #'
@@ -110,8 +110,10 @@ CTMparam <- function(DeltaT, Phi, SigmaVAR = NULL, Gamma = NULL) {
     #
     # Check on SigmaVAR and Gamma
     if(is.null(SigmaVAR) & is.null(Gamma)){ # Both SigmaVAR and Gamma unknown
-      print(paste0("The arguments SigmaVAR and Gamma are not found: Both SigmaVAR and Gamma are unknown; either one (or both) should be part of the input. In case of first matrix, specify 'SigmaVAR = SigmaVAR'."))
-      stop()
+      #print(paste0("The arguments SigmaVAR and Gamma are not found: Both SigmaVAR and Gamma are unknown; either one (or both) should be part of the input. In case of first matrix, specify 'SigmaVAR = SigmaVAR'."))
+      #stop()
+      #
+      #print(paste0("Note: Both SigmaVAR and Gamma are unknown; Hence, the continuous-time redidual covariance matrix Sigma and the the standardized parameter matrices cannot be calculated."))
     }else if(is.null(Gamma)){ # Gamma unknown, calculate Gamma from SigmaVAR and Phi
 
       # Check on SigmaVAR
@@ -150,7 +152,7 @@ if(is.null(B)){
   #
   #if (any(is.na(logm(Phi)) == TRUE)){ # In that case, there does not exist a solution A=-B for Phi # Note: logm(Phi) can (sometimes) exist when an EV < 0... so, I use the next check:
   if (any(is.na(log(Eigen_ParamVAR)))){ # In that case, there does not exist a solution A=-B for Phi
-    WarningPhi = "'Phi' does not have a CTM-equivalent drift matrix; so, no positive autocorrelation (like CTM models). For example, one or more real eigenvalues is negative."
+    WarningPhi = "'Phi' does not have a CTM-equivalent drift matrix. That is, there is no positive autocorrelation (as in the first-order continuous-time models), since one or more eigenvalues (have real parts which) are negative."
     final <- list(WarningPhi = WarningPhi)
     return(final)
     stop(WarningPhi)

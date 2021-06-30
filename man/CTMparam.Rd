@@ -12,7 +12,7 @@ CTMparam(DeltaT, Phi, SigmaVAR = NULL, Gamma = NULL)
 \item{Phi}{(Un)standardized lagged effects matrix. If necessary, it is standardized and for the standardized and vectorized Phi the covariance matrix is determined.
 It also takes a fitted object from the class "varest" (from the VAR() function in vars package); see example below. From such an object, the Phi and SigmaVAR matrices are extracted.}
 
-\item{SigmaVAR}{Residual covariance matrix of the first-order discrete-time vector autoregressive (DT-VAR(1)) model.}
+\item{SigmaVAR}{Optional (needed to also calculate continuous-time equivalent and to calculate standardized paramater matrices). Residual covariance matrix of the first-order discrete-time vector autoregressive (DT-VAR(1)) model.}
 
 \item{Gamma}{Optional (either SigmaVAR or Gamma). Stationary covariance matrix, that is, the contemporaneous covariance matrix of the data.
 Note that if Phi and SigmaVAR are known, Gamma can be calculated; hence, either SigmaVAR or Gamma is needed as input.}

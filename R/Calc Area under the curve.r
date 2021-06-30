@@ -9,7 +9,6 @@
 #'
 #' @return The output renders, per element (i,j), the area under the curve for Phi_ij.
 #' @importFrom expm expm
-#' @importFrom expm logm
 #' @export
 #' @examples
 #'
@@ -65,7 +64,7 @@ Area <- function(DeltaT = 1, Phi = NULL, Drift = NULL, t_min = 0, t_max = "inf")
   # Check on Phi
   if(any(class(Phi) == "varest")){
     Phi <- Acoef(Phi)[[1]]
-    B <- -logm(Phi)/DeltaT # Phi = expm(Drift * DeltaT)
+    B <- -CTMparam(DeltaT, Phi)$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
   } else if(any(class(Phi) == "ctsemFit")){
     B <- -1 * summary(Phi)$DRIFT
   } else{
@@ -74,7 +73,7 @@ Area <- function(DeltaT = 1, Phi = NULL, Drift = NULL, t_min = 0, t_max = "inf")
     # B is drift matrix that is pos def, so Phi(DeltaT) = expm(-B*DeltaT)
     if(is.null(Drift)){
       if(!is.null(Phi)){
-        B <- -logm(Phi)/DeltaT
+        B <- -CTMparam(DeltaT, Phi)$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
       }else{ # is.null(Phi)
         ("Either the drift matrix Drift or the autoregressive matrix Phi should be input to the function.")
         #("Note that Phi(DeltaT) = expm(-B*DeltaT).")

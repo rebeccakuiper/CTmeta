@@ -21,7 +21,6 @@
 #'
 #' @return This function returns a Phi-plot for a range of time intervals.
 #' @importFrom expm expm
-#' @importFrom expm logm
 #' @export
 #' @examples
 #'
@@ -123,18 +122,25 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
   # Check on Phi
   if(any(class(Phi) == "varest")){
     Phi_VARest <- Acoef(Phi)[[1]]
-    Drift <- logm(Phi_VARest)/DeltaT # Phi = expm(Drift * DeltaT)
+    Drift <- CTMparam(DeltaT, Phi_VARest)$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
   } else if(any(class(Phi) == "ctsemFit")){
     Drift <- summary(Phi)$DRIFT
   } else{
 
     if(is.null(Drift)){
       if(!is.null(Phi)){
-        if(length(Phi) == 1){
-          Drift <- log(Phi)/DeltaT
-        }else{
-          Drift <- logm(Phi)/DeltaT
+        #Check Phi
+        if(all(abs(eigen(Phi)$val) > 1)){
+          ("All (the real parts of) the eigenvalues of the drift matrix Drift are positive. Therefore. I assume the input for Drift was B = -A instead of A. I will use Drift = -B = A.")
+          ("Note that Phi(DeltaT) = expm(-B*DeltaT) = expm(A*DeltaT) = expm(Drift*DeltaT).")
+          Drift = -Drift
         }
+        if(any(abs(eigen(Phi)$val) >= 1)){
+          ("The function stopped, since some of (the real parts of) the eigenvalues of the drift matrix Drift are positive or zero.")
+          stop()
+        }
+        #
+        Drift <- CTMparam(DeltaT, Phi)$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
       }else{ # is.null(Phi)
         ("Either the drift matrix Drift or the autoregressive matrix Phi should be input to the function.")
         #("Note that Phi(DeltaT) = expm(Drift*DeltaT).")
@@ -201,11 +207,7 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
 
         # Calculate Gamma
         if(is.null(Drift)){
-          if(q == 1){
-            Drift <- log(Phi)/DeltaT
-          }else{
-            Drift <- logm(Phi)/DeltaT # Phi = expm(Drift * DeltaT)
-          }
+          Drift <- CTMparam(DeltaT, Phi)$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
         }
         Gamma <- Gamma.fromCTM(Drift, Sigma)
 
