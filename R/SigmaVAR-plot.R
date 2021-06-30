@@ -110,22 +110,27 @@ SigmaVARPlot <- function(DeltaT = 1, Phi = NULL, SigmaVAR = NULL, Drift = NULL, 
   # Checks:
   if(length(DeltaT) != 1){
     ErrorMessage <- (paste0("The argument DeltaT should be a scalar, that is, one number, that is, a vector with one element. Currently, DeltaT = ", DeltaT))
+    return(ErrorMessage)
     stop(ErrorMessage)
   }
   if(Stand != 0 & Stand != 1){
     ErrorMessage <- (paste0("The argument Stand should be a 0 or a 1, not ", Stand))
+    return(ErrorMessage)
     stop(ErrorMessage)
   }
   if(length(Min) != 1){
     ErrorMessage <- (paste0("The argument Min should be a scalar, that is, one number, that is, a vector with one element. Currently, Min = ", Min))
+    return(ErrorMessage)
     stop(ErrorMessage)
   }
   if(length(Max) != 1){
     ErrorMessage <- (paste0("The argument Max should be a scalar, that is, one number, that is, a vector with one element. Currently, Max = ", Max))
+    return(ErrorMessage)
     stop(ErrorMessage)
   }
   if(length(Step) != 1){
     ErrorMessage <- (paste0("The argument Step should be a scalar, that is, one number, that is, a vector with one element. Currently, Step = ", Step))
+    return(ErrorMessage)
     stop(ErrorMessage)
   }
   #
@@ -133,7 +138,13 @@ SigmaVARPlot <- function(DeltaT = 1, Phi = NULL, SigmaVAR = NULL, Drift = NULL, 
   if(any(class(Phi) == "varest")){
     SigmaVAR_VARest <- cov(resid(Phi))
     Phi <- Acoef(Phi)[[1]]
-    Drift <- CTMparam(DeltaT, Phi)$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
+    CTMp <- CTMparam(DeltaT, Phi)
+    if(is.null(CTMp$ErrorMessage)){
+      Drift <- CTMp$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
+    }else{
+      return(ErrorMessage)
+      stop()
+    }
     Gamma <- Gamma.fromVAR(Phi, SigmaVAR_VARest)
   } else if(any(class(Phi) == "ctsemFit")){
     Drift <- summary(Phi)$DRIFT
@@ -143,10 +154,17 @@ SigmaVARPlot <- function(DeltaT = 1, Phi = NULL, SigmaVAR = NULL, Drift = NULL, 
 
     if(is.null(Drift)){
       if(!is.null(Phi)){
-        Drift <- CTMparam(DeltaT, Phi)$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
+        CTMp <- CTMparam(DeltaT, Phi)
+        if(is.null(CTMp$ErrorMessage)){
+          Drift <- CTMp$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
+        }else{
+          return(ErrorMessage)
+          stop()
+        }
       }else{ # is.null(Phi)
         ErrorMessage <- ("Either the drift matrix Drift or the autoregressive matrix Phi should be input to the function.")
         #("Note that Phi(DeltaT) = expm(Drift*DeltaT).")
+        return(ErrorMessage)
         stop(ErrorMessage)
       }
     }
@@ -161,6 +179,7 @@ SigmaVARPlot <- function(DeltaT = 1, Phi = NULL, SigmaVAR = NULL, Drift = NULL, 
       }
       if(any(Re(eigen(Drift)$val) > 0)){
         #ErrorMessage <- ("The function stopped, since some of (the real parts of) the eigenvalues of the drift matrix Drift are positive.")
+        #return(ErrorMessage)
         #stop(ErrorMessage)
         cat("If the function stopped, this is because some of (the real parts of) the eigenvalues of the drift matrix Drift are positive.")
       }
@@ -177,6 +196,7 @@ SigmaVARPlot <- function(DeltaT = 1, Phi = NULL, SigmaVAR = NULL, Drift = NULL, 
   # Check on SigmaVAR, Sigma, and Gamma
   if(is.null(SigmaVAR) & is.null(Gamma) & is.null(Sigma)){ # All three unknown
     ErrorMessage <- (paste0("The arguments SigmaVAR, Sigma, or Gamma are not found: one should be part of the input. Notably, in case of the first matrix, specify 'SigmaVAR = SigmaVAR'."))
+    return(ErrorMessage)
     stop(ErrorMessage)
   }else if(is.null(Gamma)){ # Gamma unknown, calculate Gamma from Phi & SigmaVAR or Drift & Sigma
 
@@ -202,7 +222,13 @@ SigmaVARPlot <- function(DeltaT = 1, Phi = NULL, SigmaVAR = NULL, Drift = NULL, 
 
       # Calculate Gamma
       if(is.null(Drift)){
-        Drift <- CTMparam(DeltaT, Phi)$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
+        CTMp <- CTMparam(DeltaT, Phi)
+        if(is.null(CTMp$ErrorMessage)){
+          Drift <- CTMp$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
+        }else{
+          return(ErrorMessage)
+          stop()
+        }
       }
       Gamma <- Gamma.fromCTM(Drift, Sigma)
 
@@ -238,16 +264,19 @@ SigmaVARPlot <- function(DeltaT = 1, Phi = NULL, SigmaVAR = NULL, Drift = NULL, 
     if(AddGamma == 1){
       if(length(Labels) != 2*nrLines){
         ErrorMessage <- (paste0("The argument Labels should contain ", 2*nrLines, " elements, that is, q*(q+1) or twice the number of 1s in WhichElements (or WhichElements is incorrectly specified); not ", length(Labels), ". Note that Labels are needed for both SigmaVAR and Gamma."))
+        return(ErrorMessage)
         stop(ErrorMessage)
       }
     }else{
       if(length(Labels) != nrLines){
         ErrorMessage <- (paste0("The argument Labels should contain ", nrLines, " elements, that is, q*(q+1)/2 or the number of 1s in WhichElements (or WhichElements is incorrectly specified); not ", length(Labels)))
+        return(ErrorMessage)
         stop(ErrorMessage)
       }
     }
     #if(any(!is.character(Labels))){ # Note: This does not suffice, since it could also be an expression
     #  ErrorMessage <- (paste0("The argument Labels should consist of solely characters."))
+    #  return(ErrorMessage)
     #  stop(ErrorMessage)
     #}
   }
@@ -255,16 +284,19 @@ SigmaVARPlot <- function(DeltaT = 1, Phi = NULL, SigmaVAR = NULL, Drift = NULL, 
     if(AddGamma == 1){
       if(length(Col) != 2*nrLines){
         ErrorMessage <- (paste0("The argument Col should contain ", 2*nrLines, " elements, that is, q*(q+1) or twice the number of 1s in WhichElements (or WhichElements is incorrectly specified); not ", length(Col), ". Note that values (integers) are needed for both SigmaVAR and Gamma."))
+        return(ErrorMessage)
         stop(ErrorMessage)
       }
     }else{
       if(length(Col) != nrLines){
         ErrorMessage <- (paste0("The argument Col should contain ", nrLines, " elements, that is, q*(q+1)/2 or the number of 1s in WhichElements (or WhichElements is incorrectly specified); not ", length(Col)))
+        return(ErrorMessage)
         stop(ErrorMessage)
       }
     }
     if(any(Col %% 1 != 0)){
       ErrorMessage <- (paste0("The argument Col should consist of solely integers."))
+      return(ErrorMessage)
       stop(ErrorMessage)
     }
   }
@@ -272,26 +304,31 @@ SigmaVARPlot <- function(DeltaT = 1, Phi = NULL, SigmaVAR = NULL, Drift = NULL, 
     if(AddGamma == 1){
       if(length(Lty) != 2*nrLines){
         ErrorMessage <- (paste0("The argument Lty should contain ", 2*nrLines, " elements, that is, q*(q+1) or twice the number of 1s in WhichElements (or WhichElements is incorrectly specified); not ", length(Lty), ". Note that values (integers) are needed for both SigmaVAR and Gamma."))
+        return(ErrorMessage)
         stop(ErrorMessage)
       }
     }else{
       if(length(Lty) != nrLines){
         ErrorMessage <- (paste0("The argument Lty should contain ", nrLines, " elements, that is, q*(q+1)/2 or the number of 1s in WhichElements (or WhichElements is incorrectly specified); not ", length(Lty)))
+        return(ErrorMessage)
         stop(ErrorMessage)
       }
     }
     if(any(Lty %% 1 != 0)){
       ErrorMessage <- (paste0("The argument Lty should consist of solely integers."))
+      return(ErrorMessage)
       stop(ErrorMessage)
     }
   }
   if(!is.null(Title)){
     if(length(Title) != 1 & !is.list(Title)){
       ErrorMessage <- (paste0("The argument Title should be a character or a list (containing at max 3 items)."))
+      return(ErrorMessage)
       stop(ErrorMessage)
     }
     if(length(Title) > 3){
       ErrorMessage <- (paste0("The list Title should at max contain 3 items. Currently, it consists of ", length(Title), " items."))
+      return(ErrorMessage)
       stop(ErrorMessage)
     }
     # Option: Also check whether each element in list either a "call" or a 'character' is...
@@ -410,7 +447,7 @@ SigmaVARPlot <- function(DeltaT = 1, Phi = NULL, SigmaVAR = NULL, Drift = NULL, 
   Ylab <- expression(Phi(Delta[t])~values)
   #
   #wd <- getwd()
-  #dev.copy(png, filename = paste0(wd, "/www/PhiPlot.png"))
+  #dev.copy(png, filename = paste0(wd, "/www/SigmaVARPlot.png"))
   teller <- 1
   YLIM=c(min(SigmaVARDeltaTs, Gamma), max(SigmaVARDeltaTs, Gamma))
   plot(y=rep(0, length(DeltaTs)), x=DeltaTs, type="l", ylim=YLIM,

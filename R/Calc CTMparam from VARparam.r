@@ -63,6 +63,7 @@ CTMparam <- function(DeltaT, Phi, SigmaVAR = NULL, Gamma = NULL) {
   # Checks:
   if(length(DeltaT) != 1){
     ErrorMessage <- (paste0("The argument DeltaT should be a scalar, that is, one number, that is, a vector with one element."))
+    return(ErrorMessage)
     stop(ErrorMessage)
   }
   #
@@ -111,9 +112,10 @@ CTMparam <- function(DeltaT, Phi, SigmaVAR = NULL, Gamma = NULL) {
     # Check on SigmaVAR and Gamma
     if(is.null(SigmaVAR) & is.null(Gamma)){ # Both SigmaVAR and Gamma unknown
       #ErrorMessage <- (paste0("The arguments SigmaVAR and Gamma are not found: Both SigmaVAR and Gamma are unknown; either one (or both) should be part of the input. In case of first matrix, specify 'SigmaVAR = SigmaVAR'."))
+      #return(ErrorMessage)
       #stop(ErrorMessage)
       #
-      #print(paste0("Note: Both SigmaVAR and Gamma are unknown; Hence, the continuous-time redidual covariance matrix Sigma and the the standardized parameter matrices cannot be calculated."))
+      #print(paste0("Note: Both SigmaVAR and Gamma are unknown; Hence, the continuous-time residual covariance matrix Sigma and the the standardized parameter matrices cannot be calculated."))
     }else if(is.null(Gamma)){ # Gamma unknown, calculate Gamma from SigmaVAR and Phi
 
       # Check on SigmaVAR

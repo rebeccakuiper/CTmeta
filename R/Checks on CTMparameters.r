@@ -73,6 +73,7 @@ ChecksCTM <- function(Drift, Sigma = NULL, Gamma = NULL) {
     if(is.null(Drift)){
       ErrorMessage <- ("The drift matrix Drift should be input to the function.")
       #("Note that Phi(DeltaT) = expm(-B*DeltaT).")
+      return(ErrorMessage)
       stop(ErrorMessage)
     }else{ # !is.null(Drift)
       B <- -Drift
@@ -99,13 +100,15 @@ ChecksCTM <- function(Drift, Sigma = NULL, Gamma = NULL) {
     }
     #if(any(Re(eigen(B)$val) < 0)){
     #  #ErrorMessage <- ("The function stopped, since some of (the real parts of) the eigenvalues of the drift matrix Drift are positive.")
+    #  #return(ErrorMessage)
     #  #stop(ErrorMessage)
     #  cat("If the function stopped, this is because some of (the real parts of) the eigenvalues of the drift matrix Drift are positive.")
     #}
 
     # Check on Sigma and Gamma - need Sigma
     if(is.null(Sigma) & is.null(Gamma)){ # Both Sigma and Gamma unknown
-      ErrorMessage <- (paste0("The arguments Sigma and Gamma are not found: Both Sigma and Gamma are unknown; one should be part of the input."))
+      ErrorMessage <- (paste0("Both Sigma and Gamma are NULL; one should be part of the input."))
+      return(ErrorMessage)
       stop(ErrorMessage)
     }
     if(!is.null(Sigma)){ # Sigma known

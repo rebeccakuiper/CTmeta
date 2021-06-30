@@ -67,6 +67,7 @@ VARparam <- function(DeltaT = 1, Drift, Sigma = NULL, Gamma = NULL) {
   # Checks:
   if(length(DeltaT) != 1){
     ErrorMessage <- (paste0("The argument DeltaT should be a scalar, that is, one number, that is, a vector with one element. Currently, DeltaT = ", DeltaT))
+    return(ErrorMessage)
     stop(ErrorMessage)
   }
   #
@@ -89,6 +90,7 @@ VARparam <- function(DeltaT = 1, Drift, Sigma = NULL, Gamma = NULL) {
       }
       if(any(Re(eigen(Drift)$val) > 0)){
         #ErrorMessage <- ("The function stopped, since some of (the real parts of) the eigenvalues of the drift matrix Drift are positive.")
+        #return(ErrorMessage)
         #stop(ErrorMessage)
         cat("If the function stopped, this is because some of (the real parts of) the eigenvalues of the drift matrix Drift are positive.")
       }
@@ -104,6 +106,7 @@ VARparam <- function(DeltaT = 1, Drift, Sigma = NULL, Gamma = NULL) {
   # Check on Sigma, and Gamma
   if(is.null(Gamma) & is.null(Sigma)){ # Both unknown
     ErrorMessage <- (paste0("The arguments Sigma or Gamma are NULL: one should be part of the input. Notably, in case of the last matrix, specify 'Gamma = Gamma'."))
+    return(ErrorMessage)
     stop(ErrorMessage)
   }else if(is.null(Gamma)){ # Gamma unknown, calculate Gamma from Drift & Sigma
 

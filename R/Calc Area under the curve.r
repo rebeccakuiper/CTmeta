@@ -58,13 +58,20 @@ Area <- function(DeltaT = 1, Phi = NULL, Drift = NULL, t_min = 0, t_max = "inf")
   # Checks:
   if(length(DeltaT) != 1){
     ErrorMessage <- (paste0("The argument DeltaT should be a scalar, that is, one number, that is, a vector with one element. Currently, DeltaT = ", DeltaT))
+    return(ErrorMessage)
     stop(ErrorMessage)
   }
   #
   # Check on Phi
   if(any(class(Phi) == "varest")){
     Phi <- Acoef(Phi)[[1]]
-    B <- -CTMparam(DeltaT, Phi)$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
+    CTMp <- CTMparam(DeltaT, Phi)
+    if(is.null(CTMp$ErrorMessage)){
+      B <- -CTMp$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
+    }else{
+      return(ErrorMessage)
+      stop()
+    }
   } else if(any(class(Phi) == "ctsemFit")){
     B <- -1 * summary(Phi)$DRIFT
   } else{
@@ -73,10 +80,17 @@ Area <- function(DeltaT = 1, Phi = NULL, Drift = NULL, t_min = 0, t_max = "inf")
     # B is drift matrix that is pos def, so Phi(DeltaT) = expm(-B*DeltaT)
     if(is.null(Drift)){
       if(!is.null(Phi)){
-        B <- -CTMparam(DeltaT, Phi)$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
+        CTMp <- CTMparam(DeltaT, Phi)
+        if(is.null(CTMp$ErrorMessage)){
+          B <- -CTMp$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
+        }else{
+          return(ErrorMessage)
+          stop()
+        }
       }else{ # is.null(Phi)
         ErrorMessage <- ("Either the drift matrix Drift or the autoregressive matrix Phi should be input to the function.")
         #("Note that Phi(DeltaT) = expm(-B*DeltaT).")
+        return(ErrorMessage)
         stop(ErrorMessage)
       }
     }else{ # !is.null(Drift)
@@ -92,6 +106,8 @@ Area <- function(DeltaT = 1, Phi = NULL, Drift = NULL, t_min = 0, t_max = "inf")
       }
       if(any(Re(eigen(B)$val) < 0)){
         #ErrorMessage <- ("The function stopped, since some of (the real parts of) the eigenvalues of the drift matrix Drift are positive.")
+        #return(ErrorMessage)
+        #return(ErrorMessage)
         #stop(ErrorMessage)
         cat("If the function stopped, this is because some of (the real parts of) the eigenvalues of the drift matrix Drift are positive.")
       }

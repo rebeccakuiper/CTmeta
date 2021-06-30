@@ -111,39 +111,62 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
   # Checks:
   if(length(DeltaT) != 1){
     ErrorMessage <- (paste0("The argument DeltaT should be a scalar, that is, one number, that is, a vector with one element. Currently, DeltaT = ", DeltaT))
+    return(ErrorMessage)
     stop(ErrorMessage)
   }
   if(Stand != 0 & Stand != 1){
     ErrorMessage <- (paste0("The argument Stand should be a 0 or a 1, not ", Stand))
+    return(ErrorMessage)
     stop(ErrorMessage)
   }
   if(length(Min) != 1){
     ErrorMessage <- (paste0("The argument Min should be a scalar, that is, one number, that is, a vector with one element. Currently, Min = ", Min))
+    return(ErrorMessage)
     stop(ErrorMessage)
   }
   if(length(Max) != 1){
     ErrorMessage <- (paste0("The argument Max should be a scalar, that is, one number, that is, a vector with one element. Currently, Max = ", Max))
+    return(ErrorMessage)
     stop(ErrorMessage)
   }
   if(length(Step) != 1){
     ErrorMessage <- (paste0("The argument Step should be a scalar, that is, one number, that is, a vector with one element. Currently, Step = ", Step))
+    return(ErrorMessage)
+    stop(ErrorMessage)
+  }
+  if(!is.logical(MinMaxPhi) & MinMaxPhi != FALSE & MinMaxPhi != TRUE){
+    ErrorMessage <- (paste0("The argument 'MinMaxPhi' should be T(RUE) or F(ALSE); or 1 or 0; not ", MinMaxPhi))
+    return(ErrorMessage)
     stop(ErrorMessage)
   }
   #
   # Check on Phi
   if(any(class(Phi) == "varest")){
     Phi_VARest <- Acoef(Phi)[[1]]
-    Drift <- CTMparam(DeltaT, Phi_VARest)$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
+    CTMp <- CTMparam(DeltaT, Phi_VARest)
+    if(is.null(CTMp$ErrorMessage)){
+      Drift <- CTMp$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
+    }else{
+      return(ErrorMessage)
+      stop()
+    }
   } else if(any(class(Phi) == "ctsemFit")){
     Drift <- summary(Phi)$DRIFT
   } else{
 
     if(is.null(Drift)){
       if(!is.null(Phi)){
-        Drift <- CTMparam(DeltaT, Phi)$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
+        CTMp <- CTMparam(DeltaT, Phi)
+        if(is.null(CTMp$ErrorMessage)){
+          Drift <- CTMp$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
+        }else{
+          return(ErrorMessage)
+          stop()
+        }
       }else{ # is.null(Phi)
-        ("Either the drift matrix Drift or the autoregressive matrix Phi should be input to the function.")
+        ErrorMessage <- ("Either the drift matrix Drift or the autoregressive matrix Phi should be input to the function.")
         #("Note that Phi(DeltaT) = expm(Drift*DeltaT).")
+        return(ErrorMessage)
         stop(ErrorMessage)
       }
     }
@@ -152,12 +175,13 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
     if(length(Drift) > 1){
       Check_B_or_Phi(B=-Drift)
       if(all(Re(eigen(Drift)$val) > 0)){
-        ("All (the real parts of) the eigenvalues of the drift matrix Drift are positive. Therefore. I assume the input for Drift was B = -A instead of A (or -Phi instead of Phi). I will use Drift = -B = A.")
+        cat("All (the real parts of) the eigenvalues of the drift matrix Drift are positive. Therefore. I assume the input for Drift was B = -A instead of A (or -Phi instead of Phi). I will use Drift = -B = A.")
         ("Note that Phi(DeltaT) = expm(-B*DeltaT) = expm(A*DeltaT) = expm(Drift*DeltaT).")
-        Drift = -Drift
+        catDrift = -Drift
       }
       if(any(Re(eigen(Drift)$val) > 0)){
         #ErrorMessage <- ("The function stopped, since some of (the real parts of) the eigenvalues of the drift matrix Drift are positive.")
+        #return(ErrorMessage)
         #stop(ErrorMessage)
         cat("If the function stopped, this is because some of (the real parts of) the eigenvalues of the drift matrix Drift are positive.")
       }
@@ -182,6 +206,7 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
       Gamma <- Gamma.fromCTM(Drift, Sigma)
     }else if(is.null(SigmaVAR) & is.null(Gamma) & is.null(Sigma)){ # All three unknown
       ErrorMessage <- (paste0("The arguments SigmaVAR, Sigma, or Gamma are not found: one should be part of the input (when Stand = 1). Notably, in case of the first matrix, specify 'SigmaVAR = SigmaVAR'."))
+      return(ErrorMessage)
       stop(ErrorMessage)
     }else if(is.null(Gamma)){ # Gamma unknown, calculate Gamma from Phi & SigmaVAR or Drift & Sigma
 
@@ -208,7 +233,13 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
 
         # Calculate Gamma
         if(is.null(Drift)){
-          Drift <- CTMparam(DeltaT, Phi)$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
+          CTMp <- CTMparam(DeltaT, Phi)
+          if(is.null(CTMp$ErrorMessage)){
+            Drift <- CTMp$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
+          }else{
+            return(ErrorMessage)
+            stop()
+          }
         }
         Gamma <- Gamma.fromCTM(Drift, Sigma)
 
@@ -241,6 +272,7 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
   if(!is.null(Labels)){
     if(length(Labels) != nrLines){
       ErrorMessage <- (paste0("The argument Labels should contain ", nrLines, " elements, that is, q*q or the number of 1s in WhichElements (or WhichElements is incorrectly specified); not ", length(Labels)))
+      return(ErrorMessage)
       stop(ErrorMessage)
     }
     #if(any(!is.character(Labels))){ # Note: This does not suffice, since it could also be an expression
@@ -251,30 +283,36 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
   if(!is.null(Col)){
     if(length(Col) != nrLines){
       ErrorMessage <- (paste0("The argument Col should contain ", nrLines, " elements, that is, q*q or the number of 1s in WhichElements (or WhichElements is incorrectly specified); not ", length(Col)))
+      return(ErrorMessage)
       stop(ErrorMessage)
     }
     if(any(Col %% 1 != 0)){
       ErrorMessage <- (paste0("The argument Col should consist of solely integers."))
+      return(ErrorMessage)
       stop(ErrorMessage)
     }
   }
   if(!is.null(Lty)){
     if(length(Lty) != nrLines){
       ErrorMessage <- (paste0("The argument Lty should contain ", nrLines, " elements, that is, q*q or the number of 1s in WhichElements (or WhichElements is incorrectly specified); not ", length(Lty)))
+      return(ErrorMessage)
       stop(ErrorMessage)
     }
     if(any(Lty %% 1 != 0)){
       ErrorMessage <- (paste0("The argument Lty should consist of solely integers."))
+      return(ErrorMessage)
       stop(ErrorMessage)
     }
   }
   if(!is.null(Title)){
     if(length(Title) != 1 & !is.list(Title)){
       ErrorMessage <- (paste0("The argument Title should be a character or a list (containing at max 2 items)."))
+      return(ErrorMessage)
       stop(ErrorMessage)
     }
     if(length(Title) > 2){
       ErrorMessage <- (paste0("The list Title should at max contain 2 items. Currently, it consists of ", length(Title), " items."))
+      return(ErrorMessage)
       stop(ErrorMessage)
     }
     # Option: Also check whether each element in list either a "call" or a 'character' is...
@@ -385,8 +423,13 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
   #Add lines for max or min of Phi
   #if(MaxMinPhi == TRUE){
   #  MaxD <- MaxDeltaT(Phi = Phi)
-  #  Max_DeltaT <- as.vector(MaxD$DeltaT_MinOrMaxPhi[WhichElements])
-  #  Phi_MinMax <- as.vector(MaxD$MinOrMaxPhi[WhichElements])
+  #  if(is.null(MaxD$ErrorMessage)){
+  #    Max_DeltaT <- as.vector(MaxD$DeltaT_MinOrMaxPhi[WhichElements])
+  #    Phi_MinMax <- as.vector(MaxD$MinOrMaxPhi[WhichElements])
+  #  }else{
+  #    return(ErrorMessage)
+  #    stop()
+  #  }
   #  #
   #  phi_plot <- phi_plot +
   #    geom_vline(xintercept = Max_DeltaT, linetype=Lty, color = Col, size=0.5)

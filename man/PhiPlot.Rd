@@ -2,7 +2,8 @@
 % Please edit documentation in R/Phi-plot.R
 \name{PhiPlot}
 \alias{PhiPlot}
-\title{Phi-plot of Phi based on its underlying drift matrix}
+\title{Phi-plot of Phi based on its underlying drift matrix
+This function makes a Phi-plot of Phi(DeltaT) for a range of time intervals based on its underlying drift matrix. There is also an interactive web application on my website to create a Phi-plot: Phi-and-Psi-Plots and Find DeltaT (\url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}).}
 \usage{
 PhiPlot(
   DeltaT = 1,
@@ -61,6 +62,7 @@ It also takes a fitted object from the classes "varest" (from the VAR() function
 This function returns a Phi-plot for a range of time intervals.
 }
 \description{
+Phi-plot of Phi based on its underlying drift matrix
 This function makes a Phi-plot of Phi(DeltaT) for a range of time intervals based on its underlying drift matrix. There is also an interactive web application on my website to create a Phi-plot: Phi-and-Psi-Plots and Find DeltaT (\url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}).
 }
 \examples{
