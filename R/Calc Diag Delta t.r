@@ -96,33 +96,38 @@ DiagDeltaT <- function(Phi = NULL, SigmaVAR = NULL, Drift = NULL, Sigma = NULL, 
     if(is.null(Phi)){
       if(!is.null(Drift)){
 
+        if(length(Drift) == 1){
+          Phi <- exp(Drift*DeltaT)
+        }else{
+          Phi <- expm(Drift*DeltaT)
+        }
+
         B <- -Drift
 
         # Check on B
         if(length(B) > 1){
           Check_B_or_Phi(B)
           if(all(Re(eigen(B)$val) < 0)){
-            ("All (the real parts of) the eigenvalues of the drift matrix Drift are positive. Therefore. I assume the input for Drift was B = -A instead of A. I will use Drift = -B = A.")
-            ("Note that Phi(DeltaT) = expm(-B*DeltaT) = expm(A*DeltaT) = expm(Drift*DeltaT).")
-            B = -B
+            cat("All (the real parts of) the eigenvalues of the drift matrix Drift are positive. Therefore. I assume the input for Drift was B = -A instead of A (or -Phi instead of Phi). I will use Drift = -B = A.")
+            cat("Note that Phi(DeltaT) = expm(-B*DeltaT) = expm(A*DeltaT) = expm(Drift*DeltaT).")
+            Drift <- -B
+            #
+            if(length(Drift) == 1){
+              Phi <- exp(Drift*DeltaT)
+            }else{
+              Phi <- expm(Drift*DeltaT)
+            }
           }
-          if(any(Re(eigen(B)$val) <= 0)){
-            ("The function stopped, since some of (the real parts of) the eigenvalues of the drift matrix Drift are positive or zero.")
-            stop()
+          if(any(Re(eigen(B)$val) < 0)){
+            #ErrorMessage <- ("The function stopped, since some of (the real parts of) the eigenvalues of the drift matrix Drift are positive.")
+            #stop(ErrorMessage)
+            cat("If the function stopped, this is because some of (the real parts of) the eigenvalues of the drift matrix Drift are positive.")
           }
-        }
-        #
-        Drift <- -B
-
-        if(length(Drift) == 1){
-          Phi <- exp(Drift*DeltaT)
-        }else{
-          Phi <- expm(Drift*DeltaT)
         }
       }else{ # is.null(Drift)
-        ("Either the drift matrix Drift or the autoregressive matrix Phi should be input to the function.")
+        ErrorMessage <- ("Either the drift matrix Drift or the autoregressive matrix Phi should be input to the function.")
         #("Note that Phi(DeltaT) = expm(-B*DeltaT).")
-        stop()
+        stop(ErrorMessage)
       }
     }else{ # Phi not NULL
       if(length(Phi) != 1){
@@ -142,8 +147,8 @@ DiagDeltaT <- function(Phi = NULL, SigmaVAR = NULL, Drift = NULL, Sigma = NULL, 
 
     # Check on SigmaVAR, Sigma, and Gamma
     if(is.null(SigmaVAR) & is.null(Gamma) & is.null(Sigma)){ # All three unknown
-      print(paste0("The arguments SigmaVAR, Sigma, or Gamma are not found: one should be part of the input. Notably, in case of the first matrix, specify 'SigmaVAR = SigmaVAR'."))
-      stop()
+      ErrorMessage <- (paste0("The arguments SigmaVAR, Sigma, or Gamma are not found: one should be part of the input. Notably, in case of the first matrix, specify 'SigmaVAR = SigmaVAR'."))
+      stop(ErrorMessage)
     }else if(is.null(Gamma)){ # Gamma unknown
 
       if(!is.null(SigmaVAR)){ # SigmaVAR known, use SigmaVAR and Phi or Drift

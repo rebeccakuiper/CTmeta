@@ -19,7 +19,8 @@ ggPhiPlot(
   Labels = NULL,
   Col = NULL,
   Lty = NULL,
-  Title = NULL
+  Title = NULL,
+  MaxMinPhi = FALSE
 )
 }
 \arguments{
@@ -53,6 +54,8 @@ It also takes a fitted object from the classes "varest" (from the VAR() function
 \item{Lty}{Optional. Vector with line type values (integers) of the lines to be plotted. The length of this vector equals the number of 1s in WhichElements (or equals q*q). By default, Lty = NULL, which renders solid lines for the autoregressive effects and the same type of dashed line for reciprocal effects (i.e., same type for Phi_ij as for Phi_ji). See \url{https://www.statmethods.net/advgraphs/parameters.html} for more information about the values.}
 
 \item{Title}{Optional. A character or a list consisting of maximum 2 character-strings or 'expression' class objects that together represent the title of the Phi-plot. By default, Title = NULL, then the following code will be used for the title: as.list(expression(Phi(Delta[t])~plot), "How do the lagged parameters vary \n as a function of the time-interval")). Note that the default 2-items list will result in 3 lines because of the use of '\n'.}
+
+\item{MaxMinPhi}{Work in progress, is available in PhiPlot(). Optional. An indicator (TRUE/FALSE) whether vertical lines for the optimum (maximum or minimum) should be added to the plot (TRUE) or not (FALSE). These values are obtained by the function MaxDeltaT(). By default, MaxMinPhi = FALSE; hence, by default, no vertical are added.}
 }
 \value{
 This function returns a Phi-plot for a range of time intervals.

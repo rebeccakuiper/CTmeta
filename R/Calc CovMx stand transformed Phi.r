@@ -80,21 +80,21 @@ StandTransPhi <- function(DeltaTStar, DeltaT = 1, N = NULL, Phi, SigmaVAR = NULL
 
   # Checks:
   if(length(DeltaTStar) != 1){
-    print(paste0("The argument DeltaTStar should be a scalar, that is, one number, that is, a vector with one element. Currently, DeltaTStar = ", DeltaTStar))
-    stop()
+    ErrorMessage <- (paste0("The argument DeltaTStar should be a scalar, that is, one number, that is, a vector with one element. Currently, DeltaTStar = ", DeltaTStar))
+    stop(ErrorMessage)
   }
   if(length(DeltaT) != 1){
-    print(paste0("The argument DeltaT should be a scalar, that is, one number, that is, a vector with one element. Currently, DeltaT = ", DeltaT))
-    stop()
+    ErrorMessage <- (paste0("The argument DeltaT should be a scalar, that is, one number, that is, a vector with one element. Currently, DeltaT = ", DeltaT))
+    stop(ErrorMessage)
   }
   if(!is.null(N) & length(N) != 1){
-    print(paste0("The argument N should be a scalar, that is, one number, that is, a vector with one element. Currently, N = ", N))
-    stop()
+    ErrorMessage <- (paste0("The argument N should be a scalar, that is, one number, that is, a vector with one element. Currently, N = ", N))
+    stop(ErrorMessage)
   }
   #
   if(length(alpha) != 1){
-    print(paste0("The argument alpha should be a scalar, that is, one number, that is, a vector with one element. Currently, alpha = ", alpha))
-    stop()
+    ErrorMessage <- (paste0("The argument alpha should be a scalar, that is, one number, that is, a vector with one element. Currently, alpha = ", alpha))
+    stop(ErrorMessage)
   }
   #
   # Check on Phi
@@ -119,11 +119,11 @@ StandTransPhi <- function(DeltaTStar, DeltaT = 1, N = NULL, Phi, SigmaVAR = NULL
     #
     # Check on SigmaVAR and Gamma
     if(is.null(SigmaVAR) & is.null(Gamma)){ # Both SigmaVAR and Gamma unknown
-      print("Just to be sure:") # TO DO
-      print(paste0("The arguments SigmaVAR and Gamma are not found: Both SigmaVAR and Gamma are NULL."))
-      print(paste0("Now, only the (unstandardized) transformed Phi is calculated."))
-      print(paste0("In case you want a standarized matrix or more: either SigmaVAR and/or Gamma should be part of the input. In case of first matrix, specify 'SigmaVAR = <insert your matrix name>'."))
-      print("")
+      cat("Note:") # TO DO
+      cat(paste0("Both SigmaVAR and Gamma are NULL."))
+      cat(paste0("Consequently, only the (unstandardized) transformed Phi is calculated."))
+      cat(paste0("In case you want a standarized matrix or more: either SigmaVAR and/or Gamma should be part of the input. In case of first matrix, specify 'SigmaVAR = <insert your matrix name>'."))
+      cat("")
       #stop()
     }else if(!is.null(SigmaVAR)){ # SigmaVAR known
       # Check on SigmaVAR

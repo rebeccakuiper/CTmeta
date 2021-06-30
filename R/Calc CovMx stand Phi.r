@@ -64,13 +64,13 @@ StandPhi <- function(N = NULL, Phi, SigmaVAR = NULL, Gamma = NULL, alpha = 0.05)
 
   # Checks:
   if(!is.null(N) & length(N) != 1){
-    print(paste0("The argument N should be a scalar, that is, one number, that is, a vector with one element. Currently, N = ", N))
-    stop()
+    ErrorMessage <- (paste0("The argument N should be a scalar, that is, one number, that is, a vector with one element. Currently, N = ", N))
+    stop(ErrorMessage)
   }
   #
   if(length(alpha) != 1){
-    print(paste0("The argument alpha should be a scalar, that is, one number, that is, a vector with one element. Currently, alpha = ", alpha))
-    stop()
+    ErrorMessage <- (paste0("The argument alpha should be a scalar, that is, one number, that is, a vector with one element. Currently, alpha = ", alpha))
+    stop(ErrorMessage)
   }
   #
   # Check on Phi
@@ -95,8 +95,8 @@ StandPhi <- function(N = NULL, Phi, SigmaVAR = NULL, Gamma = NULL, alpha = 0.05)
     #
     # Check on SigmaVAR and Gamma
     if(is.null(SigmaVAR) & is.null(Gamma)){ # Both SigmaVAR and Gamma unknown
-      print(paste0("The arguments SigmaVAR and Gamma are not found: Both SigmaVAR and Gamma are unknown; either one (or both) should be part of the input. In case of first matrix, specify 'SigmaVAR = SigmaVAR'."))
-      stop()
+      ErrorMessage <- (paste0("Both SigmaVAR and Gamma are NULL; either one (or both) should be part of the input. In case of first matrix, specify 'SigmaVAR = SigmaVAR'."))
+      stop(ErrorMessage)
     }else if(!is.null(SigmaVAR)){ # SigmaVAR known
       # Check on SigmaVAR
       Check_SigmaVAR(SigmaVAR, q)

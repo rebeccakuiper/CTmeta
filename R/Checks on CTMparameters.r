@@ -71,9 +71,9 @@ ChecksCTM <- function(Drift, Sigma = NULL, Gamma = NULL) {
     # Drift = A = -B
     # B is drift matrix that is pos def, so Phi(DeltaT) = expm(-B*DeltaT)
     if(is.null(Drift)){
-      ("The drift matrix Drift should be input to the function.")
+      ErrorMessage <- ("The drift matrix Drift should be input to the function.")
       #("Note that Phi(DeltaT) = expm(-B*DeltaT).")
-      stop()
+      stop(ErrorMessage)
     }else{ # !is.null(Drift)
       B <- -Drift
       #
@@ -93,19 +93,20 @@ ChecksCTM <- function(Drift, Sigma = NULL, Gamma = NULL) {
     }
     #
     if(all(Re(eigen(B)$val) < 0)){
-      ("All (the real parts of) the eigenvalues of the drift matrix Drift are positive. Therefore. I assume the input for Drift was B = -A instead of A. I will use Drift = -B = A.")
-      ("Note that Phi(DeltaT) = expm(-B*DeltaT) = expm(A*DeltaT) = expm(Drift*DeltaT).")
+      cat("All (the real parts of) the eigenvalues of the drift matrix Drift are positive. Therefore. I assume the input for Drift was B = -A instead of A. I will use Drift = -B = A.")
+      cat("Note that Phi(DeltaT) = expm(-B*DeltaT) = expm(A*DeltaT) = expm(Drift*DeltaT).")
       B = -B
     }
-    #if(any(Re(eigen(B)$val) <= 0)){
-    #  ("The function stopped, since some of (the real parts of) the eigenvalues of the drift matrix Drift are positive or zero.")
-    #  stop()
+    #if(any(Re(eigen(B)$val) < 0)){
+    #  #ErrorMessage <- ("The function stopped, since some of (the real parts of) the eigenvalues of the drift matrix Drift are positive.")
+    #  #stop(ErrorMessage)
+    #  cat("If the function stopped, this is because some of (the real parts of) the eigenvalues of the drift matrix Drift are positive.")
     #}
 
     # Check on Sigma and Gamma - need Sigma
     if(is.null(Sigma) & is.null(Gamma)){ # Both Sigma and Gamma unknown
-      print(paste0("The arguments Sigma and Gamma are not found: Both Sigma and Gamma are unknown; one should be part of the input."))
-      stop()
+      ErrorMessage <- (paste0("The arguments Sigma and Gamma are not found: Both Sigma and Gamma are unknown; one should be part of the input."))
+      stop(ErrorMessage)
     }
     if(!is.null(Sigma)){ # Sigma known
       # Check on Sigma

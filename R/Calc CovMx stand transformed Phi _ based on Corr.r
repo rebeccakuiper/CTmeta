@@ -54,54 +54,54 @@ TransPhi_Corr <- function(DeltaTStar, DeltaT = 1, N = NULL, corr_YXYX, alpha = 0
 
   # Checks:
   if(length(DeltaTStar) != 1){
-    print(paste0("The argument DeltaTStar should be a scalar, that is, one number, that is, a vector with one element. Currently, DeltaTStar = ", DeltaTStar))
-    stop()
+    ErrorMessage <- (paste0("The argument DeltaTStar should be a scalar, that is, one number, that is, a vector with one element. Currently, DeltaTStar = ", DeltaTStar))
+    stop(ErrorMessage)
   }
   if(length(DeltaT) != 1){
-    print(paste0("The argument DeltaT should be a scalar, that is, one number, that is, a vector with one element. Currently, DeltaT = ", DeltaT))
-    stop()
+    ErrorMessage <- (paste0("The argument DeltaT should be a scalar, that is, one number, that is, a vector with one element. Currently, DeltaT = ", DeltaT))
+    stop(ErrorMessage)
   }
   if(!is.null(N) & length(N) != 1){
-    print(paste0("The argument N should be a scalar, that is, one number, that is, a vector with one element. Currently, N = ", N))
-    stop()
+    ErrorMessage <- (paste0("The argument N should be a scalar, that is, one number, that is, a vector with one element. Currently, N = ", N))
+    stop(ErrorMessage)
   }
   #
   if(length(alpha) != 1){
-    print(paste0("The argument alpha should be a scalar, that is, one number, that is, a vector with one element. Currently, alpha = ", alpha))
-    stop()
+    ErrorMessage <- (paste0("The argument alpha should be a scalar, that is, one number, that is, a vector with one element. Currently, alpha = ", alpha))
+    stop(ErrorMessage)
   }
   #
   # Check on corr_YXYX
   if(is.null(dim(corr_YXYX))){
     if(!is.null(length(corr_YXYX))){ # Should be matrix
-      print(paste0("The argument corr_YXYX is not a matrix. It should be a matrix of size 2q times 2q."))
-      stop()
+      ErrorMessage <- (paste0("The argument corr_YXYX is not a matrix. It should be a matrix of size 2q times 2q."))
+      stop(ErrorMessage)
     }else{
-      print(paste0("The argument corr_YXYX is not found: The (lagged) correlation matrix corr_YXYX is unknown, but should be part of the input."))
-      stop()
+      ErrorMessage <- (paste0("The argument corr_YXYX is not found: The (lagged) correlation matrix corr_YXYX is unknown, but should be part of the input."))
+      stop(ErrorMessage)
     }
   }
   # Should be square matrix
     #if(dim(corr_YXYX)[1] != dim(corr_YXYX)[2] | length(dim(corr_YXYX)) != 2){
-    #  print(paste0("The argument corr_YXYX is not a matrix of size 2q times 2q. Currently, it is of size ", dim(corr_YXYX)))
-    #  stop()
+    #  ErrorMessage <- (paste0("The argument corr_YXYX is not a matrix of size 2q times 2q. Currently, it is of size ", dim(corr_YXYX)))
+    #  stop(ErrorMessage)
     #}
     if(length(dim(corr_YXYX)) < 2){
-      print(paste0("The argument corr_YXYX is not a matrix. It should be a matrix of size 2q times 2q."))
-      stop()
+      ErrorMessage <- (paste0("The argument corr_YXYX is not a matrix. It should be a matrix of size 2q times 2q."))
+      stop(ErrorMessage)
     }
     if(length(dim(corr_YXYX)) > 2){
-      print(paste0("The argument corr_YXYX is not a matrix of size 2q times 2q. Currently, it is of size ", dim(corr_YXYX)))
-      stop()
+      ErrorMessage <- (paste0("The argument corr_YXYX is not a matrix of size 2q times 2q. Currently, it is of size ", dim(corr_YXYX)))
+      stop(ErrorMessage)
     }
     if(dim(corr_YXYX)[1] != dim(corr_YXYX)[2]){
-      print(paste0("The argument corr_YXYX should be a square matrix. It should be a matrix of size 2q times 2q. Currently, it is of size ", dim(corr_YXYX)[1], " times ", dim(corr_YXYX)[2]))
-      stop()
+      ErrorMessage <- (paste0("The argument corr_YXYX should be a square matrix. It should be a matrix of size 2q times 2q. Currently, it is of size ", dim(corr_YXYX)[1], " times ", dim(corr_YXYX)[2]))
+      stop(ErrorMessage)
     }
     #
     if((dim(corr_YXYX)[1] %% 2) != 0) { # 2q should be an even number
-      print(paste0("The argument corr_YXYX is not a matrix of size 2q times 2q, since the number of rows/columns is not even but an odd number, namely ", dim(corr_YXYX)[1]))
-      stop()
+      ErrorMessage <- (paste0("The argument corr_YXYX is not a matrix of size 2q times 2q, since the number of rows/columns is not even but an odd number, namely ", dim(corr_YXYX)[1]))
+      stop(ErrorMessage)
     }
 
 
@@ -124,9 +124,9 @@ TransPhi_Corr <- function(DeltaTStar, DeltaT = 1, N = NULL, corr_YXYX, alpha = 0
     warning = "No warnings (since there are no complex eigenvalues)"
     if(any(is.complex(eigenPhi$values))){
       if(DeltaTStar%%DeltaT == 0){
-        warning = "There is at least one pair of complex eigenvalues and the ratio of DeltaTs (i.e., DeltaT*/DeltaT) is not an integer, so the solution for Phi(DeltaT*) is NOT unique."
+        warning <- "There is at least one pair of complex eigenvalues and the ratio of DeltaTs (i.e., DeltaT*/DeltaT) is not an integer, so the solution for Phi(DeltaT*) is NOT unique."
       }else{
-        warning = "There is at least one pair of complex eigenvalues, but the ratio of DeltaTs (i.e., DeltaT*/DeltaT) is an integer, so the solution for Phi(DeltaT*) is unique."
+        warning <- "There is at least one pair of complex eigenvalues, but the ratio of DeltaTs (i.e., DeltaT*/DeltaT) is an integer, so the solution for Phi(DeltaT*) is unique."
       }
     }
 

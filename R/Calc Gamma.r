@@ -48,9 +48,9 @@ Gamma.fromCTM <- function(Drift, Sigma) {
     # Drift = A = -B
     # B is drift matrix that is pos def, so Phi(DeltaT) = expm(-B*DeltaT)
     if(is.null(Drift)){
-      ("The drift matrix Drift should be input to the function.")
+      ErrorMessage <- ("The drift matrix Drift should be input to the function.")
       #("Note that Phi(DeltaT) = expm(-B*DeltaT).")
-      stop()
+      stop(ErrorMessage)
     }else{ # !is.null(Drift)
       B <- -Drift
       #
@@ -65,20 +65,20 @@ Gamma.fromCTM <- function(Drift, Sigma) {
     if(length(B) > 1){
       Check_B(B)
       if(all(Re(eigen(B)$val) < 0)){
-        ("All (the real parts of) the eigenvalues of the drift matrix Drift are positive. Therefore. I assume the input was B=-A instead of A. I will use -B=A in the calculation.")
+        cat("All (the real parts of) the eigenvalues of the drift matrix Drift are positive. Therefore. I assume the input was B=-A instead of A. I will use -B=A in the calculation.")
         B = -B
       }
-      if(any(Re(eigen(B)$val) <= 0)){
-        #("The function stopped, since some of the eigenvalues of the drift matrix B are negative or zero.")
-        ("The function stopped, since some of (the real parts of) the eigenvalues of the drift matrix Drift are positive or zero.")
-        stop()
+      if(any(Re(eigen(B)$val) < 0)){
+        #ErrorMessage <- ("The function stopped, since some of (the real parts of) the eigenvalues of the drift matrix Drift are positive.")
+        #stop(ErrorMessage)
+        cat("If the function stopped, this is because some of (the real parts of) the eigenvalues of the drift matrix Drift are positive.")
       }
     }
 
     # Check on Sigma
     if(is.null(Sigma)){ # Sigma unknown
-      print(paste0("The argument Sigma is not found: Sigma is unknown, but should be part of the input."))
-      stop()
+      ErrorMessage <- (paste0("The argument Sigma is not found: Sigma is unknown, but should be part of the input."))
+      stop(ErrorMessage)
     }else if(!is.null(Sigma)){ # Sigma known
       # Check on Sigma
       Check_Sigma(Sigma, q)
@@ -90,13 +90,14 @@ Gamma.fromCTM <- function(Drift, Sigma) {
     if(length(Drift) > 1){
       Check_B(B)
       if(all(Re(eigen(Drift)$val) > 0)){
-        ("All (the real parts of) the eigenvalues of the drift matrix Drift are positive. Therefore. I assume the input for Drift was B = -A instead of A. I will use Drift = -B = A.")
-        ("Note that Phi(DeltaT) = expm(-B*DeltaT) = expm(A*DeltaT) = expm(Drift*DeltaT).")
+        cat("All (the real parts of) the eigenvalues of the drift matrix Drift are positive. Therefore. I assume the input for Drift was B = -A instead of A. I will use Drift = -B = A.")
+        cat("Note that Phi(DeltaT) = expm(-B*DeltaT) = expm(A*DeltaT) = expm(Drift*DeltaT).")
         Drift = -Drift
       }
-      if(any(Re(eigen(Drift)$val) >= 0)){
-        ("The function stopped, since some of (the real parts of) the eigenvalues of the drift matrix Drift are positive or zero.")
-        stop()
+      if(any(Re(eigen(Drift)$val) > 0)){
+        #ErrorMessage <- ("The function stopped, since some of (the real parts of) the eigenvalues of the drift matrix Drift are positive.")
+        #stop(ErrorMessage)
+        cat("If the function stopped, this is because some of (the real parts of) the eigenvalues of the drift matrix Drift are positive.")
       }
     }
 

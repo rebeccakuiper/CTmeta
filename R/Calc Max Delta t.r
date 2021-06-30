@@ -62,8 +62,8 @@ MaxDeltaT <- function(DeltaT = 1, Phi = NULL, Drift = NULL) {
 
   # Checks:
   if(length(DeltaT) != 1){
-    print(paste0("The argument DeltaT should be a scalar, that is, one number, that is, a vector with one element. Currently, DeltaT = ", DeltaT))
-    stop()
+    ErrorMessage <- (paste0("The argument DeltaT should be a scalar, that is, one number, that is, a vector with one element. Currently, DeltaT = ", DeltaT))
+    stop(ErrorMessage)
   }
   #
   # Check on Phi
@@ -80,9 +80,9 @@ MaxDeltaT <- function(DeltaT = 1, Phi = NULL, Drift = NULL) {
       if(!is.null(Phi)){
         B <- -CTMparam(DeltaT, Phi)$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
       }else{ # is.null(Phi)
-        ("Either the drift matrix Drift or the autoregressive matrix Phi should be input to the function.")
+        ErrorMessage <- ("Either the drift matrix Drift or the autoregressive matrix Phi should be input to the function.")
         #("Note that Phi(DeltaT) = expm(-B*DeltaT).")
-        stop()
+        stop(ErrorMessage)
       }
     }else{ # !is.null(Drift)
       B <- -Drift
@@ -91,13 +91,14 @@ MaxDeltaT <- function(DeltaT = 1, Phi = NULL, Drift = NULL) {
     if(length(B) > 1){
       Check_B_or_Phi(B)
       if(all(Re(eigen(B)$val) < 0)){
-        ("All (the real parts of) the eigenvalues of the drift matrix Drift are positive. Therefore. I assume the input for Drift was B = -A instead of A. I will use Drift = -B = A.")
-        ("Note that Phi(DeltaT) = expm(-B*DeltaT) = expm(A*DeltaT) = expm(Drift*DeltaT).")
+        cat("All (the real parts of) the eigenvalues of the drift matrix Drift are positive. Therefore. I assume the input for Drift was B = -A instead of A (or -Phi instead of Phi). I will use Drift = -B = A.")
+        cat("Note that Phi(DeltaT) = expm(-B*DeltaT) = expm(A*DeltaT) = expm(Drift*DeltaT).")
         B = -B
       }
-      if(any(Re(eigen(B)$val) <= 0)){
-        ("The function stopped, since some of (the real parts of) the eigenvalues of the drift matrix Drift are positive or zero.")
-        stop()
+      if(any(Re(eigen(B)$val) < 0)){
+        #ErrorMessage <- ("The function stopped, since some of (the real parts of) the eigenvalues of the drift matrix Drift are positive.")
+        #stop(ErrorMessage)
+        cat("If the function stopped, this is because some of (the real parts of) the eigenvalues of the drift matrix Drift are positive.")
       }
     }
   }
@@ -109,7 +110,7 @@ MaxDeltaT <- function(DeltaT = 1, Phi = NULL, Drift = NULL) {
   }
 
 
-  message = "There is a DeltaT such that the Phi(DeltaT) functions reach a minimum or maximum."
+  message <- "There is a DeltaT such that the Phi(DeltaT) functions reach a minimum or maximum."
 
 
   SolveForMaxDelta_ij_fie <- function(q, B, i, j) {
@@ -135,7 +136,7 @@ MaxDeltaT <- function(DeltaT = 1, Phi = NULL, Drift = NULL) {
       # Check
       if(all(is.nan(fstart_ij) == FALSE) == FALSE){
         ("There is no DeltaT such that the Phi(DeltaT) functions reach a minimum or maximum!")
-        message = "There is no DeltaT such that the Phi(DeltaT) functions reach a minimum or maximum."
+        message <- "There is no DeltaT such that the Phi(DeltaT) functions reach a minimum or maximum."
       }
       #
       #
@@ -147,9 +148,9 @@ MaxDeltaT <- function(DeltaT = 1, Phi = NULL, Drift = NULL) {
       sol_ij$message
       sol_ij$fvec
       if(sol_ij$termcd != 1){
-        ("The nleqslv-function terminated.")
-        ("Hence, there is no DeltaT such that the Phi(DeltaT) functions reach a minimum or maximum.")
-        message = "There is no DeltaT such that the Phi(DeltaT) functions reach a minimum or maximum."
+        cat("The nleqslv-function terminated.")
+        cat("Hence, there is no DeltaT such that the Phi(DeltaT) functions reach a minimum or maximum.")
+        message <- "There is no DeltaT such that the Phi(DeltaT) functions reach a minimum or maximum."
         #stop()
       }
       #
@@ -160,11 +161,11 @@ MaxDeltaT <- function(DeltaT = 1, Phi = NULL, Drift = NULL) {
 
   ## For a single i and j
   #MaxDeltaT_ij
-  #print("Phi(Max DeltaT)_ij = ")
-  #print((expm(-B*MaxDeltaT_mx[i,j]))[i,j])
-  #print("Check on zero for 1st order deriv = ")
-  #print((B %*% expm(-B*MaxDeltaT_mx[i,j]))[i,j])
-  #print("")
+  #cat("Phi(Max DeltaT)_ij = ")
+  #cat((expm(-B*MaxDeltaT_mx[i,j]))[i,j])
+  #cat("Check on zero for 1st order deriv = ")
+  #cat((B %*% expm(-B*MaxDeltaT_mx[i,j]))[i,j])
+  #cat("")
 
   # If loop is in place
   MaxDeltaT_mx
@@ -172,11 +173,11 @@ MaxDeltaT <- function(DeltaT = 1, Phi = NULL, Drift = NULL) {
   for(i in 1:q){
     for(j in 1:q){
       Phi_MaxDeltaT_mx[i,j] <- (expm(-B*MaxDeltaT_mx[i,j]))[i,j]
-      #print("Phi(Max DeltaT)_ij = ")
-      #print((expm(-B*MaxDeltaT_mx[i,j]))[i,j])
-      #print("Check on zero for 1st order deriv = ")
-      #print((B %*% expm(-B*MaxDeltaT_mx[i,j]))[i,j])
-      #print("")
+      #cat("Phi(Max DeltaT)_ij = ")
+      #cat((expm(-B*MaxDeltaT_mx[i,j]))[i,j])
+      #cat("Check on zero for 1st order deriv = ")
+      #cat((B %*% expm(-B*MaxDeltaT_mx[i,j]))[i,j])
+      #cat("")
     }
   }
 

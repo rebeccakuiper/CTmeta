@@ -62,8 +62,8 @@ CTMparam <- function(DeltaT, Phi, SigmaVAR = NULL, Gamma = NULL) {
 
   # Checks:
   if(length(DeltaT) != 1){
-    print(paste0("The argument DeltaT should be a scalar, that is, one number, that is, a vector with one element."))
-    stop()
+    ErrorMessage <- (paste0("The argument DeltaT should be a scalar, that is, one number, that is, a vector with one element."))
+    stop(ErrorMessage)
   }
   #
   B <- NULL
@@ -110,8 +110,8 @@ CTMparam <- function(DeltaT, Phi, SigmaVAR = NULL, Gamma = NULL) {
     #
     # Check on SigmaVAR and Gamma
     if(is.null(SigmaVAR) & is.null(Gamma)){ # Both SigmaVAR and Gamma unknown
-      #print(paste0("The arguments SigmaVAR and Gamma are not found: Both SigmaVAR and Gamma are unknown; either one (or both) should be part of the input. In case of first matrix, specify 'SigmaVAR = SigmaVAR'."))
-      #stop()
+      #ErrorMessage <- (paste0("The arguments SigmaVAR and Gamma are not found: Both SigmaVAR and Gamma are unknown; either one (or both) should be part of the input. In case of first matrix, specify 'SigmaVAR = SigmaVAR'."))
+      #stop(ErrorMessage)
       #
       #print(paste0("Note: Both SigmaVAR and Gamma are unknown; Hence, the continuous-time redidual covariance matrix Sigma and the the standardized parameter matrices cannot be calculated."))
     }else if(is.null(Gamma)){ # Gamma unknown, calculate Gamma from SigmaVAR and Phi
@@ -152,13 +152,13 @@ if(is.null(B)){
   #
   #if (any(is.na(logm(Phi)) == TRUE)){ # In that case, there does not exist a solution A=-B for Phi # Note: logm(Phi) can (sometimes) exist when an EV < 0... so, I use the next check:
   if (any(is.na(log(Eigen_ParamVAR)))){ # In that case, there does not exist a solution A=-B for Phi
-    WarningPhi = "'Phi' does not have a CTM-equivalent drift matrix. That is, there is no positive autocorrelation (as in the first-order continuous-time models), since one or more eigenvalues (have real parts which) are negative."
+    WarningPhi <- "'Phi' does not have a CTM-equivalent drift matrix. That is, there is no positive autocorrelation (as in the first-order continuous-time models), since one or more eigenvalues (have real parts which) are negative."
     final <- list(WarningPhi = WarningPhi)
     return(final)
     stop(WarningPhi)
   }
   # I at first wanted to filter out those where the real part of the eigenvalue of Phi is negative, but I don't think that is correct in all complex cases, so I decided to do the check above.
-  #if (any(Re(Eigen_Phi) <= 0)){ #
+  #if (any(Re(Eigen_ParamVAR) <= 0)){ #
   #  WarningPhi = "At least one of the eigenvalues of 'Phi' is (has a real part)  smaller than or equal to 0; so, no positive autocorrelation (like CTM models)."
   #  final <- list(WarningPhi = WarningPhi, warningPhi = 1)
   #  return(final)

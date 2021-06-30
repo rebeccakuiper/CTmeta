@@ -66,8 +66,8 @@ VARparam <- function(DeltaT = 1, Drift, Sigma = NULL, Gamma = NULL) {
 
   # Checks:
   if(length(DeltaT) != 1){
-    print(paste0("The argument DeltaT should be a scalar, that is, one number, that is, a vector with one element. Currently, DeltaT = ", DeltaT))
-    stop()
+    ErrorMessage <- (paste0("The argument DeltaT should be a scalar, that is, one number, that is, a vector with one element. Currently, DeltaT = ", DeltaT))
+    stop(ErrorMessage)
   }
   #
   #
@@ -83,13 +83,14 @@ VARparam <- function(DeltaT = 1, Drift, Sigma = NULL, Gamma = NULL) {
     if(length(Drift) > 1){
       Check_B(B)
       if(all(Re(eigen(Drift)$val) > 0)){
-        ("All (the real parts of) the eigenvalues of the drift matrix Drift are positive. Therefore. I assume the input for Drift was B = -A instead of A. I will use Drift = -B = A.")
-        ("Note that Phi(DeltaT) = expm(-B*DeltaT) = expm(A*DeltaT) = expm(Drift*DeltaT).")
+        cat("All (the real parts of) the eigenvalues of the drift matrix Drift are positive. Therefore. I assume the input for Drift was B = -A instead of A. I will use Drift = -B = A.")
+        cat("Note that Phi(DeltaT) = expm(-B*DeltaT) = expm(A*DeltaT) = expm(Drift*DeltaT).")
         Drift = -Drift
       }
-      if(any(Re(eigen(Drift)$val) >= 0)){
-        ("The function stopped, since some of (the real parts of) the eigenvalues of the drift matrix Drift are positive or zero.")
-        stop()
+      if(any(Re(eigen(Drift)$val) > 0)){
+        #ErrorMessage <- ("The function stopped, since some of (the real parts of) the eigenvalues of the drift matrix Drift are positive.")
+        #stop(ErrorMessage)
+        cat("If the function stopped, this is because some of (the real parts of) the eigenvalues of the drift matrix Drift are positive.")
       }
     }
   }
@@ -102,8 +103,8 @@ VARparam <- function(DeltaT = 1, Drift, Sigma = NULL, Gamma = NULL) {
   #
   # Check on Sigma, and Gamma
   if(is.null(Gamma) & is.null(Sigma)){ # Both unknown
-    print(paste0("The arguments Sigma or Gamma are not found: one should be part of the input. Notably, in case of the last matrix, specify 'Gamma = Gamma'."))
-    stop()
+    ErrorMessage <- (paste0("The arguments Sigma or Gamma are NULL: one should be part of the input. Notably, in case of the last matrix, specify 'Gamma = Gamma'."))
+    stop(ErrorMessage)
   }else if(is.null(Gamma)){ # Gamma unknown, calculate Gamma from Drift & Sigma
 
     if(!is.null(Sigma)){ # Sigma known, calculate Gamma from Drift=-B & Sigma

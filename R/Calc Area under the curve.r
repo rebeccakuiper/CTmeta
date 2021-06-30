@@ -57,8 +57,8 @@ Area <- function(DeltaT = 1, Phi = NULL, Drift = NULL, t_min = 0, t_max = "inf")
 
   # Checks:
   if(length(DeltaT) != 1){
-    print(paste0("The argument DeltaT should be a scalar, that is, one number, that is, a vector with one element. Currently, DeltaT = ", DeltaT))
-    stop()
+    ErrorMessage <- (paste0("The argument DeltaT should be a scalar, that is, one number, that is, a vector with one element. Currently, DeltaT = ", DeltaT))
+    stop(ErrorMessage)
   }
   #
   # Check on Phi
@@ -75,9 +75,9 @@ Area <- function(DeltaT = 1, Phi = NULL, Drift = NULL, t_min = 0, t_max = "inf")
       if(!is.null(Phi)){
         B <- -CTMparam(DeltaT, Phi)$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
       }else{ # is.null(Phi)
-        ("Either the drift matrix Drift or the autoregressive matrix Phi should be input to the function.")
+        ErrorMessage <- ("Either the drift matrix Drift or the autoregressive matrix Phi should be input to the function.")
         #("Note that Phi(DeltaT) = expm(-B*DeltaT).")
-        stop()
+        stop(ErrorMessage)
       }
     }else{ # !is.null(Drift)
       B <- -Drift
@@ -86,13 +86,14 @@ Area <- function(DeltaT = 1, Phi = NULL, Drift = NULL, t_min = 0, t_max = "inf")
     if(length(B) > 1){
       Check_B_or_Phi(B)
       if(all(Re(eigen(B)$val) < 0)){
-        ("All (the real parts of) the eigenvalues of the drift matrix Drift are positive. Therefore. I assume the input for Drift was B = -A instead of A. I will use Drift = -B = A.")
-        ("Note that Phi(DeltaT) = expm(-B*DeltaT) = expm(A*DeltaT) = expm(Drift*DeltaT).")
+        cat("All (the real parts of) the eigenvalues of the drift matrix Drift are positive. Therefore. I assume the input for Drift was B = -A instead of A (or -Phi instead of Phi). I will use Drift = -B = A.")
+        cat("Note that Phi(DeltaT) = expm(-B*DeltaT) = expm(A*DeltaT) = expm(Drift*DeltaT).")
         B = -B
       }
-      if(any(Re(eigen(B)$val) <= 0)){
-        ("The function stopped, since some of (the real parts of) the eigenvalues of the drift matrix Drift are positive or zero.")
-        stop()
+      if(any(Re(eigen(B)$val) < 0)){
+        #ErrorMessage <- ("The function stopped, since some of (the real parts of) the eigenvalues of the drift matrix Drift are positive.")
+        #stop(ErrorMessage)
+        cat("If the function stopped, this is because some of (the real parts of) the eigenvalues of the drift matrix Drift are positive.")
       }
     }
   }
