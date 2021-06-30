@@ -92,16 +92,13 @@ ChecksCTM <- function(Drift, Sigma = NULL, Gamma = NULL) {
       eigenvalDrift <- B
     }
     #
-    if(all(eigen(B)$val < 0)){
-      #("All the eigenvalues of the drift matrix B are negative; therefore. I assume the input was A=-B instead of B. I will use -A=B in the calculation.")
-      #("Note that Phi(DeltaT) = expm(-B*DeltaT).")
-      ("All the eigenvalues of the drift matrix Drift are positive. Therefore. I assume the input for Drift was B = -A instead of A. I will use Drift = -B = A.")
+    if(all(Re(eigen(B)$val) < 0)){
+      ("All (the real parts of) the eigenvalues of the drift matrix Drift are positive. Therefore. I assume the input for Drift was B = -A instead of A. I will use Drift = -B = A.")
       ("Note that Phi(DeltaT) = expm(-B*DeltaT) = expm(A*DeltaT) = expm(Drift*DeltaT).")
       B = -B
     }
-    #if(any(eigen(B)$val <= 0)){
-    #  #("The function stopped, since some of the eigenvalues of the drift matrix B are negative or zero.")
-    #  ("The function stopped, since some of the eigenvalues of the drift matrix Drift are positive or zero.")
+    #if(any(Re(eigen(B)$val) <= 0)){
+    #  ("The function stopped, since some of (the real parts of) the eigenvalues of the drift matrix Drift are positive or zero.")
     #  stop()
     #}
 

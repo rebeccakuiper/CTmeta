@@ -36,7 +36,7 @@ It also takes a fitted object from the classes "varest" (from the VAR() function
 
 \item{Sigma}{Optional (if Stand = 1, then either SigmaVAR, Sigma, or Gamma needed). Residual covariance matrix of the first-order continuous-time (CT-VAR(1)) model, that is, the diffusion matrix.}
 
-\item{Gamma}{Optional (either SigmaVAR, Sigma or Gamma). Stationary covariance matrix, that is, the contemporaneous covariance matrix of the data.}
+\item{Gamma}{Optional (either SigmaVAR, Sigma, or Gamma). Stationary covariance matrix, that is, the contemporaneous covariance matrix of the data.}
 
 \item{Min}{Optional. Minimum time interval used in the Phi-plot. By default, Min = 0.}
 

@@ -1,10 +1,11 @@
 
 Check_Phi <- function(Phi){
 
-  if(q == 0){
-    print(paste0("The argument q = 0, it should be larger than 0. Notably, Phi is a q times q matrix."))
-    stop()
-  }
+  #function(Phi, q){
+  #if(q == 0){
+  #  print(paste0("The argument q = 0, it should be larger than 0. Notably, Phi is a q times q matrix."))
+  #  stop()
+  #}
 
   if(is.null(dim(Phi))){
     if(!is.null(length(Phi))){

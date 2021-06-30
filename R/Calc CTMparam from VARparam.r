@@ -148,7 +148,7 @@ if(is.null(B)){
   Decomp_ParamVAR <- eigen(Phi, symmetric=F)
   Eigen_ParamVAR <- Decomp_ParamVAR$val
   #
-  #if (any(is.na(logm(Phi)) == TRUE)){ # In that case, there does not exist a solution A=-B for Phi # Noet: logm(Phi) can (sometimes) exist when an EV < 0... so, I use the next check:
+  #if (any(is.na(logm(Phi)) == TRUE)){ # In that case, there does not exist a solution A=-B for Phi # Note: logm(Phi) can (sometimes) exist when an EV < 0... so, I use the next check:
   if (any(is.na(log(Eigen_ParamVAR)))){ # In that case, there does not exist a solution A=-B for Phi
     WarningPhi = "'Phi' does not have a CTM-equivalent drift matrix; so, no positive autocorrelation (like CTM models). For example, one or more real eigenvalues is negative."
     final <- list(WarningPhi = WarningPhi)

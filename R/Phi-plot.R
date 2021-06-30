@@ -9,7 +9,7 @@
 #' @param Stand Optional. Indicator for whether Phi (or Drift) should be standardized (1) or not (0). In case Stand = 1, one of the following matrices should be input as well: SigmaVAR, Sigma, or Gamma  (or it is subtracted from a varest or ctsemFit object). By default, Stand = 0.
 #' @param SigmaVAR Optional (if Stand = 1, then either SigmaVAR, Sigma, or Gamma needed). Residual covariance matrix of the first-order discrete-time vector autoregressive (DT-VAR(1)) model.
 #' @param Sigma Optional (if Stand = 1, then either SigmaVAR, Sigma, or Gamma needed). Residual covariance matrix of the first-order continuous-time (CT-VAR(1)) model, that is, the diffusion matrix.
-#' @param Gamma Optional (either SigmaVAR, Sigma or Gamma). Stationary covariance matrix, that is, the contemporaneous covariance matrix of the data.
+#' @param Gamma Optional (either SigmaVAR, Sigma, or Gamma). Stationary covariance matrix, that is, the contemporaneous covariance matrix of the data.
 #' @param Min Optional. Minimum time interval used in the Phi-plot. By default, Min = 0.
 #' @param Max Optional. Maximum time interval used in the Phi-plot. By default, Max = 10.
 #' @param Step Optional. The step-size taken in the time intervals. By default, Step = 0.05. Hence, using the defaults, the Phi-plots is based on the values of Phi(DeltaT) for DeltaT = 0, 0.05, 0.10, ..., 10. Note: Especially in case of complex eigenvalues, this step size should be very small (then, the oscillating behavior can be seen best).
@@ -145,16 +145,13 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
     # Check on B
     if(length(Drift) > 1){
       Check_B_or_Phi(B=-Drift)
-      if(all(eigen(Drift)$val > 0)){
-        #("All the eigenvalues of the drift matrix B are negative; therefore. I assume the input was A=-B instead of B. I will use -A=B in the calculation.")
-        #("Note that Phi(DeltaT) = expm(-B*DeltaT).")
-        ("All the eigenvalues of the drift matrix Drift are positive. Therefore. I assume the input for Drift was B = -A instead of A. I will use Drift = -B = A.")
+      if(all(Re(eigen(Drift)$val) > 0)){
+        ("All (the real parts of) the eigenvalues of the drift matrix Drift are positive. Therefore. I assume the input for Drift was B = -A instead of A. I will use Drift = -B = A.")
         ("Note that Phi(DeltaT) = expm(-B*DeltaT) = expm(A*DeltaT) = expm(Drift*DeltaT).")
         Drift = -Drift
       }
-      if(any(eigen(Drift)$val >= 0)){
-        #("The function stopped, since some of the eigenvalues of the drift matrix B are negative or zero.")
-        ("The function stopped, since some of the eigenvalues of the drift matrix Drift are positive or zero.")
+      if(any(Re(eigen(Drift)$val) >= 0)){
+        ("The function stopped, since some of (the real parts of) the eigenvalues of the drift matrix Drift are positive or zero.")
         stop()
       }
     }
