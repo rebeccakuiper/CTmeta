@@ -87,8 +87,8 @@
 
 
 PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = NULL, Sigma = NULL, Gamma = NULL, Min = 0, Max = 10, Step = 0.05, WhichElements = NULL, Labels = NULL, Col = NULL, Lty = NULL, Title = NULL, MaxMinPhi = FALSE) {
-  #Min = 0; Max = 10; Step = 0.05; WhichElements = NULL; Labels = NULL; Col = NULL; Lty = NULL; Title = NULL
-  #Drift = NULL; Stand = 0; SigmaVAR = NULL; Sigma = NULL; Gamma = NULL; Min = 0; Max = 10; Step = 0.05; WhichElements = NULL; Labels = NULL; Col = NULL; Lty = NULL; Title = NULL; MaxMinPhi = FALSE
+  #Min = 0; Max = 10; Step = 0.05; WhichElements = NULL; Labels = NULL; Col = NULL; Lty = NULL; Title = NULL; MaxMinPhi = FALSE
+  #DeltaT = 1; Drift = NULL; Stand = 0; SigmaVAR = NULL; Sigma = NULL; Gamma = NULL; Min = 0; Max = 10; Step = 0.05; WhichElements = NULL; Labels = NULL; Col = NULL; Lty = NULL; Title = NULL; MaxMinPhi = FALSE
 
 #  #######################################################################################################################
 #
@@ -136,6 +136,7 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
     if(is.null(CTMp$ErrorMessage)){
       Drift <- CTMp$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
     }else{
+      ErrorMessage <- CTMp$ErrorMessage
       return(ErrorMessage)
       stop(ErrorMessage)
     }
@@ -149,6 +150,7 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
         if(is.null(CTMp$ErrorMessage)){
           Drift <- CTMp$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
         }else{
+          ErrorMessage <- CTMp$ErrorMessage
           return(ErrorMessage)
           stop(ErrorMessage)
         }
@@ -226,6 +228,7 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
           if(is.null(CTMp$ErrorMessage)){
             Drift <- CTMp$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
           }else{
+            ErrorMessage <- CTMp$ErrorMessage
             return(ErrorMessage)
             stop(ErrorMessage)
           }
@@ -441,6 +444,7 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
       Max_DeltaT <- MaxD$DeltaT_MinOrMaxPhi
       Phi_MinMax <- MaxD$MinOrMaxPhi
     }else{
+      ErrorMessage <- MaxD$ErrorMessage
       return(ErrorMessage)
       stop(ErrorMessage)
     }

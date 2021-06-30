@@ -83,6 +83,7 @@ DiagDeltaT <- function(Phi = NULL, SigmaVAR = NULL, Drift = NULL, Sigma = NULL, 
     if(is.null(CTMp$ErrorMessage)){
       Drift <- CTMp$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
     }else{
+      ErrorMessage <- CTMp$ErrorMessage
       return(ErrorMessage)
       stop(ErrorMessage)
     }
@@ -153,6 +154,7 @@ DiagDeltaT <- function(Phi = NULL, SigmaVAR = NULL, Drift = NULL, Sigma = NULL, 
       if(is.null(CTMp$ErrorMessage)){
         Drift <- CTMp$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
       }else{
+        ErrorMessage <- CTMp$ErrorMessage
         return(ErrorMessage)
         stop(ErrorMessage)
       }

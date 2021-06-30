@@ -69,6 +69,7 @@ Area <- function(DeltaT = 1, Phi = NULL, Drift = NULL, t_min = 0, t_max = "inf")
     if(is.null(CTMp$ErrorMessage)){
       B <- -CTMp$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
     }else{
+      ErrorMessage <- CTMp$ErrorMessage
       return(ErrorMessage)
       stop(ErrorMessage)
     }
@@ -84,6 +85,7 @@ Area <- function(DeltaT = 1, Phi = NULL, Drift = NULL, t_min = 0, t_max = "inf")
         if(is.null(CTMp$ErrorMessage)){
           B <- -CTMp$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
         }else{
+          ErrorMessage <- CTMp$ErrorMessage
           return(ErrorMessage)
           stop(ErrorMessage)
         }

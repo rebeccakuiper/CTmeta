@@ -74,6 +74,7 @@ MaxDeltaT <- function(DeltaT = 1, Phi = NULL, Drift = NULL) {
     if(is.null(CTMp$ErrorMessage)){
       B <- -CTMp$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
     }else{
+      ErrorMessage <- CTMp$ErrorMessage
       return(ErrorMessage)
       stop(ErrorMessage)
     }
@@ -89,6 +90,7 @@ MaxDeltaT <- function(DeltaT = 1, Phi = NULL, Drift = NULL) {
         if(is.null(CTMp$ErrorMessage)){
           B <- -CTMp$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
         }else{
+          ErrorMessage <- CTMp$ErrorMessage
           return(ErrorMessage)
           stop(ErrorMessage)
         }

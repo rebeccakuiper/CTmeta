@@ -154,17 +154,17 @@ if(is.null(B)){
   #
   #if (any(is.na(logm(Phi)) == TRUE)){ # In that case, there does not exist a solution A=-B for Phi # Note: logm(Phi) can (sometimes) exist when an EV < 0... so, I use the next check:
   if (any(is.na(log(Eigen_ParamVAR)))){ # In that case, there does not exist a solution A=-B for Phi
-    WarningPhi <- "'Phi' does not have a CTM-equivalent drift matrix. That is, there is no positive autocorrelation (as in the first-order continuous-time models), since one or more eigenvalues (have real parts which) are negative."
-    final <- list(WarningPhi = WarningPhi)
+    ErrorMessage <- "'Phi' does not have a CTM-equivalent drift matrix. That is, there is no positive autocorrelation (as in the first-order continuous-time models), since one or more eigenvalues (have real parts which) are negative."
+    final <- list(ErrorMessage = ErrorMessage)
     return(final)
-    stop(WarningPhi)
+    stop(ErrorMessage)
   }
   # I at first wanted to filter out those where the real part of the eigenvalue of Phi is negative, but I don't think that is correct in all complex cases, so I decided to do the check above.
   #if (any(Re(Eigen_ParamVAR) <= 0)){ #
-  #  WarningPhi = "At least one of the eigenvalues of 'Phi' is (has a real part)  smaller than or equal to 0; so, no positive autocorrelation (like CTM models)."
-  #  final <- list(WarningPhi = WarningPhi, warningPhi = 1)
+  #  ErrorMessage <- "At least one of the eigenvalues of 'Phi' is (has a real part)  smaller than or equal to 0; so, no positive autocorrelation (like CTM models)."
+  #  final <- list(ErrorMessage = ErrorMessage)
   #  return(final)
-  #  stop(WarningPhi)
+  #  stop(ErrorMessage)
   #}
 
 

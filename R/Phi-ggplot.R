@@ -92,7 +92,7 @@
 
 
 ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = NULL, Sigma = NULL, Gamma = NULL, Min = 0, Max = 10, Step = 0.05, WhichElements = NULL, Labels = NULL, Col = NULL, Lty = NULL, Title = NULL, MaxMinPhi = FALSE) {
-# DeltaT = 1; Drift = NULL; Stand = 0; SigmaVAR = NULL; Sigma = NULL; Gamma = NULL; Min = 0; Max = 10; Step = 0.05; WhichElements = NULL; Labels = NULL; Col = NULL; Lty = NULL; Title = NULL
+# DeltaT = 1; Drift = NULL; Stand = 0; SigmaVAR = NULL; Sigma = NULL; Gamma = NULL; Min = 0; Max = 10; Step = 0.05; WhichElements = NULL; Labels = NULL; Col = NULL; Lty = NULL; Title = NULL; MaxMinPhi = FALSE
 # library(expm); library(purrr); library(ggplot2); library(dplyr); library(ggpubr) # library(tidyverse)
 # library(CTmeta); Phi <- myPhi[1:2,1:2]
 
@@ -147,6 +147,7 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
     if(is.null(CTMp$ErrorMessage)){
       Drift <- CTMp$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
     }else{
+      ErrorMessage <- CTMp$ErrorMessage
       return(ErrorMessage)
       stop(ErrorMessage)
     }
@@ -160,6 +161,7 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
         if(is.null(CTMp$ErrorMessage)){
           Drift <- CTMp$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
         }else{
+          ErrorMessage <- CTMp$ErrorMessage
           return(ErrorMessage)
           stop(ErrorMessage)
         }
@@ -237,6 +239,7 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
           if(is.null(CTMp$ErrorMessage)){
             Drift <- CTMp$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
           }else{
+            ErrorMessage <- CTMp$ErrorMessage
             return(ErrorMessage)
             stop(ErrorMessage)
           }
@@ -427,6 +430,7 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
   #    Max_DeltaT <- as.vector(MaxD$DeltaT_MinOrMaxPhi[WhichElements])
   #    Phi_MinMax <- as.vector(MaxD$MinOrMaxPhi[WhichElements])
   #  }else{
+  #    ErrorMessage <- MaxD$ErrorMessage
   #    return(ErrorMessage)
   #    stop(ErrorMessage)
   #  }
