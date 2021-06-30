@@ -4,12 +4,12 @@
 #'
 #' @param DeltaT Optional. The time interval used. By default, DeltaT = 1.
 #' @param Phi Matrix of size q times q of (un)standardized lagged effects. Note that the Phi (or Drift) matrix should be standardized to make a fair comparison between cross-lagged effects.
-#' It also takes a fitted object from the classes "varest" (from the VAR() function in vars package) and "ctsemFit" (from the ctFit() function in the ctsem package); see example below. From such an object, the (standardized) Phi/Drift matrix is calculated/extracted.
-#' @param Drift Optional (either Phi or Drift). Underling continuous-time lagged effects matrix (i.e., Drift matrix) of the discrete-time lagged effects matrix Phi(DeltaT). By default, input for Phi is used; only when Phi = NULL, Drift will be used.
-#' @param Stand Optional. Indicator for whether Phi (or Drift) should be standardized (1) or not (0). In case Stand = 1, one of the following matrices should be input as well: SigmaVAR, Sigma, or Gamma (or it is subtracted from a varest or ctsemFit object). By default, Stand = 0.
+#' It also takes a fitted object from the classes "varest" (from the VAR() function in vars package) and "ctsemFit" (from the ctFit() function in the ctsem package); see example below. From such an object, the (standardized) Drift matrix is calculated/extracted.
+#' @param Drift Optional (either Phi or Drift). Underlying continuous-time lagged effects matrix (i.e., Drift matrix) of the discrete-time lagged effects matrix Phi(DeltaT). By default, input for Phi is used; only when Phi = NULL, Drift will be used.
+#' @param Stand Optional. Indicator for whether Phi (or Drift) should be standardized (1) or not (0). In case Stand = 1, one of the following matrices should be input as well: SigmaVAR, Sigma, or Gamma  (or it is subtracted from a varest or ctsemFit object). By default, Stand = 0.
 #' @param SigmaVAR Optional (if Stand = 1, then either SigmaVAR, Sigma, or Gamma needed). Residual covariance matrix of the first-order discrete-time vector autoregressive (DT-VAR(1)) model.
 #' @param Sigma Optional (if Stand = 1, then either SigmaVAR, Sigma, or Gamma needed). Residual covariance matrix of the first-order continuous-time (CT-VAR(1)) model, that is, the diffusion matrix.
-#' @param Gamma Optional (either SigmaVAR, Sigma or Gamma). Stationary covariance matrix, that is, the contemporaneous covariance matrix of the data.
+#' @param Gamma Optional (either SigmaVAR, Sigma, or Gamma). Stationary covariance matrix, that is, the contemporaneous covariance matrix of the data.
 #' @param Min Optional. Minimum time interval used in the Phi-plot. By default, Min = 0.
 #' @param Max Optional. Maximum time interval used in the Phi-plot. By default, Max = 10.
 #' @param Step Optional. The step-size taken in the time intervals. By default, Step = 0.05. Hence, using the defaults, the Phi-plots is based on the values of Phi(DeltaT) for DeltaT = 0, 0.05, 0.10, ..., 10. Note: Especially in case of complex eigenvalues, this step size should be very small (then, the oscillating behavior can be seen best).
@@ -17,15 +17,11 @@
 #' @param Labels Optional. Vector with (character) labels of the lines to be plotted. The length of this vector equals the number of 1s in WhichElements (or equals q*q). By default, Labels = NULL, which renders labels with Greek letter of Phi (as a function of the time-interval) together with the indices (of outcome and predictor variables).
 #' @param Col Optional. Vector with color values (integers) of the lines to be plotted. The length of this vector equals the number of 1s in WhichElements (or equals q*q). By default, Col = NULL, which renders the same color for effects that belong to the same outcome variable (i.e. a row in the Drift matrix). See \url{https://www.statmethods.net/advgraphs/parameters.html} for more information about the values.
 #' @param Lty Optional. Vector with line type values (integers) of the lines to be plotted. The length of this vector equals the number of 1s in WhichElements (or equals q*q). By default, Lty = NULL, which renders solid lines for the autoregressive effects and the same type of dashed line for reciprocal effects (i.e., same type for Phi_ij as for Phi_ji). See \url{https://www.statmethods.net/advgraphs/parameters.html} for more information about the values.
-#' @param Title Optional. A character or a list consisting of maximum 2 character-strings or 'expression' class objects that together represent the title of the Phi-plot. By default, Title = NULL, then the following code will be used for the title: as.list(expression(Phi(Delta[t])~plot), "How do the lagged parameters vary \n as a function of the time-interval")). Note that the default 2-items list will result in 3 lines because of the use of '\n'.
+#' @param Title Optional. A character or a list consisting of maximum 3 character-strings or 'expression' class objects that together represent the title of the Phi-plot. By default, Title = NULL, then the following code will be used for the title: as.list(expression(Phi(Delta[t])~plot), "How do the lagged parameters vary", "as a function of the time-interval").
 #'
 #' @return This function returns a Phi-plot for a range of time intervals.
 #' @importFrom expm expm
 #' @importFrom expm logm
-#' @importFrom purrr map
-#' @importFrom ggplot2 ggplot
-#' @importFrom ggpubr ggarrange
-#' @import dplyr
 #' @export
 #' @examples
 #'
@@ -44,15 +40,15 @@
 #' # Example 1.1: unstandardized Phi #
 #' #
 #' # Make plot of Phi
-#' ggPhiPlot(DeltaT, Phi)
-#' ggPhiPlot(DeltaT, Phi, Min = 0, Max = 10, Step = 0.01)           # Specifying range x-axis and precision
-#' ggPhiPlot(DeltaT, Drift = Drift, Min = 0, Max = 10, Step = 0.01) # Using Drift instead of Phi
+#' PhiPlot(DeltaT, Phi)
+#' PhiPlot(DeltaT, Phi, Min = 0, Max = 10, Step = 0.01)           # Specifying range x-axis and precision
+#' PhiPlot(DeltaT, Drift = Drift, Min = 0, Max = 10, Step = 0.01) # Using Drift instead of Phi
 #'
 #'
 #' # Example 1.2: standardized Phi #
 #' q <- dim(Phi)[1]
 #' SigmaVAR <- diag(q) # for ease
-#' ggPhiPlot(DeltaT, Phi, Stand = 1, SigmaVAR = SigmaVAR)
+#' PhiPlot(DeltaT, Phi, Stand = 1, SigmaVAR = SigmaVAR)
 #'
 #'
 #' ## Example 2: input from fitted object of class "varest" ##
@@ -64,10 +60,10 @@
 #' out_VAR <- VAR(data, p = 1)
 #'
 #' # Example 2.1: unstandardized Phi #
-#' ggPhiPlot(DeltaT, out_VAR)
+#' PhiPlot(DeltaT, out_VAR)
 #'
 #' # Example 2.2: standardized Phi #
-#' ggPhiPlot(DeltaT, out_VAR, Stand = 1)
+#' PhiPlot(DeltaT, out_VAR, Stand = 1)
 #'
 #'
 #' ## Example 3: Change plot options ##
@@ -87,26 +83,20 @@
 #' Col <- c(1,2)
 #' Lty <- c(1,2)
 #' # Standardized Phi
-#' ggPhiPlot(DeltaT = 1, Phi, Stand = 1, SigmaVAR = SigmaVAR, Min = 0, Max = 10, Step = 0.05, WhichElements = WhichElements, Labels = Labels, Col = Col, Lty = Lty)
+#' PhiPlot(DeltaT = 1, Phi, Stand = 1, SigmaVAR = SigmaVAR, Min = 0, Max = 10, Step = 0.05, WhichElements = WhichElements, Labels = Labels, Col = Col, Lty = Lty)
 #'
 
 
-ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = NULL, Sigma = NULL, Gamma = NULL, Min = 0, Max = 10, Step = 0.05, WhichElements = NULL, Labels = NULL, Col = NULL, Lty = NULL, Title = NULL) {
-# DeltaT = 1; Drift = NULL; Stand = 0; SigmaVAR = NULL; Sigma = NULL; Gamma = NULL; Min = 0; Max = 10; Step = 0.05; WhichElements = NULL; Labels = NULL; Col = NULL; Lty = NULL; Title = NULL
-# library(expm); library(purrr); library(ggplot2); library(dplyr); library(ggpubr) # library(tidyverse)
-# library(CTmeta); Phi <- myPhi[1:2,1:2]
+PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = NULL, Sigma = NULL, Gamma = NULL, Min = 0, Max = 10, Step = 0.05, WhichElements = NULL, Labels = NULL, Col = NULL, Lty = NULL, Title = NULL) {
+  #Min = 0; Max = 10; Step = 0.05; WhichElements = NULL; Labels = NULL; Col = NULL; Lty = NULL; Title = NULL
+  #Drift = NULL; Stand = 0; SigmaVAR = NULL; Sigma = NULL; Gamma = NULL; Min = 0; Max = 10; Step = 0.05; WhichElements = NULL; Labels = NULL; Col = NULL; Lty = NULL; Title = NULL
 
-  # Note needed:
-  #@import tidyverse
-  #@import ggpubr
-
-
-  #  #######################################################################################################################
-  #
-  #  #if (!require("expm")) install.packages("expm")
-  #  library(expm)
-  #
-  #  #######################################################################################################################
+#  #######################################################################################################################
+#
+#  #if (!require("expm")) install.packages("expm")
+#  library(expm)
+#
+#  #######################################################################################################################
 
   # Checks:
   if(length(DeltaT) != 1){
@@ -277,14 +267,14 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
   }
   if(!is.null(Title)){
     if(length(Title) != 1 & !is.list(Title)){
-      print(paste0("The argument Title should be a character or a list (containing at max 2 items)."))
+      print(paste0("The argument Title should be a character or a list (containing at max 3 items)."))
       stop()
     }
-    if(length(Title) > 2){
-      print(paste0("The list Title should at max contain 2 items. Currently, it consists of ", length(Title), " items."))
+    if(length(Title) > 3){
+      print(paste0("The list Title should at max contain 3 items. Currently, it consists of ", length(Title), " items."))
       stop()
     }
-    # Option: Also check whether each element in list either a "call" or a 'character' is...
+  # Option: Also check whether each element in list either a "call" or a 'character' is...
   }
 
 
@@ -323,83 +313,123 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
 
   if(is.null(Title)){
     Title_1 <- expression(Phi(Delta[t])~plot)
-    Title_2 <- "How do the lagged parameters vary \n as a function of the time-interval"
+    Title_2 <- "How do the lagged parameters vary"
+    #Title_2 <- "How do the overall lagged parameters"
+    Title_3 <- "as a function of the time-interval"
   }else{
+    Title_1 <- NULL
+    Title_2 <- NULL
     if(length(Title) == 1){
       if(is.list(Title)){
-        Title_1 <- Title[[1]]
+        Title_3 <- Title[[1]]
       }else{
-        Title_1 <- Title
+        Title_3 <- Title
       }
-      Title_2 <- NULL
     }else if(length(Title) == 2){
+      Title_2 <- Title[[1]]
+      Title_3 <- Title[[2]]
+    }else if(length(Title) == 3){
       Title_1 <- Title[[1]]
       Title_2 <- Title[[2]]
+      Title_3 <- Title[[3]]
     }
   }
 
-###############################################################################################
-
-
-  while (!is.null(dev.list()))  dev.off()  # to reset the graphics pars to defaults
-
+##########################################################################################
 
   if(any(is.complex(eigen(Drift)$val))){
+    while (!is.null(dev.list()))  dev.off()  # to reset the graphics pars to defaults
+    # Multiple solutions, then 2x2 plots
+    op <- par(mfrow=c(2,2))
     complex <- TRUE
+    nf <- layout(matrix(c(1,2,5,3,4,6),2,3,byrow = TRUE), c(3,3,1), c(2,2,1), TRUE)
+    #layout.show(nf)
   } else{
+    op <- par(mfrow=c(1,1))
     complex <- FALSE
+    #
+    while (!is.null(dev.list()))  dev.off()  # to reset the graphics pars to defaults
+    par(mar=c(par('mar')[1:3], 0)) # optional, removes extraneous right inner margin space
+    plot.new()
+    l <- legend(0, 0,
+           legend = legendT, #cex=CEX,
+           bty = "n",
+           lty=Lty, # gives the legend appropriate symbols (lines)
+           lwd=rep(2, q*q),
+           col=Col # gives the legend lines the correct color and width
+    )
+    # calculate right margin width in ndc
+    w <- 1.5 *( grconvertX(l$rect$w, to='ndc') - grconvertX(0, to='ndc') )
+    par(omd=c(0, 1-w, 0, 1))
+    #
   }
 
 
   DeltaTs<-seq(Min,Max,by=Step)
 
-  PhiDeltaTsDF <- map(DeltaTs, function(x) {
-    if(length(Drift) == 1) {exp(Drift * x)}
-    else {expm(Drift * x)}
-  }) %>%
-    map(function(x) data.frame(Values = as.vector(t(x)))) %>%
-    bind_rows %>%
-    bind_cols(WhichElements = rep(as.vector(WhichElements), length(DeltaTs))) %>%
-    filter(WhichElements == 1) %>%
-    bind_cols(DeltaTs = rep(DeltaTs, each = sum(WhichElements)),
-              Color = rep(as.character(Col), length(DeltaTs)),
-              LineType = rep(as.character(Lty), length(DeltaTs)),
-              Labels = rep(as.character(legendT), length(DeltaTs)))
+  PhiDeltaTs<-array(data=NA,dim=c(q,q,length(DeltaTs)))
+  if(length(Drift) == 1){
+    for(i in 1:length(DeltaTs)){
+      PhiDeltaTs[,,i]<-exp(Drift*DeltaTs[i])
+    }
+  }else{
+    for(i in 1:length(DeltaTs)){
+      PhiDeltaTs[,,i]<-expm(Drift*DeltaTs[i])
+    }
+  }
 
   Xlab <- expression(Time-interval (Delta[t]))
   Ylab <- expression(Phi(Delta[t])~values)
   #
-  phi_plot <- ggplot(PhiDeltaTsDF, aes(DeltaTs, Values, color = Labels, linetype = Labels)) +
-    geom_line(lwd = 0.75) +
-    geom_abline(intercept = 0, slope = 0, alpha = .5) +
-    scale_linetype_manual(name = " ", values = Lty, labels = legendT) +
-    scale_color_manual(name = " ", values = Col, labels = legendT) +
-    ylab(Ylab) +
-    xlab(Xlab) +
-    #labs(title = as.expression(Title_1),
-    #     subtitle = as.expression(Title_2)) +
-    ggtitle(as.expression(Title_1), subtitle = Title_2) +
-    theme_classic() +
-    theme(plot.title = element_text(margin = margin(t = 20))) +
-    ylim(0,1) +
-    theme(
-      legend.key.width = unit(2, "lines"),
-      legend.spacing.x = unit(1.5, "lines"),
-      legend.text = element_text(size = 12)
-    ) #; phi_plot
+  #wd <- getwd()
+  #dev.copy(png, filename = paste0(wd, "/www/PhiPlot.png"))
+  teller <- 1
+  plot(y=rep(0, length(DeltaTs)), x=DeltaTs, type="l", ylim=c(min(PhiDeltaTs), max(PhiDeltaTs)),
+       #ylab = expression(Overall~Phi(Delta[t])~values),
+       ylab = Ylab,
+       xlab = Xlab,
+       col=1000, lwd=2, lty=1,
+       main = mtext(side=3, line=2, adj=0, as.expression(Title_1)),
+       sub = mtext(side=3, line=c(1,0), adj=0, c(as.expression(Title_2), as.expression(Title_3)))
+  )
+  #
+  teller <- 0
+  for(j in 1:q){
+    for(i in 1:q){
+      if(WhichElements[j,i] == 1){
+        teller <- teller + 1
+        lines(y=PhiDeltaTs[j,i,], x=DeltaTs, col=Col[teller], lwd=2, lty=Lty[teller])
+      }
+    }
+  }
+
+
+  if(complex == FALSE){
+    if(q<4){CEX = 1}else{CEX = (1.4-q/10)} # Check for optimal values!
+    #
+    #legend("topright",
+    legend(par('usr')[2], par('usr')[4], xpd=NA,
+           legend = legendT, cex=CEX,
+           bty = "n",
+           lty=Lty, # gives the legend appropriate symbols (lines)
+           lwd=rep(2, q*q),
+           col=Col # gives the legend lines the correct color and width
+    )
+  }
+
+
 
 
   if(complex){
     # Multiple solutions and add 3 plots (2 for 2 different solutions and one scatter plot)
-    Title_2_N <- "using an 'aliasing' matrix \n (i.e., another solution for A)"
+    Title_2_N <- "using an 'aliasing' matrix"
+    Title_3_N <- "(i.e., another solution for A)"
     Title_1_N2 <- expression(Phi(Delta[t])~scatter~plot~'for'~multiples~of~Delta[t])
-    Title_2_N2 <- expression(Note~that~'for'~multiples~of~Delta[t]~Phi(Delta[t])~is~unique)
-    #Title_2_N2 <- expression(paste("Note that for multiples of ", Delta[t], "\n", Phi(Delta[t]), "is unique"))
+    Title_2_N2 <- expression(Note~that~'for'~multiples~of~Delta[t])
+    Title_3_N2 <- expression(Phi(Delta[t])~is~unique)
 
     EigenDrift <- eigen(Drift)
     V <- EigenDrift$vector
-
-    PhiDeltaTsDF_L <- list(NULL)
 
     for(N in 1:2){ # Note: last plot is scatter plot
       im <- complex(real = 0, imaginary = 1)
@@ -420,109 +450,90 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
       #A_N
       #print(A_N)
       Drift_N <- Re(A_N)
+      PhiDeltaTs_N<-array(data=NA,dim=c(q,q,length(DeltaTs)))
+      for(i in 1:length(DeltaTs)){
+        PhiDeltaTs_N[,,i] <- expm(Drift_N*DeltaTs[i])
+      }
       #
-      PhiDeltaTsDF_N <- map(DeltaTs, function(x) {
-        expm(Drift_N * x)
-        }) %>%
-        map(function(x) data.frame(Values = as.vector(t(x)))) %>%
-        bind_rows %>%
-        bind_cols(WhichElements = rep(as.vector(WhichElements), length(DeltaTs))) %>%
-        filter(WhichElements == 1) %>%
-        bind_cols(DeltaTs = rep(DeltaTs, each = sum(WhichElements)),
-                  Color = rep(as.character(Col), length(DeltaTs)),
-                  LineType = rep(as.character(Lty), length(DeltaTs)),
-                  Labels = rep(as.character(legendT), length(DeltaTs)))
-
-      PhiDeltaTsDF_L[[N]] <- PhiDeltaTsDF_N
+      plot(y=rep(0, length(DeltaTs)), x=DeltaTs, type="l", ylim=c(min(PhiDeltaTs_N), max(PhiDeltaTs_N)),
+           ylab = Ylab, xlab = Xlab,
+           col=1000, lwd=2, lty=1,
+           main = mtext(side=3, line=2, adj=0, as.expression(Title_1)),
+           sub = mtext(side=3, line=c(1,0), adj=0, c(as.expression(Title_2_N), as.expression(Title_3_N)))
+      )
       #
+      teller <- 0
+      for(j in 1:q){
+        for(i in 1:q){
+          if(WhichElements[j,i] == 1){
+            teller <- teller + 1
+            lines(y=PhiDeltaTs_N[j,i,], x=DeltaTs, col=Col[teller], lwd=2, lty=Lty[teller])
+          }
+        }
+      }
     }
     # In case last plot is scatter plot
     # In last plot a scatter plot, for multiples of DeltaT, from Min to Max.
     Min_ <- Min + Min%%DeltaT # last part is remainder after integer division
     Max_ <- Max - Max%%DeltaT # last part is remainder after integer division
     DeltaTs <- seq(Min_, Max_, by=DeltaT)
-    #
-    PhiDeltaTsDF_4 <- map(DeltaTs, function(x) {
-      expm(Drift_N * x)
-    }) %>%
-      map(function(x) data.frame(Values = as.vector(t(x)))) %>%
-      bind_rows %>%
-      bind_cols(WhichElements = rep(as.vector(WhichElements), length(DeltaTs))) %>%
-      filter(WhichElements == 1) %>%
-      bind_cols(DeltaTs = rep(DeltaTs, each = sum(WhichElements)),
-                Color = rep(as.character(Col), length(DeltaTs)),
-                LineType = rep(as.character(Lty), length(DeltaTs)),
-                Labels = rep(as.character(legendT), length(DeltaTs)))
-
-    for (i in 1:2) {
-      p.plot <- ggplot(PhiDeltaTsDF_L[[i]], aes(DeltaTs, Values, color = Labels, linetype = Labels)) +
-        geom_line(lwd = 0.75) +
-        geom_abline(intercept = 0, slope = 0, alpha = .5) +
-        scale_linetype_manual(name = " ", values = Lty, labels = legendT) +
-        scale_color_manual(name = " ", values = Col, labels = legendT) +
-        ylab(Ylab) +
-        xlab(Xlab) +
-        #labs(title = as.expression(Title_1),
-        #     subtitle = Title_2_N) +
-        ggtitle(as.expression(Title_1), subtitle = Title_2_N) +
-        theme_classic() +
-        theme(plot.title = element_text(margin = margin(t = 20))) +
-        ylim(0,1) +
-        theme(
-          legend.key.width = unit(2, "lines"),
-          legend.spacing.x = unit(1.5, "lines"),
-          legend.text = element_text(size = 12)
-        )
-
-      PlotName <- paste0("Plot_", i)
-      assign(PlotName, p.plot)
-      #Plot_1
-      #Plot_2
+    PhiDeltaTs_N<-array(data=NA,dim=c(q,q,length(DeltaTs)))
+    for(i in 1:length(DeltaTs)){
+      PhiDeltaTs_N[,,i]<-expm(Drift_N*DeltaTs[i])
     }
-
-    Plot_3 <- ggplot(PhiDeltaTsDF_4, aes(DeltaTs, Values, color = Labels, shape = Labels)) +
-    geom_point(show.legend = ) +
-    geom_abline(intercept = 0, slope = 0, alpha = .5) +
-    scale_shape_manual(name = " ", values = Lty, labels = legendT) +
-    scale_color_manual(name = " ", values = Col, labels = legendT) +
-    ylab(Ylab) +
-    xlab(Xlab) +
-    #labs(title = as.expression(Title_1_N2),
-    #     subtitle = as.expression(Title_2_N2)) +
-    ggtitle(as.expression(Title_1_N2), subtitle = Title_2_N2) +
-    theme_classic() +
-    theme(plot.title = element_text(margin = margin(t = 20))) +
-    ylim(0,1) +
-    theme(
-      legend.key.width = unit(2, "lines"),
-      legend.spacing.x = unit(1, "lines"),
-      legend.text = element_text(size = 12)
+    #
+    plot(y=rep(0, length(DeltaTs)), x=DeltaTs, type="l", ylim=c(min(PhiDeltaTs_N), max(PhiDeltaTs_N)),
+         ylab = Ylab, xlab = Xlab,
+         col=1000, lwd=2, lty=1,
+         main = mtext(side=3, line=2, adj=0, as.expression(Title_1_N2)),
+         sub = mtext(side=3, line=c(1,0), adj=0, c(as.expression(Title_2_N2), as.expression(Title_3_N2)))
     )
-    # Plot_3
+    #
+    teller <- 0
+    for(j in 1:q){
+      for(i in 1:q){
+        if(WhichElements[j,i] == 1){
+          teller <- teller + 1
+          points(y=PhiDeltaTs_N[j,i,], x=DeltaTs, col=Col[teller], lwd=2, pch=Lty[teller])
+        }
+      }
+    }
+  } # end if complex
 
-    Plot <- phi_plot + theme(legend.position = "none")
-    Plot_2_ <- Plot_2 + theme(legend.position = "none")
-    Plot_complex <- ggarrange(plotlist = list(Plot, Plot_1, Plot_2_, Plot_3), ncol = 2, nrow = 2,
-              widths = c(3,4)) %>% show
 
-    final <- list(PhiPlot = phi_plot,
-                  complex = complex,
-                  PhiPlot_aliasing_1 = Plot_1,
-                  PhiPlot_aliasing_2 = Plot_2,
-                  PhiPlot_scatter = Plot_3,
-                  PhiPlot_all = Plot_complex)
-
-  }else{ # if not complex, then only one plot
-    final <- list(PhiPlot = phi_plot,
-                  complex = complex)
-    print(phi_plot)
+  if(complex == TRUE){
+    if(q<4){CEX = 1}else{CEX = (1.4-q/10)} # Check for optimal values!
+    par(mar = c(0,0,0,0))
+    plot.new()
+    legend("center",
+           legend = legendT, cex=CEX,
+           bty = "n",
+           lty=Lty, # gives the legend appropriate symbols (lines)
+           lwd=rep(2, q*q),
+           col=Col # gives the legend lines the correct color and width
+    )
+    plot.new()
+    legend("center",
+           legend = legendT, cex=CEX,
+           bty = "n",
+           pch=Lty, # gives the legend appropriate symbols (lines)
+           #lwd=rep(2, q*q),
+           col=Col # gives the legend lines the correct color and width
+    )
   }
+
+  #dev.off()
+
+  par(op)
+
+
+
 
 
   ############################################################################################################
 
   #final <- list(.. = ...)
-  return(invisible(final))
+  #return(final)
 
 }
 
