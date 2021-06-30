@@ -123,8 +123,8 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
     return(ErrorMessage)
     stop(ErrorMessage)
   }
-  if(!is.logical(MinMaxPhi) & MinMaxPhi != FALSE & MinMaxPhi != TRUE){
-    ErrorMessage <- (paste0("The argument 'MinMaxPhi' should be T(RUE) or F(ALSE); or 1 or 0; not ", MinMaxPhi))
+  if(!is.logical(MaxMinPhi) & MaxMinPhi != FALSE & MaxMinPhi != TRUE){
+    ErrorMessage <- (paste0("The argument 'MaxMinPhi' should be T(RUE) or F(ALSE); or 1 or 0; not ", MaxMinPhi))
     return(ErrorMessage)
     stop(ErrorMessage)
   }
@@ -137,7 +137,7 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
       Drift <- CTMp$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
     }else{
       return(ErrorMessage)
-      stop()
+      stop(ErrorMessage)
     }
   } else if(any(class(Phi) == "ctsemFit")){
     Drift <- summary(Phi)$DRIFT
@@ -150,7 +150,7 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
           Drift <- CTMp$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
         }else{
           return(ErrorMessage)
-          stop()
+          stop(ErrorMessage)
         }
       }else{ # is.null(Phi)
         cat("Either the drift matrix Drift or the autoregressive matrix Phi should be input to the function.")
@@ -227,7 +227,7 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
             Drift <- CTMp$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
           }else{
             return(ErrorMessage)
-            stop()
+            stop(ErrorMessage)
           }
         }
         Gamma <- Gamma.fromCTM(Drift, Sigma)
@@ -442,7 +442,7 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
       Phi_MinMax <- MaxD$MinOrMaxPhi
     }else{
       return(ErrorMessage)
-      stop()
+      stop(ErrorMessage)
     }
     #
     teller <- 0

@@ -75,7 +75,7 @@ MaxDeltaT <- function(DeltaT = 1, Phi = NULL, Drift = NULL) {
       B <- -CTMp$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
     }else{
       return(ErrorMessage)
-      stop()
+      stop(ErrorMessage)
     }
   } else if(any(class(Phi) == "ctsemFit")){
     B <- -1 * summary(Phi)$DRIFT
@@ -90,7 +90,7 @@ MaxDeltaT <- function(DeltaT = 1, Phi = NULL, Drift = NULL) {
           B <- -CTMp$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
         }else{
           return(ErrorMessage)
-          stop()
+          stop(ErrorMessage)
         }
       }else{ # is.null(Phi)
         ErrorMessage <- ("Either the drift matrix Drift or the autoregressive matrix Phi should be input to the function.")
@@ -166,7 +166,7 @@ MaxDeltaT <- function(DeltaT = 1, Phi = NULL, Drift = NULL) {
         cat("The nleqslv-function terminated.")
         cat("Hence, there is no DeltaT such that the Phi(DeltaT) functions reach a minimum or maximum.")
         message <- "There is no DeltaT such that the Phi(DeltaT) functions reach a minimum or maximum."
-        #stop()
+        #stop(message)
       }
       #
       #

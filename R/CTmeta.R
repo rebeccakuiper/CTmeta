@@ -889,7 +889,7 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
           PhiPlot <- phi_plot$PhiPlot
         }else{
           return(ErrorMessage)
-          stop()
+          stop(ErrorMessage)
         }
       }
       #

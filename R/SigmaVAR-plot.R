@@ -143,7 +143,7 @@ SigmaVARPlot <- function(DeltaT = 1, Phi = NULL, SigmaVAR = NULL, Drift = NULL, 
       Drift <- CTMp$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
     }else{
       return(ErrorMessage)
-      stop()
+      stop(ErrorMessage)
     }
     Gamma <- Gamma.fromVAR(Phi, SigmaVAR_VARest)
   } else if(any(class(Phi) == "ctsemFit")){
@@ -159,7 +159,7 @@ SigmaVARPlot <- function(DeltaT = 1, Phi = NULL, SigmaVAR = NULL, Drift = NULL, 
           Drift <- CTMp$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
         }else{
           return(ErrorMessage)
-          stop()
+          stop(ErrorMessage)
         }
       }else{ # is.null(Phi)
         ErrorMessage <- ("Either the drift matrix Drift or the autoregressive matrix Phi should be input to the function.")
@@ -227,7 +227,7 @@ SigmaVARPlot <- function(DeltaT = 1, Phi = NULL, SigmaVAR = NULL, Drift = NULL, 
           Drift <- CTMp$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
         }else{
           return(ErrorMessage)
-          stop()
+          stop(ErrorMessage)
         }
       }
       Gamma <- Gamma.fromCTM(Drift, Sigma)
