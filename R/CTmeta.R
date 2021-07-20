@@ -46,12 +46,110 @@
 #' ##################################################################################################
 #'
 #'
+#' ### Examples without comments ###
+#'
+#'
+#' ## Example without moderators ##
+#'
+#' # Fixed effects model #
+#'
+#' # Run CTmeta
+#' CTma <- CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR)
+#' CTma
+#' summary(CTma)
+#'
+#'
+#' # Random effects model #
+#'
+#' CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR, FEorRE = 2)
+#'
+#'
+#' ## Example with moderators ##
+#'
+#' Mod <- matrix(c(64,65,47)) # 1 moderator
+#' CTma <- CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR, Moderators = 1, Mod = Mod) # fixed effects model
+#' summary(CTma)
+#'
+#' q <- dim(Phi)[2]; Mod <- matrix(cbind(c(64,65,47), c(78,89,34)), ncol = q); colnames(Mod) <- c("Mod1", "Mod2") # two moderators, in each column 1
+#' CTma <- CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR, Moderators = 1, Mod = Mod, FEorRE = 2); CTma$tau2 # random effects model
+#' summary(CTma)
+#'
+#'
+#' ## Make customized Phi-plot of resulting overall Phi ##
+#'
+#' CTma <- CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR, PrintPlot = TRUE)
+#' CTma$PhiPlot
+#'
+#' out_CTmeta <- CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR)
+#' overallPhi <- out_CTmeta$Overall_standPhi
+#' Title <- as.list(expression(paste0(Phi(Delta[t]), " plot:"),
+#'    "How do the overall lagged parameters vary as a function of the time-interval"))
+#' PhiPlot(DeltaTStar, overallPhi, Min = 0, Max = 40, Step = 0.5, Title = Title)
+#' # or
+#' ggPhiPlot <- ggPhiPlot(DeltaTStar, overallPhi, Min = 0, Max = 40, Step = 0.5, Title = Title)
+#' ggPhiPlot$PhiPlot
+#'
+#'
+#' ## Evaluate dominance of (absolute values of) cross-lagged effects ##
+#'
+#' if (!require("restriktor")) install.packages("restriktor") # Use restriktor package for function goric().
+#'                                                            # Authors of goric(): Vanbrabant and Kuiper.
+#' library(restriktor)
+#'
+#' out_CTmeta <- CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR)
+#' H1 <- "abs(overallPhi12) < abs(overallPhi21)"
+#' goric(out_CTmeta, H1, type = "gorica", comparison = "complement")
+#'
+#' out_CTmeta <- CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR)
+#' H1 <- "abs(overallPhi12) < abs(overallPhi21); abs(overallPhi11) < abs(overallPhi22)"
+#' goric(out_CTmeta, H1, type = "gorica", comparison = "complement")
+#'
+#' out_CTmeta <- CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR)
+#' est <- coef(out_CTmeta)  # or: est  <- out_CTmeta$Overall_vecStandPhi_DeltaTStar
+#' VCOV <- vcov(out_CTmeta) # or: VCOV <- out_CTmeta$CovMx_OverallPhi_DeltaTStar
+#' goric(est, VCOV = VCOV, H1, type = "gorica", comparison = "complement")
+#'
+#'
+#' ## What if primary studies report a (lagged) correlation matrix ##
+#'
+#' q <- 2
+#' corr_YXYX <- matrix(c(1.00, 0.40, 0.63, 0.34,
+#'                       0.40, 1.00, 0.31, 0.63,
+#'                       0.63, 0.31, 1.00, 0.41,
+#'                       0.34, 0.63, 0.41, 1.00), byrow = T, ncol = 2*q)
+#' N <- matrix(c(643, 651, 473))
+#' DeltaT <- matrix(c(2, 3, 1))
+#' DeltaTStar <- 1
+#' #
+#' # Create input:
+#' out_1 <- TransPhi_Corr(DeltaTStar = DeltaT[1], DeltaT = 1, N = N[1], corr_YXYX)
+#' Phi_1 <- out_1$standPhi_DeltaTStar
+#' SigmaVAR_1 <- out_1$standSigmaVAR_DeltaTStar
+#' out_2 <- TransPhi_Corr(DeltaTStar = DeltaT[2], DeltaT = 1, N = N[2], corr_YXYX)
+#' Phi_2 <- out_2$standPhi_DeltaTStar
+#' SigmaVAR_2 <- out_2$standSigmaVAR_DeltaTStar
+#' out_3 <- TransPhi_Corr(DeltaTStar = DeltaT[3], DeltaT = 1, N = N[3], corr_YXYX)
+#' Phi_3 <- out_3$standPhi_DeltaTStar
+#' SigmaVAR_3 <- out_3$standSigmaVAR_DeltaTStar
+#' #
+#' Phi <- rbind(Phi_1, Phi_2, Phi_3) # This, returns a stacked matrix of size S q times q.
+#' SigmaVAR <- rbind(SigmaVAR_1, SigmaVAR_2, SigmaVAR_3)
+#' out_CTmeta <- CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR)
+#' out_CTmeta$Overall_standPhi
+#'
+#'
+#' ##############################
+#'
+#'
+#' ### Examples with comments ###
+#'
+#'
 #' ## Example without moderators ##
 #'
 #' # Fixed effects model #
 #'
 #' # Run CTmeta with, for instance,
-#' CTmeta(N, DeltaT, DeltaTStar, Phi, Gamma = Gamma)
+#' CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR)
 #'
 #' # There are multiple options; use one of the following:
 #' CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR, Gamma, Moderators, Mod, 1) # The 1, here, says FEorRE = 1
@@ -67,7 +165,7 @@
 #' # Then, CTmeta incorrectly uses SigmaVAR = Gamma.
 #'
 #' # Different types of output options are possible:
-#' CTma <- CTmeta(N, DeltaT, DeltaTStar, Phi, Gamma = Gamma)
+#' CTma <- CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR)
 #' CTma # gives same as print(CTma)
 #' summary(CTma)
 #' print(CTma, digits = 4)
@@ -79,24 +177,24 @@
 #' # Random effects model #
 #'
 #' # Add "FEorRE = 2"; e.g.,
-#' CTmeta(N, DeltaT, DeltaTStar, Phi, Gamma = Gamma, FEorRE = 2)
+#' CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR, FEorRE = 2)
 #'
 #'
 #' ## Example with moderators ##
 #'
 #' Mod <- matrix(c(64,65,47)) # 1 moderator
 #' #q <- dim(Phi)[2]; Mod <- matrix(cbind(c(64,65,47), c(78,89,34)), ncol = q); colnames(Mod) <- c("Mod1", "Mod2") # two moderators, in each column 1
-#' CTma <- CTmeta(N, DeltaT, DeltaTStar, Phi, Gamma = Gamma, Moderators = 1, Mod = Mod) # fixed effects model
-#' #CTma <- CTmeta(N, DeltaT, DeltaTStar, Phi, Gamma = Gamma, Moderators = 1, Mod = Mod, FEorRE = 2); CTma$tau2 # random effects model
+#' CTma <- CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR, Moderators = 1, Mod = Mod) # fixed effects model
+#' #CTma <- CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR, Moderators = 1, Mod = Mod, FEorRE = 2); CTma$tau2 # random effects model
 #' summary(CTma)
 #'
 #'
 #' ## Make customized Phi-plot of resulting overall Phi ##
 #'
 #' # Option 1: Using the plot option in the function:
-#' CTmeta(N, DeltaT, DeltaTStar, Phi, Gamma = Gamma, PrintPlot = TRUE)
+#' CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR, PrintPlot = TRUE)
 #' # The plot can be stored and retrieved as an object as follows:
-#' # CTma <- CTmeta(N, DeltaT, DeltaTStar, Phi, Gamma = Gamma, PrintPlot = TRUE)
+#' # CTma <- CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR, PrintPlot = TRUE)
 #' # CTma$PhiPlot
 #'
 #'
@@ -104,7 +202,7 @@
 #' # Alternatively, one can use the function 'ggPhiPlot' instead of 'PhiPlot'.
 #'
 #' # Extract the (q times q) overall Phi matrix
-#' out_CTmeta <- CTmeta(N, DeltaT, DeltaTStar, Phi, Gamma = Gamma)
+#' out_CTmeta <- CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR)
 #' # resulting overall Phi:
 #' overallPhi <- out_CTmeta$Overall_standPhi
 #'
@@ -121,28 +219,41 @@
 #'
 #' ## Evaluate dominance of (absolute values of) cross-lagged effects ##
 #'
-#' # Extract the vectorized overall standardized overallPhi matrix and its covariance matrix
-#' # using the functions coef() and vcov()
-#' out_CTmeta <- CTmeta(N, DeltaT, DeltaTStar, Phi, Gamma = Gamma)
-#' est <- coef(out_CTmeta)  # or: est  <- out_CTmeta$Overall_vecStandPhi_DeltaTStar
-#' VCOV <- vcov(out_CTmeta) # or: VCOV <- out_CTmeta$CovMx_OverallPhi_DeltaTStar
+#' if (!require("restriktor")) install.packages("restriktor") # Use restriktor package for function goric().
+#'                                                            # Authors of goric(): Vanbrabant and Kuiper.
+#' #
+#' # If version from github needed:
+#' #if (!require("devtools")) install.packages("devtools")
+#' #library(devtools)
+#' #install_github("LeonardV/restriktor")
+#' #
+#' library(restriktor)
+#'
+#' # Option 1
+#' # Use CTmeta object
+#' out_CTmeta <- CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR)
 #' #
 #' # Example 1: dominance of (absolute values of) cross-lagged effects
 #' # Specify hypothesis
 #' H1 <- "abs(overallPhi12) < abs(overallPhi21)"
 #' #H2 <- "abs(overallPhi12) > abs(overallPhi21)" # = complement of H1 and does not need to be specified, see below.
-#' # Evaluate dominance of cross-lagged effects via AIC-type criterion called the GORICA (Altinisik, Nederhof, Hoijtink, Oldehinkel, Kuiper, conditionally accepted).
-#' if (!require("restriktor")) install.packages("restriktor")
-#' # Use restriktor package for function goric().
-#' # Authors of goric(): Vanbrabant and Kuiper.
-#' library(restriktor)
-#' #goric(est, VCOV = VCOV, H1, H2, type = "gorica", comparison = "none")
+#' # Evaluate dominance of cross-lagged effects via AIC-type criterion called the GORICA (Altinisik, Nederhof, Hoijtink, Oldehinkel, Kuiper, accepted 2021).
+#' #goric(out_CTmeta, H1, H2, type = "gorica", comparison = "none")
 #' # or, since H2 is complement of H1, equivalently:
-#' goric(est, VCOV = VCOV, H1, type = "gorica", comparison = "complement")
+#' goric(out_CTmeta, H1, type = "gorica", comparison = "complement")
 #' #
-#' # Example 1: dominance of (absolute values of) cross-lagged effects and autoregressive effects
+#' # Example 2: dominance of (absolute values of) cross-lagged effects and autoregressive effects
 #' H1 <- "abs(overallPhi12) < abs(overallPhi21); abs(overallPhi11) < abs(overallPhi22)"
 #' # Note that, now, specification of complement 'by hand' harder.
+#' goric(out_CTmeta, H1, type = "gorica", comparison = "complement")
+#' #
+#' #
+#' # Option 2
+#' # Extract the vectorized overall standardized overallPhi matrix and its covariance matrix
+#' # using the functions coef() and vcov()
+#' out_CTmeta <- CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR)
+#' est <- coef(out_CTmeta)  # or: est  <- out_CTmeta$Overall_vecStandPhi_DeltaTStar
+#' VCOV <- vcov(out_CTmeta) # or: VCOV <- out_CTmeta$CovMx_OverallPhi_DeltaTStar
 #' goric(est, VCOV = VCOV, H1, type = "gorica", comparison = "complement")
 #'
 #'
