@@ -181,6 +181,9 @@ if(any(is.complex(eigenPhi$values))){
   }else{
     warning <- "There is at least one pair of complex eigenvalues, but the ratio of DeltaTs (i.e., DeltaT*/DeltaT) is an integer, so the solution for Phi(DeltaT*) is unique."
   }
+  if(all(Im(Phi_DeltaT) == 0)){
+    Phi_DeltaT <- Re(Phi_DeltaT)
+  }
 }
 
 

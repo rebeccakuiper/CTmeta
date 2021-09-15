@@ -303,6 +303,7 @@
 
 
 CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Moderators = 0, Mod = NULL, FEorRE = 1, alpha=0.05, PrintPlot = FALSE) {
+  #Gamma = NULL; Moderators = 0; Mod = NULL; FEorRE = 1; alpha=0.05; PrintPlot = FALSE
 
 #  #######################################################################################################################
 #  if (!require("fastDummies")) install.packages("fastDummies")
@@ -643,14 +644,15 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
       messageMultivar <- "For each study, the covariance matrix is positive definite. Hence, a multivariate approach is used."
       if(Trans == 1){
         # Calculate standardized transformed Phi
+        messagePhi <- matrix(NA, ncol = 1, nrow = S)
         #s = 0
         #while(s < S & Trans == 1){ # go through all, unless a warning of not unique solution (which I already cover above...)
         #  s = s +1
         for(s in 1:S){
-          out <- StandTransPhi(DeltaTStar, DeltaT[s], N[s], Phi[,,s], Gamma[,,s], SigmaVAR[,,s])
+          out <- StandTransPhi(DeltaTStar, DeltaT[s], N[s], Phi[,,s], Gamma = Gamma[,,s], SigmaVAR = SigmaVAR[,,s])
           vecStandPhi[,s] <- out$vecStandPhi_DeltaTStar
           CovMxPhi[,,s] <- out$CovMx_vecStandPhi_DeltaTStar
-          #Warning[s] <- out$warning
+          messagePhi[s] <- out$warning
           #Trans <- 1 - as.numeric(out$Warning)
           #
           # If covariance matrix is not positive definite then do univariate approach (and use only variances)
@@ -1030,6 +1032,7 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
                         messageTrans = messageTrans, messageMultivar = messageMultivar,
                         StudiesComplexEV = StudiesComplexEV, StudiesNegEV = StudiesNegEV, StudiesCovMxNotPosDef = StudiesCovMxNotPosDef,
                         ratioDeltaT = ratioDeltaT,
+                        messagePhi = messagePhi,
                         summaryMetaAnalysis = summary(metaan))
         } else{ # RE
           final <- list(DeltaTStar = dT_star,
@@ -1044,6 +1047,7 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
                         messageTrans = messageTrans, messageMultivar = messageMultivar,
                         StudiesComplexEV = StudiesComplexEV, StudiesNegEV = StudiesNegEV, StudiesCovMxNotPosDef = StudiesCovMxNotPosDef,
                         ratioDeltaT = ratioDeltaT,
+                        messagePhi = messagePhi,
                         summaryMetaAnalysis = summary(metaan))
         }
       # Multivar and Dummies

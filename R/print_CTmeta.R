@@ -42,21 +42,21 @@ print.CTmeta <- function(x, digits = NULL)
   cat("\n")
 
   if(!is.null(x$StudiesComplexEV)){
+    cat("\n")
     cat("The studies with compex eigenvalues: \n")
     cat(x$StudiesComplexEV)
     cat("\n")
-    cat("\n")
   }
   if(!is.null(x$StudiesNegEV)) {
+    cat("\n")
     cat("The studies with negative (real parts of the) eigenvalues: \n")
     cat(x$StudiesNegEV)
     cat("\n")
-    cat("\n")
   }
   if(!is.null(x$StudiesCovMxNotPosDef)) {
+    cat("\n")
     cat("The studies with not-positive definite (i.e., negative semidefinite) covariance matrices: \n")
     cat(x$StudiesCovMxNotPosDef)
-    cat("\n")
     cat("\n")
   }
 
