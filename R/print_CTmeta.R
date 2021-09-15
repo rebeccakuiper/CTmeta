@@ -43,7 +43,7 @@ print.CTmeta <- function(x, digits = NULL)
 
   if(!is.null(x$StudiesComplexEV)){
     cat("\n")
-    cat("The studies with compex eigenvalues: \n")
+    cat("The studies with complex eigenvalues: \n")
     cat(x$StudiesComplexEV)
     cat("\n")
   }
