@@ -994,7 +994,7 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
         Title <- as.list(expression(Phi(Delta[t])~plot), "How do the overall lagged parameters vary as a function of the time-interval")
         min <- min(DeltaT)
         max <- max(DeltaT)
-        step <- (max - min + 1)/10
+        step <- (max - min + 1)/50 #(max - min + 1)/10
         #PhiPlot(DeltaTStar, overallPhi, Min = min, Max = max, Step = step, Title = Title)
         phi_plot <- ggPhiPlot(DeltaTStar, overallPhi, Min = min, Max = max, Step = step, Title = Title)
         PhiPlot <- phi_plot$PhiPlot
