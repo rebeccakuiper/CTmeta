@@ -138,6 +138,9 @@ TransPhi_Corr <- function(DeltaTStar, DeltaT = 1, N = NULL, corr_YXYX, alpha = 0
       }else{
         warning <- "There is at least one pair of complex eigenvalues, but the ratio of DeltaTs (i.e., DeltaT*/DeltaT) is an integer, so the solution for Phi(DeltaT*) is unique."
       }
+      if(all(Im(TransPhi) == 0)){
+        TransPhi <- Re(TransPhi)
+      }
     }
 
 
