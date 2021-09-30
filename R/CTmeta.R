@@ -12,7 +12,7 @@
 #' @param Moderators Optional. Indicator (TRUE/FALSE or 1/0) whether there are moderators to be included (TRUE or 1) or not (FALSE or 0). By default, Moderators = 0.
 #' @param Mod Optional. An S x m matrix of m moderators to be included in the analysis when Moderators == 1. By default, Mod = NULL.
 #' @param FEorRE Optional. Indicator (1/2) whether continuous-time meta-analysis should use a fixed-effects model (1) or random-effects model (2). By default, FEorRE = 1.
-#' @param BetweenLevel Optional. Needed in case of a 2-level multilevel meta-analysis. An (q*q*S)-vector or (q*q*S) x 1 matrix (namely one value for each of the q*q elements for each study). It will only be used, if FEorRE == 2 (i.e., in a random-effects model). Then, one can add a between-level to the random part (e.g., dataset number if multiple studies use the same dataset). Note that the within level is Study number (for each of the elements in the study-specific q x q matrix Phi). By default, BetweenLevel = NULL.
+#' @param BetweenLevel Optional. Needed in case of a 2-level multilevel meta-analysis. An S-vector or S x 1 matrix (namely one value for each study). It will only be used, if FEorRE == 2 (i.e., in a random-effects model). Then, one can add a between-level to the random part (e.g., dataset number if multiple studies use the same dataset). Note that the within level is Study number. By default, BetweenLevel = NULL.
 #' @param alpha Optional. The alpha level in determining the (1-alpha)*100\% confidence interval (CI). By default, alpha = 0.05; resulting in a 95\% CI.
 #' @param PrintPlot Optional. Indicator (TRUE/FALSE or 1/0) for rendering a Phi-plot (TRUE or 1) or not (FALSE or 0). By default, PrintPlot = FALSE.
 #'
@@ -397,9 +397,9 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
     stop(ErrorMessage)
   }
   if(FEorRE == 2 & !is.null(BetweenLevel)){
-    if(length(BetweenLevel) != q*q*S){
-      ErrorMessage <- (paste0("The argument BetweenLevel should be a q*q*S vector or q*q*S x 1 matrix.
-                   Thus, the number of elements in BetweenLevel should equal q*q*S = ", q*q*S, " not ", length(BetweenLevel), "."))
+    if(length(BetweenLevel) != S){
+      ErrorMessage <- (paste0("The argument BetweenLevel should be a S vector or S x 1 matrix.
+                   Thus, the number of elements in BetweenLevel should equal S = ", S, " not ", length(BetweenLevel), "."))
       return(ErrorMessage)
       stop(ErrorMessage)
     }
@@ -731,7 +731,14 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
         }
         #
         if(FEorRE == 2){
-          Study <- matrix(rep(1:S, each = q*q), ncol = 1)
+          if(Multivar == 1){
+            Study <- matrix(rep(1:S, each = q*q), ncol = 1)
+            if(!is.null(BetweenLevel)){
+              BetweenLevel <- rep(BetweenLevel, each = q*q)
+            }
+          }else{
+            Study <- matrix(rep(1:S), ncol = 1)
+          }
         }
       }
       #
@@ -946,8 +953,6 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
               if(is.null(BetweenLevel)){
                 metaan <- rma.uni(yi=Phi_jk, vi=var, mods = Mod., method = "ML")
               }else{
-                BetweenLevel <- BetweenLevel[c(T, rep(F, q*q-1))]
-                Study <- Study[c(T, rep(F, q*q-1))]
                 metaan <- rma.mv(yi=Phi_jk, V=diag(var), mods = Mod., method = "ML",
                                  random = ~ 1 | BetweenLevel/Study)
               }
@@ -955,8 +960,6 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
               if(is.null(BetweenLevel)){
                 metaan <- rma.uni(yi=Phi_jk, vi=var, method = "ML")
               }else{
-                BetweenLevel <- BetweenLevel[c(T, rep(F, q*q-1))]
-                Study <- Study[c(T, rep(F, q*q-1))]
                 metaan <- rma.mv(yi=Phi_jk, V=diag(var), method = "ML",
                                  random = ~ 1 | BetweenLevel/Study)
               }
@@ -1004,8 +1007,6 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
                 if(is.null(BetweenLevel)){
                   metaan_g <- rma.uni(yi=Phi_jk, vi=var, mods = ~ -1 + D. + Mod., method = "ML")
                 }else{
-                  BetweenLevel <- BetweenLevel[c(T, rep(F, q*q-1))]
-                  Study <- Study[c(T, rep(F, q*q-1))]
                   metaan_g <- rma.mv(yi=Phi_jk, V=diag(var), mods = ~ -1 + D. + Mod., method = "ML",
                                    random = ~ 1 | BetweenLevel/Study)
                 }
@@ -1013,8 +1014,6 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
                 if(is.null(BetweenLevel)){
                   metaan_g <- rma.uni(yi=Phi_jk, vi=var, mods = ~ -1 + D., method = "ML")
                 }else{
-                  BetweenLevel <- BetweenLevel[c(T, rep(F, q*q-1))]
-                  Study <- Study[c(T, rep(F, q*q-1))]
                   metaan_g <- rma.mv(yi=Phi_jk, V=diag(var), mods = ~ -1 + D., method = "ML",
                                    random = ~ 1 | BetweenLevel/Study)
                 }
@@ -1024,8 +1023,6 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
                 if(is.null(BetweenLevel)){
                   metaan_g <- rma.uni(yi=Phi_jk, vi=var, mods = ~ 1 + Mod., method = "ML")
                 }else{
-                  BetweenLevel <- BetweenLevel[c(T, rep(F, q*q-1))]
-                  Study <- Study[c(T, rep(F, q*q-1))]
                   metaan_g <- rma.mv(yi=Phi_jk, V=diag(var), mods = ~ 1 + Mod., method = "ML",
                                      random = ~ 1 | BetweenLevel/Study)
                 }
@@ -1033,8 +1030,6 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
                 if(is.null(BetweenLevel)){
                   metaan_g <- rma.uni(yi=Phi_jk, vi=var, method = "ML")
                 }else{
-                  BetweenLevel <- BetweenLevel[c(T, rep(F, q*q-1))]
-                  Study <- Study[c(T, rep(F, q*q-1))]
                   metaan_g <- rma.mv(yi=Phi_jk, V=diag(var), method = "ML",
                                      random = ~ 1 | BetweenLevel/Study)
                 }
