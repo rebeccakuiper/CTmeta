@@ -11,7 +11,8 @@
 #' Note that if Phi and Gamma are known, SigmaVAR can be calculated. Hence, only SigmaVAR or Gamma is needed as input (if only Gamma, then use 'Gamma = Gamma' or set SigmaVAR to NULL, see examples below).
 #' @param Moderators Optional. Indicator (TRUE/FALSE or 1/0) whether there are moderators to be included (TRUE or 1) or not (FALSE or 0). By default, Moderators = 0.
 #' @param Mod Optional. An S x m matrix of m moderators to be included in the analysis when Moderators == 1. By default, Mod = NULL.
-#' @param FEorRE Optional. Indicator (2/1) whether continuous-time meta-analysis should use a fixed-effects model (1) or random-effects model (2). By default, FEorRE = 1.
+#' @param FEorRE Optional. Indicator (1/2) whether continuous-time meta-analysis should use a fixed-effects model (1) or random-effects model (2). By default, FEorRE = 1.
+#' @param BetweenLevel Optional. Needed in case of a 2-level multilevel meta-analysis. An (q*q*S)-vector or (q*q*S) x 1 matrix (namely one value for each of the q*q elements for each study). It will only be used, if FEorRE == 2 (i.e., in a random-effects model). Then, one can add a between-level to the random part (e.g., dataset number if multiple studies use the same dataset). Note that the within level is Study number (for each of the elements in the study-specific q x q matrix Phi). By default, BetweenLevel = NULL.
 #' @param alpha Optional. The alpha level in determining the (1-alpha)*100\% confidence interval (CI). By default, alpha = 0.05; resulting in a 95\% CI.
 #' @param PrintPlot Optional. Indicator (TRUE/FALSE or 1/0) for rendering a Phi-plot (TRUE or 1) or not (FALSE or 0). By default, PrintPlot = FALSE.
 #'
@@ -302,8 +303,8 @@
 #'
 
 
-CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Moderators = 0, Mod = NULL, FEorRE = 1, alpha=0.05, PrintPlot = FALSE) {
-  #Gamma = NULL; Moderators = 0; Mod = NULL; FEorRE = 1; alpha=0.05; PrintPlot = FALSE
+CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Moderators = 0, Mod = NULL, FEorRE = 1, BetweenLevel = NULL, alpha=0.05, PrintPlot = FALSE) {
+  #Gamma = NULL; Moderators = 0; Mod = NULL; FEorRE = 1; BetweenLevel = NULL; alpha=0.05; PrintPlot = FALSE
 
 #  #######################################################################################################################
 #  if (!require("fastDummies")) install.packages("fastDummies")
@@ -384,7 +385,7 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
   if(Moderators == TRUE){
     if(dim(Mod)[1] != S){
       ErrorMessage <- (paste0("The argument Mod should be a S times m matrix, with m the number of moderators to be included in the model.
-                   Thus, the number of rows of Mod should equal S = ", S, " not ", dim(Mod)[1]))
+                   Thus, the number of rows of Mod should equal S = ", S, " not ", dim(Mod)[1], "."))
       return(ErrorMessage)
       stop(ErrorMessage)
     }
@@ -394,6 +395,14 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
     ErrorMessage <- (paste0("The argument FEorRE should be 1 or 2; not ", FEorRE))
     return(ErrorMessage)
     stop(ErrorMessage)
+  }
+  if(FEorRE == 2 & !is.null(BetweenLevel)){
+    if(length(BetweenLevel) != q*q*S){
+      ErrorMessage <- (paste0("The argument BetweenLevel should be a q*q*S vector or q*q*S x 1 matrix.
+                   Thus, the number of elements in BetweenLevel should equal q*q*S = ", q*q*S, " not ", length(BetweenLevel), "."))
+      return(ErrorMessage)
+      stop(ErrorMessage)
+    }
   }
   #
   if(!is.logical(PrintPlot) & PrintPlot != FALSE & PrintPlot != TRUE){
@@ -722,7 +731,7 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
         }
         #
         if(FEorRE == 2){
-          RandomPart <- matrix(rep(1:S, each = q*q), ncol = 1)
+          Study <- matrix(rep(1:S, each = q*q), ncol = 1)
         }
       }
       #
@@ -739,11 +748,25 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
         vecVecStandPhi <- as.vector(vecStandPhi) # vecStandPhi[q:q*q,1:S]
         if(FEorRE == 2){ # RE
           if(Moderators == 1){ # Moderators
-            metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ overallPhi + overallPhi:Mod. - 1, random = ~ overallPhi | RandomPart,
-                           struct = "UN", method = "ML")  # With struct="UN", the random effects are allowed to have different variances for each overallPhi and are allowed to be correlated.
+            if(is.null(BetweenLevel)){
+              metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ overallPhi + overallPhi:Mod. - 1,
+                               random = ~ overallPhi | Study,
+                               struct = "UN", method = "ML")  # With struct="UN", the random effects are allowed to have different variances for each overallPhi and are allowed to be correlated.
+            }else{
+              metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ overallPhi + overallPhi:Mod. - 1,
+                               random = ~ 1 | BetweenLevel / Study,
+                               method = "ML")
+            }
           }else{ # No Moderators
-            metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ overallPhi - 1, random = ~ overallPhi | RandomPart,
-                             struct = "UN", method = "ML")  # With struct="UN", the random effects are allowed to have different variances for each overallPhi and are allowed to be correlated.
+            if(is.null(BetweenLevel)){
+              metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ overallPhi - 1,
+                               random = ~ overallPhi | Study,
+                               struct = "UN", method = "ML")  # With struct="UN", the random effects are allowed to have different variances for each overallPhi and are allowed to be correlated.
+            }else{
+              metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ overallPhi - 1,
+                               random = ~ 1 | BetweenLevel / Study,
+                               method = "ML")
+            }
           }
           tau2_metaan_MV <- metaan$tau2
         }else{# FE
@@ -805,20 +828,46 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
         if(FEorRE == 2){ # RE
           if(G > 1){
             if(Moderators == 1){ # Moderators
-              metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ -1 + overallPhi:D. + overallPhi:Mod.,
-                               random = ~ overallPhi | RandomPart, struct = "UN", method = "ML")  # With struct="UN", the random effects are allowed to have different variances for each overallPhi and are allowed to be correlated.
+              if(is.null(BetweenLevel)){
+                metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ -1 + overallPhi:D. + overallPhi:Mod.,
+                                 random = ~ overallPhi | Study, struct = "UN", method = "ML")  # With struct="UN", the random effects are allowed to have different variances for each overallPhi and are allowed to be correlated.
+              }else{
+                metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ -1 + overallPhi:D. + overallPhi:Mod.,
+                                 random = ~ 1 | BetweenLevel / Study, method = "ML")
+              }
             }else{ # No Moderators
-              metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ -1 + overallPhi:D.,
-                               random = ~ overallPhi | RandomPart, struct = "UN", method = "ML")  # With struct="UN", the random effects are allowed to have different variances for each overallPhi and are allowed to be correlated.
+              if(is.null(BetweenLevel)){
+                metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ -1 + overallPhi:D.,
+                                 random = ~ overallPhi | Study,
+                                 struct = "UN", method = "ML")  # With struct="UN", the random effects are allowed to have different variances for each overallPhi and are allowed to be correlated.
+              }else{
+                metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ -1 + overallPhi:D.,
+                                 random = ~ 1 | BetweenLevel / Study,
+                                 method = "ML")
+              }
             }
             tau2_metaan_MV <- metaan$tau2
           } else{ # G = 1, no use for dummies (only one group)
             if(Moderators == 1){ # Moderators
-              metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ overallPhi - 1 + overallPhi:Mod.,
-                               random = ~ overallPhi | RandomPart, struct = "UN", method = "ML")
+              if(is.null(BetweenLevel)){
+                metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ overallPhi - 1 + overallPhi:Mod.,
+                                 random = ~ overallPhi | Study,
+                                 struct = "UN", method = "ML")  # With struct="UN", the random effects are allowed to have different variances for each overallPhi and are allowed to be correlated.
+              }else{
+                metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ overallPhi - 1 + overallPhi:Mod.,
+                                 random = ~ 1 | BetweenLevel / Study,
+                                 method = "ML")
+              }
             }else{ # No Moderators
-              metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ overallPhi - 1,
-                               random = ~ overallPhi | RandomPart, struct = "UN", method = "ML")
+              if(is.null(BetweenLevel)){
+                metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ overallPhi - 1,
+                                 random = ~ overallPhi | Study,
+                                 struct = "UN", method = "ML")  # With struct="UN", the random effects are allowed to have different variances for each overallPhi and are allowed to be correlated.
+              }else{
+                metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ overallPhi - 1,
+                                 random = ~ 1 | BetweenLevel / Study,
+                                 method = "ML")
+              }
             }
           }
         }else{# FE
@@ -886,6 +935,7 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
         tau2_metaan <- array(data=NA, dim=c(q,q))
         QEp_metaan <- array(data=NA, dim=c(q,q))
         QMp_metaan <- array(data=NA, dim=c(q,q))
+        summaryMetaAnalysis_jk <- list()
         for(teller in 1:(q^2)){ # Do meta-analysis (over S studies) for each of the q*q SLEs
           j = (teller+q-1)%/%q
           k = teller-(j-1)*q
@@ -893,9 +943,23 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
           var <- varPhi[teller,]
           if(FEorRE == 2){ # RE
             if(Moderators == 1){ # Moderators
-              metaan <- rma.uni(yi=Phi_jk, vi=var, mods = Mod., method = "ML")
+              if(is.null(BetweenLevel)){
+                metaan <- rma.uni(yi=Phi_jk, vi=var, mods = Mod., method = "ML")
+              }else{
+                BetweenLevel <- BetweenLevel[c(T, rep(F, q*q-1))]
+                Study <- Study[c(T, rep(F, q*q-1))]
+                metaan <- rma.mv(yi=Phi_jk, V=diag(var), mods = Mod., method = "ML",
+                                 random = ~ 1 | BetweenLevel/Study)
+              }
             }else{ # No Moderators
-              metaan <- rma.uni(yi=Phi_jk, vi=var, method = "ML")
+              if(is.null(BetweenLevel)){
+                metaan <- rma.uni(yi=Phi_jk, vi=var, method = "ML")
+              }else{
+                BetweenLevel <- BetweenLevel[c(T, rep(F, q*q-1))]
+                Study <- Study[c(T, rep(F, q*q-1))]
+                metaan <- rma.mv(yi=Phi_jk, V=diag(var), method = "ML",
+                                 random = ~ 1 | BetweenLevel/Study)
+              }
             }
             tau2_metaan[j,k] <- metaan$tau2
           }else{# FE
@@ -913,6 +977,8 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
           if(Moderators == 1){ # Moderators
             QMp_metaan[j,k] <- metaan$QMp
           }
+          NameList <- paste0("j", j, "_k", k)
+          summaryMetaAnalysis_jk[[NameList]] <- summary(metaan)
         }
         vecPhi <- Phi_metaan
       #
@@ -926,6 +992,7 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
         tau2_metaan_dum <- array(data=NA, dim=c(q,q,G))
         QEp_metaan <- array(data=NA, dim=c(q,q))
         QMp_metaan <- array(data=NA, dim=c(q,q))
+        summaryMetaAnalysis_jk <- list()
         for(teller in 1:(q^2)){ # Do meta-analysis (over S studies) for each of the q*q SLEs
           j = (teller+q-1)%/%q
           k = teller-(j-1)*q
@@ -934,15 +1001,43 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
           if(FEorRE == 2){ # RE
             if(G > 1){
               if(Moderators == 1){ # Moderators
-                metaan_g <- rma.uni(yi=Phi_jk, vi=var, mods = ~ -1 + D. + Mod., method = "ML")
+                if(is.null(BetweenLevel)){
+                  metaan_g <- rma.uni(yi=Phi_jk, vi=var, mods = ~ -1 + D. + Mod., method = "ML")
+                }else{
+                  BetweenLevel <- BetweenLevel[c(T, rep(F, q*q-1))]
+                  Study <- Study[c(T, rep(F, q*q-1))]
+                  metaan_g <- rma.mv(yi=Phi_jk, V=diag(var), mods = ~ -1 + D. + Mod., method = "ML",
+                                   random = ~ 1 | BetweenLevel/Study)
+                }
               }else{ # No Moderators
-                metaan_g <- rma.uni(yi=Phi_jk, vi=var, mods = ~ -1 + D., method = "ML")
+                if(is.null(BetweenLevel)){
+                  metaan_g <- rma.uni(yi=Phi_jk, vi=var, mods = ~ -1 + D., method = "ML")
+                }else{
+                  BetweenLevel <- BetweenLevel[c(T, rep(F, q*q-1))]
+                  Study <- Study[c(T, rep(F, q*q-1))]
+                  metaan_g <- rma.mv(yi=Phi_jk, V=diag(var), mods = ~ -1 + D., method = "ML",
+                                   random = ~ 1 | BetweenLevel/Study)
+                }
               }
             } else{ # G == 1: no dummies needed
               if(Moderators == 1){ # Moderators
-                metaan_g <- rma.uni(yi=Phi_jk, vi=var, mods = ~ 1 + Mod., method = "ML")
+                if(is.null(BetweenLevel)){
+                  metaan_g <- rma.uni(yi=Phi_jk, vi=var, mods = ~ 1 + Mod., method = "ML")
+                }else{
+                  BetweenLevel <- BetweenLevel[c(T, rep(F, q*q-1))]
+                  Study <- Study[c(T, rep(F, q*q-1))]
+                  metaan_g <- rma.mv(yi=Phi_jk, V=diag(var), mods = ~ 1 + Mod., method = "ML",
+                                     random = ~ 1 | BetweenLevel/Study)
+                }
               }else{ # No Moderators
-                metaan_g <- rma.uni(yi=Phi_jk, vi=var, method = "ML")
+                if(is.null(BetweenLevel)){
+                  metaan_g <- rma.uni(yi=Phi_jk, vi=var, method = "ML")
+                }else{
+                  BetweenLevel <- BetweenLevel[c(T, rep(F, q*q-1))]
+                  Study <- Study[c(T, rep(F, q*q-1))]
+                  metaan_g <- rma.mv(yi=Phi_jk, V=diag(var), method = "ML",
+                                     random = ~ 1 | BetweenLevel/Study)
+                }
               }
             }
             tau2_metaan_dum[j,k,] <- metaan_g$tau2
@@ -977,6 +1072,8 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
           if(Moderators == 1){ # Moderators
             QMp_metaan[j,k] <- metaan_g$QMp
           }
+          NameList <- paste0("j", j, "_k", k)
+          summaryMetaAnalysis_jk[[NameList]] <- summary(metaan_g)
         }
         vecPhi <- Phi_metaan_dum
       }
@@ -1092,7 +1189,8 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
                         pvalue_OmnibusCoefTest_IfModerator = QMp_metaan,
                         messageTrans = messageTrans, messageMultivar = messageMultivar,
                         StudiesComplexEV = StudiesComplexEV, StudiesNegEV = StudiesNegEV, StudiesCovMxNotPosDef = StudiesCovMxNotPosDef,
-                        ratioDeltaT = ratioDeltaT)
+                        ratioDeltaT = ratioDeltaT,
+                        summaryMetaAnalysis_jk = summaryMetaAnalysis_jk)
         } else{ # RE
           final <- list(DeltaTStar = dT_star,
                         Overall_standPhi_DeltaTStar = matrix(Phi_metaan, byrow = T, ncol = q),
@@ -1106,7 +1204,8 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
                         pvalue_OmnibusCoefTest_IfModerator = QMp_metaan,
                         messageTrans = messageTrans, messageMultivar = messageMultivar,
                         StudiesComplexEV = StudiesComplexEV, StudiesNegEV = StudiesNegEV, StudiesCovMxNotPosDef = StudiesCovMxNotPosDef,
-                        ratioDeltaT = ratioDeltaT)
+                        ratioDeltaT = ratioDeltaT,
+                        summaryMetaAnalysis_jk = summaryMetaAnalysis_jk)
         }
       # Univar and Dummies
       }else if(Multivar == 0 & Trans == 0){
@@ -1122,7 +1221,8 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
                         pvalue_OmnibusCoefTest = QMp_metaan,
                         messageTrans = messageTrans, messageMultivar = messageMultivar,
                         StudiesComplexEV = StudiesComplexEV, StudiesNegEV = StudiesNegEV, StudiesCovMxNotPosDef = StudiesCovMxNotPosDef,
-                        ratioDeltaT = ratioDeltaT)
+                        ratioDeltaT = ratioDeltaT,
+                        summaryMetaAnalysis_jk = summaryMetaAnalysis_jk)
         } else{ # RE
           final <- list(UniqueTimeIntervals = dT,
                         Overall_standPhi_PerUniqueTimeInterval = matrix(Phi_metaan_dum, byrow = T, ncol = q),
@@ -1136,7 +1236,8 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
                         pvalue_OmnibusCoefTest = QMp_metaan,
                         messageTrans = messageTrans, messageMultivar = messageMultivar,
                         StudiesComplexEV = StudiesComplexEV, StudiesNegEV = StudiesNegEV, StudiesCovMxNotPosDef = StudiesCovMxNotPosDef,
-                        ratioDeltaT = ratioDeltaT)
+                        ratioDeltaT = ratioDeltaT,
+                        summaryMetaAnalysis_jk = summaryMetaAnalysis_jk)
         }
       }
 

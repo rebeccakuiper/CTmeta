@@ -14,6 +14,7 @@ CTmeta(
   Moderators = 0,
   Mod = NULL,
   FEorRE = 1,
+  BetweenLevel = NULL,
   alpha = 0.05,
   PrintPlot = FALSE
 )
@@ -36,7 +37,9 @@ Note that if Phi and Gamma are known, SigmaVAR can be calculated. Hence, only Si
 
 \item{Mod}{Optional. An S x m matrix of m moderators to be included in the analysis when Moderators == 1. By default, Mod = NULL.}
 
-\item{FEorRE}{Optional. Indicator (2/1) whether continuous-time meta-analysis should use a fixed-effects model (1) or random-effects model (2). By default, FEorRE = 1.}
+\item{FEorRE}{Optional. Indicator (1/2) whether continuous-time meta-analysis should use a fixed-effects model (1) or random-effects model (2). By default, FEorRE = 1.}
+
+\item{BetweenLevel}{Optional. Needed in case of a 2-level multilevel meta-analysis. An (q*q*S)-vector or (q*q*S) x 1 matrix (namely one value for each of the q*q elements for each study). It will only be used, if FEorRE == 2 (i.e., in a random-effects model). Then, one can add a between-level to the random part (e.g., dataset number if multiple studies use the same dataset). Note that the within level is Study number (for each of the elements in the study-specific q x q matrix Phi). By default, BetweenLevel = NULL.}
 
 \item{alpha}{Optional. The alpha level in determining the (1-alpha)*100\% confidence interval (CI). By default, alpha = 0.05; resulting in a 95\% CI.}
 
