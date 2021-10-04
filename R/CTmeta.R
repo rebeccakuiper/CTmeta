@@ -12,7 +12,8 @@
 #' @param Moderators Optional. Indicator (TRUE/FALSE or 1/0) whether there are moderators to be included (TRUE or 1) or not (FALSE or 0). By default, Moderators = 0.
 #' @param Mod Optional. An S x m matrix of m moderators to be included in the analysis when Moderators == 1. By default, Mod = NULL.
 #' @param FEorRE Optional. Indicator (1/2) whether continuous-time meta-analysis should use a fixed-effects model (1) or random-effects model (2). By default, FEorRE = 1.
-#' @param BetweenLevel Optional. Needed in case of a 2-level multilevel meta-analysis. An S-vector or S x 1 matrix (namely one value for each study). It will only be used, if FEorRE == 2 (i.e., in a random-effects model). Then, one can add a between-level to the random part (e.g., dataset number if multiple studies use the same dataset). Note that the within level is Study number. By default, BetweenLevel = NULL.
+#' @param BetweenLevel Optional. Needed in case of a 2-level multilevel meta-analysis. BetweenLevel should be an S-vector or S x 1 matrix (namely one value for each study). It will only be used, if FEorRE == 2 (i.e., in a random-effects model). Then, one can add a between-level to the random part (e.g., sample number if multiple studies use the sample such that there is dependency between those studies). Note that the within level is Study number. By default, BetweenLevel = NULL.
+#' @param Label Optional. If one creates, for example, a funnel or forest plot the labeling used in the rma.mv function is used. Label should be an q*q*S-vector (namely one value for each of the elements in a study-specific Phi (of size q x q) and for each study). It will only be used, in case the multivariate approach can be used (in case of the univariate approach, it will always use the labeling Study 1 to Study S). By default, Label = NULL; then it will use the labeling Study 1 Phi11, Study Phi 12, ..., Study 1 Phi qq, ... Study S Phi11, ..., Study S Phiqq.
 #' @param alpha Optional. The alpha level in determining the (1-alpha)*100\% confidence interval (CI). By default, alpha = 0.05; resulting in a 95\% CI.
 #' @param PrintPlot Optional. Indicator (TRUE/FALSE or 1/0) for rendering a Phi-plot (TRUE or 1) or not (FALSE or 0). By default, PrintPlot = FALSE.
 #'
@@ -43,8 +44,12 @@
 #' # These are all three stacked matrices of size S*q times q.
 #' # The CTmeta function will standardize these matrices (to make comparison of effects meaningful).
 #' #
-#' Moderators = 0 # By default set to 0. Hence, not per se needed, as denomstrated below.
+#' Moderators = 0 # By default set to 0. Hence, not per se needed, as demonstrated below.
 #' ##################################################################################################
+#'
+#'
+#' # Below, you can find example code. Note that, here, only 3 primary studies are used.
+#' # In practice, one would normally have (many) more, but the code stays (more or less) the same.
 #'
 #'
 #' ### Examples without comments ###
@@ -60,9 +65,12 @@
 #' summary(CTma)
 #'
 #'
-#' # Random effects model #
+#' # Random effects (RE) model #
 #'
 #' CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR, FEorRE = 2)
+#'
+#' BetweenLevel <- c(1, 1, 2) # Assuming the first two studies used the same sample/dataset
+#' CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR, FEorRE = 2, BetweenLevel = BetweenLevel) # Two-level RE meta-analysis example
 #'
 #'
 #' ## Example with moderators ##
@@ -74,6 +82,34 @@
 #' q <- dim(Phi)[2]; Mod <- matrix(cbind(c(64,65,47), c(78,89,34)), ncol = q); colnames(Mod) <- c("Mod1", "Mod2") # two moderators, in each column 1
 #' CTma <- CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR, Moderators = 1, Mod = Mod, FEorRE = 2); CTma$tau2 # random effects model
 #' summary(CTma)
+#'
+#' Mod <- matrix(c(64,65,47)) # 1 moderator
+#' BetweenLevel <- c(1, 1, 2) # Assuming the first two studies used the same sample/dataset.
+#' CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR, Moderators = 1, Mod = Mod, FEorRE = 2, BetweenLevel = BetweenLevel) # Two-level RE meta-analysis example
+#'
+#'
+#' ## funnel and forest plots ##
+#' CTma <- CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR, FEorRE = 2)
+#' funnel(CTma$summaryMetaAnalysis, label = 'out')
+#' forest(CTma$summaryMetaAnalysis)
+#' # One can do the same for the two-level analysis.
+#' #
+#' # Note, in case a univariate approach had to be taken, leading to multiple analyses, then one should create a plot per analysis:
+#' # lapply(CTma$summaryMetaAnalysis_jk, funnel, label = 'out')
+#' #
+#' # In case you want to create a plot per element of the study-specific Phi's:
+#' #elt <- rep(F, (q*q))
+#' #elt[1] <- T # First element out of q*q true, so referring to element Phi11.
+#' #yi_Phi11 <- CTma$summaryMetaAnalysis$yi[elt]
+#' #vi_Phi11 <- CTma$summaryMetaAnalysis$vi[elt]
+#' #funnel(yi_Phi11, vi_Phi11, label = 'out')
+#' #forest(yi_Phi11, vi_Phi11)
+#' elt <- rep(F, (q*q))
+#' elt[2] <- T # Second element out of q*q true, so referring to element Phi12.
+#' yi_Phi12 <- CTma$summaryMetaAnalysis$yi[elt]
+#' vi_Phi12 <- CTma$summaryMetaAnalysis$vi[elt]
+#' funnel(yi_Phi12, vi_Phi12, label = 'out')
+#' forest(yi_Phi12, vi_Phi12)
 #'
 #'
 #' ## Make customized Phi-plot of resulting overall Phi ##
@@ -180,6 +216,11 @@
 #' # Add "FEorRE = 2"; e.g.,
 #' CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR, FEorRE = 2)
 #'
+#' # Two-level RE meta-analysis example
+#' BetweenLevel <- c(1, 1, 2) # Assuming the first two studies used the same sample/dataset
+#' CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR, FEorRE = 2, BetweenLevel = BetweenLevel) # Two-level RE meta-analysis example
+#' # Note, one can also use this in case there are moderators (as in the example below).
+#'
 #'
 #' ## Example with moderators ##
 #'
@@ -188,6 +229,46 @@
 #' CTma <- CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR, Moderators = 1, Mod = Mod) # fixed effects model
 #' #CTma <- CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR, Moderators = 1, Mod = Mod, FEorRE = 2); CTma$tau2 # random effects model
 #' summary(CTma)
+#'
+#' # Two-level RE meta-analysis example
+#' Mod <- matrix(c(64,65,47)) # 1 moderator
+#' BetweenLevel <- c(1, 1, 2) # Assuming the first two studies used the same sample/dataset
+#' CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR, Moderators = 1, Mod = Mod, FEorRE = 2, BetweenLevel = BetweenLevel) # Two-level RE meta-analysis example
+#'
+#'
+#' ## funnel and forest plots ##
+#' CTma <- CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR, FEorRE = 2)
+#' funnel(CTma$summaryMetaAnalysis, label = 'out')
+#' forest(CTma$summaryMetaAnalysis)
+#' # One can do the same for the two-level analysis.
+#' #
+#' # Note, in case a univariate approach had to be taken, leading to multiple analyses, then one should create a plot per analysis:
+#' # lapply(CTma$summaryMetaAnalysis_jk, funnel, label = 'out')
+#' #
+#' # Notes on funnel and forest:
+#' # - These plots are now based on the q*q elements in the study-specific Phi's and the S studies.
+#' # See below, how you can create these plots per element of Phi. This should then be done separately for all q*q elements.
+#' # - In case label names are too long or not insightful, one can change them by using the Label argument.
+#' # In case of the funnel plot, one can also decide to not use the "label = 'out'" part.
+#'
+#' #
+#' # Notes on forest:
+#' # - For random-effects models of class "rma.mv" (see rma.mv) with multiple  values, the addpred argument can be used to specify for which level of the inner factor the prediction interval should be provided (since the intervals differ depending on the value).
+#' # - One can also look into the functionality of addpoly().
+#' #
+#' # In case you want to create a plot per element of the study-specific Phi's:
+#' #elt <- rep(F, (q*q))
+#' #elt[1] <- T # First element out of q*q true, so referring to element Phi11.
+#' #yi_Phi11 <- CTma$summaryMetaAnalysis$yi[elt]
+#' #vi_Phi11 <- CTma$summaryMetaAnalysis$vi[elt]
+#' #funnel(yi_Phi11, vi_Phi11, label = 'out')
+#' #forest(yi_Phi11, vi_Phi11)
+#' elt <- rep(F, (q*q))
+#' elt[2] <- T # Second element out of q*q true, so referring to element Phi12.
+#' yi_Phi12 <- CTma$summaryMetaAnalysis$yi[elt]
+#' vi_Phi12 <- CTma$summaryMetaAnalysis$vi[elt]
+#' funnel(yi_Phi12, vi_Phi12, label = 'out')
+#' forest(yi_Phi12, vi_Phi12)
 #'
 #'
 #' ## Make customized Phi-plot of resulting overall Phi ##
@@ -303,8 +384,8 @@
 #'
 
 
-CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Moderators = 0, Mod = NULL, FEorRE = 1, BetweenLevel = NULL, alpha=0.05, PrintPlot = FALSE) {
-  #Gamma = NULL; Moderators = 0; Mod = NULL; FEorRE = 1; BetweenLevel = NULL; alpha=0.05; PrintPlot = FALSE
+CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Moderators = 0, Mod = NULL, FEorRE = 1, BetweenLevel = NULL, Label = NULL, alpha=0.05, PrintPlot = FALSE) {
+  #Gamma = NULL; Moderators = 0; Mod = NULL; FEorRE = 1; BetweenLevel = NULL; Label = NULL; alpha=0.05; PrintPlot = FALSE
 
 #  #######################################################################################################################
 #  if (!require("fastDummies")) install.packages("fastDummies")
@@ -400,6 +481,20 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
     if(length(BetweenLevel) != S){
       ErrorMessage <- (paste0("The argument BetweenLevel should be a S vector or S x 1 matrix.
                    Thus, the number of elements in BetweenLevel should equal S = ", S, " not ", length(BetweenLevel), "."))
+      return(ErrorMessage)
+      stop(ErrorMessage)
+    }
+  }
+  #
+  if(!is.null(Label)){
+    if(length(Label) != q*q*S){
+      ErrorMessage <- (paste0("The argument Label should be a q*q*S vector.
+                     Thus, the number of elements in Label should equal q*q*S = ", q*q*S, " not ", length(Label), "."))
+        return(ErrorMessage)
+        stop(ErrorMessage)
+    }
+    if(!is.character(Label)){
+      ErrorMessage <- (paste0("The argument Label should be a character (containing q*q*S labels/names)."))
       return(ErrorMessage)
       stop(ErrorMessage)
     }
@@ -724,6 +819,10 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
         }
         overallPhi <- rep(sub, S)
         #
+        Label_S <- paste0("Study ", rep(1:S, each = q*q))
+        Label_S
+        Label_Phi <- paste0(Label_S, " Phi", overallPhi)
+        #
         #
         if(Moderators == 1){
           Mod. <- matrix(rep(as.matrix(Mod), each = q*q), ncol = dim(Mod)[2])
@@ -758,29 +857,37 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
             if(is.null(BetweenLevel)){
               metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ overallPhi + overallPhi:Mod. - 1,
                                random = ~ overallPhi | Study,
+                               slab = Label_Phi,
                                struct = "UN", method = "ML")  # With struct="UN", the random effects are allowed to have different variances for each overallPhi and are allowed to be correlated.
             }else{
               metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ overallPhi + overallPhi:Mod. - 1,
                                random = ~ 1 | BetweenLevel / Study,
+                               slab = Label_Phi,
                                method = "ML")
             }
           }else{ # No Moderators
             if(is.null(BetweenLevel)){
               metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ overallPhi - 1,
                                random = ~ overallPhi | Study,
+                               slab = Label_Phi,
                                struct = "UN", method = "ML")  # With struct="UN", the random effects are allowed to have different variances for each overallPhi and are allowed to be correlated.
             }else{
               metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ overallPhi - 1,
                                random = ~ 1 | BetweenLevel / Study,
+                               slab = Label_Phi,
                                method = "ML")
             }
           }
           tau2_metaan_MV <- metaan$tau2
         }else{# FE
           if(Moderators == 1){ # Moderators
-            metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ overallPhi - 1 + overallPhi:Mod., method = "FE")
+            metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ overallPhi - 1 + overallPhi:Mod.,
+                             slab = Label_Phi,
+                             method = "FE")
           }else{ # No Moderators
-            metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ overallPhi - 1, method = "FE")
+            metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ overallPhi - 1,
+                             slab = Label_Phi,
+                             method = "FE")
           }
         }
         Phi_metaan_MV <- coef(metaan)[1:q^2]
@@ -837,19 +944,25 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
             if(Moderators == 1){ # Moderators
               if(is.null(BetweenLevel)){
                 metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ -1 + overallPhi:D. + overallPhi:Mod.,
-                                 random = ~ overallPhi | Study, struct = "UN", method = "ML")  # With struct="UN", the random effects are allowed to have different variances for each overallPhi and are allowed to be correlated.
+                                 random = ~ overallPhi | Study,
+                                 slab = Label_Phi,
+                                 struct = "UN", method = "ML")  # With struct="UN", the random effects are allowed to have different variances for each overallPhi and are allowed to be correlated.
               }else{
                 metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ -1 + overallPhi:D. + overallPhi:Mod.,
-                                 random = ~ 1 | BetweenLevel / Study, method = "ML")
+                                 random = ~ 1 | BetweenLevel / Study,
+                                 slab = Label_Phi,
+                                 method = "ML")
               }
             }else{ # No Moderators
               if(is.null(BetweenLevel)){
                 metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ -1 + overallPhi:D.,
                                  random = ~ overallPhi | Study,
+                                 slab = Label_Phi,
                                  struct = "UN", method = "ML")  # With struct="UN", the random effects are allowed to have different variances for each overallPhi and are allowed to be correlated.
               }else{
                 metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ -1 + overallPhi:D.,
                                  random = ~ 1 | BetweenLevel / Study,
+                                 slab = Label_Phi,
                                  method = "ML")
               }
             }
@@ -859,20 +972,24 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
               if(is.null(BetweenLevel)){
                 metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ overallPhi - 1 + overallPhi:Mod.,
                                  random = ~ overallPhi | Study,
+                                 slab = Label_Phi,
                                  struct = "UN", method = "ML")  # With struct="UN", the random effects are allowed to have different variances for each overallPhi and are allowed to be correlated.
               }else{
                 metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ overallPhi - 1 + overallPhi:Mod.,
                                  random = ~ 1 | BetweenLevel / Study,
+                                 slab = Label_Phi,
                                  method = "ML")
               }
             }else{ # No Moderators
               if(is.null(BetweenLevel)){
                 metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ overallPhi - 1,
                                  random = ~ overallPhi | Study,
+                                 slab = Label_Phi,
                                  struct = "UN", method = "ML")  # With struct="UN", the random effects are allowed to have different variances for each overallPhi and are allowed to be correlated.
               }else{
                 metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ overallPhi - 1,
                                  random = ~ 1 | BetweenLevel / Study,
+                                 slab = Label_Phi,
                                  method = "ML")
               }
             }
@@ -880,15 +997,23 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
         }else{# FE
           if(G > 1){
             if(Moderators == 1){ # Moderators
-              metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ -1 + overallPhi:D. + overallPhi:Mod., method = "FE")
+              metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ -1 + overallPhi:D. + overallPhi:Mod.,
+                               slab = Label_Phi,
+                               method = "FE")
             }else{ # No Moderators
-              metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ -1 + overallPhi:D., method = "FE")
+              metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ -1 + overallPhi:D.,
+                               slab = Label_Phi,
+                               method = "FE")
             }
           } else{ # G = 1, no use for dummies (only one group)
             if(Moderators == 1){ # Moderators
-              metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ overallPhi - 1 + overallPhi:Mod., method = "FE")
+              metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ overallPhi - 1 + overallPhi:Mod.,
+                               slab = Label_Phi,
+                               method = "FE")
             }else{ # No Moderators
-              metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ overallPhi - 1, method = "FE")
+              metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ overallPhi - 1,
+                               slab = Label_Phi,
+                               method = "FE")
             }
           }
         }
