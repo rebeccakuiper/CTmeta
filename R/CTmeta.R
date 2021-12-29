@@ -395,11 +395,16 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
 #  #######################################################################################################################
 
   S <- length(N) #dim(N)[1]
+  
+  # Return an error if there are any NAs in N
+  if (anyNA(N)) {stop("There are NA values in N.")}
+  
+  # Return an error if there are any NAs in DeltaT
+  if (anyNA(DeltaT)) {stop("There are NA values in DeltaT.")}
+  
   # Check
   if(S != length(DeltaT)){
-    ErrorMessage <- (paste0("The length of the arguments N and DeltaT are not the same, while they should both equate to S, the number of primary studies included in the meta-analysis.
-                Notably, the length of N is ", S, " and the length of DeltaT is ", length(DeltaT)))
-    return(ErrorMessage)
+    ErrorMessage <- (paste0("The length of the arguments N and DeltaT are not the same. They should both equate to S, the number of primary studies included in the meta-analysis. \n Here, the length of N is ", S, " and the length of DeltaT is ", length(DeltaT), "."))
     stop(ErrorMessage)
   }
   #
@@ -444,9 +449,13 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
   }
 
   # Check DeltaTStar
+  
+  if(length(DeltaTStar) == 0){
+    stop("DeltaTStar is not specified.")
+  }
+  
   if(length(DeltaTStar) != 1){
-    ErrorMessage <- (paste0("The argument DeltaTStar should be a scalar, that is, one number, that is, a vector with one element. If you want to inspect multiple DeltaTStar values, you should do the analysis for each value seperately. Notably, currently, DeltaTStar = ", DeltaTStar))
-    return(ErrorMessage)
+    ErrorMessage <- (paste0("The argument DeltaTStar should be a scalar (i.e. one number or a vector with one element). To inspect multiple DeltaTStar values, the analysis should be done for each value separately."))
     stop(ErrorMessage)
   }
 
@@ -508,6 +517,26 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
 
 
   # Check on Phi
+  
+  # Return an error message is Phi is not numeric
+  if (!is.numeric(Phi)) {
+    stop("Phi contains non-numerical values.")
+  }
+  
+  # Add a warning when Phi is an array with too many panels
+  if (length(dim(Phi)) > 2 && dim(Phi)[3] > S) {
+    warning(paste0("Phi is an array with ", dim(Phi)[3] - S, " more panels than S (the number of studies). The last ", dim(Phi)[3] - S, " panels were ignored."))
+  }
+  # Add a warning when Phi is a matrix with too many rows
+  if (is.matrix(Phi) && dim(Phi)[1] > S*dim(Phi)[2]) {
+    warning(paste0("Phi is a stacked matrix with ", dim(Phi)[1] - S*dim(Phi)[2], " more rows than S*q. The last ", dim(Phi)[1] - S*dim(Phi)[2], " rows were ignored."))
+  }
+  
+  # Make the function run when Phi is an array with the right number of elements but the wrong number of panels
+  if (length(dim(Phi)) > 2 && dim(Phi)[3] < S) {
+    stop(paste0("Phi is an array with ", S - dim(Phi)[3], " less panels than S (the number of studies). Phi should have S panels."))
+  }
+  
   if(length(Phi) == 1){
     ErrorMessage <- (paste0("The argument Phi should not consist of one element: a meta-analysis on one single element is not meaningfull. Notably, it should be a stacked matrix of size S*q times q or array with dimensions q times q times S, with S = ", S, " the number of primary studies and q = ", q, " the number of variables."))
     return(ErrorMessage)
