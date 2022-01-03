@@ -405,6 +405,9 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
   # Return an error if there are any NAs in SigmaVAR
   if (anyNA(SigmaVAR)) {stop("There are NA values in SigmaVAR.")}
   
+  # Return an error if there are any NAs in Gamma
+  if (anyNA(Gamma)) {stop("There are NA values in Gamma.")}
+  
   # Check
   if(S != length(DeltaT)){
     ErrorMessage <- (paste0("The length of the arguments N and DeltaT are not the same. They should both equate to S, the number of primary studies included in the meta-analysis. \n Here, the length of N is ", S, " and the length of DeltaT is ", length(DeltaT), "."))
@@ -586,8 +589,7 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
   }
 
   if(is.null(SigmaVAR) & is.null(Gamma)){ # Both SigmaVAR and Gamma unknown
-    ErrorMessage <- (paste0("The arguments SigmaVAR and Gamma are not found: Both SigmaVAR and Gamma are unknown; either one (or both) should be part of the input. In case of first matrix, specify 'SigmaVAR = SigmaVAR'."))
-    return(ErrorMessage)
+    ErrorMessage <- (paste0("The arguments SigmaVAR and Gamma are not specified. At least one of them must be specified. In case of first matrix, specify 'SigmaVAR = SigmaVAR'."))
     stop(ErrorMessage)
   }else if(is.null(Gamma)){ # Gamma unknown, calculate Gamma from SigmaVAR and Phi
 
@@ -660,6 +662,20 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
     }
 
     # Gamma
+    # Add a warning when Gamma is an array with too many panels
+    if (length(dim(Gamma)) > 2 && dim(Gamma)[3] > S) {
+      warning(paste0("SigmaVAR is an array with ", dim(Gamma)[3] - S, " more panels than S (the number of studies). The last ", dim(Gamma)[3] - S, " panels were ignored."))
+    }
+    
+    # Add a warning when Gamma is a matrix with too many rows
+    if (is.matrix(Gamma) && dim(Gamma)[1] > S*q) {
+      warning(paste0("Gamma is a stacked matrix with ", dim(Gamma)[1] - S*q, " more rows than S*q. The last ", dim(Gamma)[1] - S*q, " rows were ignored."))
+    }
+    # Add a warning when Gamma is a matrix with too many columns
+    if (is.matrix(Gamma) && dim(Gamma)[2] > q) {
+      warning(paste0("Gamma is a stacked matrix with ", dim(Gamma)[2] - q, " more columns than q. The last ", dim(Gamma)[2] - q, " columns were ignored."))
+    }
+    
     if(length(dim(Gamma)) < 2){
       ErrorMessage <- (paste0("The covariance matrix Gamma should be an S*q times q matrix or a q times q times S array, with S = ", S, " and q = ", q))
       return(ErrorMessage)
