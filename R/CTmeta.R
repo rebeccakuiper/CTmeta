@@ -402,6 +402,9 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
   # Return an error if there are any NAs in DeltaT
   if (anyNA(DeltaT)) {stop("There are NA values in DeltaT.")}
   
+  # Return an error if there are any NAs in SigmaVAR
+  if (anyNA(SigmaVAR)) {stop("There are NA values in SigmaVAR.")}
+  
   # Check
   if(S != length(DeltaT)){
     ErrorMessage <- (paste0("The length of the arguments N and DeltaT are not the same. They should both equate to S, the number of primary studies included in the meta-analysis. \n Here, the length of N is ", S, " and the length of DeltaT is ", length(DeltaT), "."))
@@ -532,7 +535,7 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
     warning(paste0("Phi is a stacked matrix with ", dim(Phi)[1] - S*dim(Phi)[2], " more rows than S*q. The last ", dim(Phi)[1] - S*dim(Phi)[2], " rows were ignored."))
   }
   
-  # Make the function run when Phi is an array with the right number of elements but the wrong number of panels
+  # Give a proper error when Phi is an array with the right number of elements but the wrong number of panels
   if (length(dim(Phi)) > 2 && dim(Phi)[3] < S) {
     stop(paste0("Phi is an array with ", S - dim(Phi)[3], " less panels than S (the number of studies). Phi should have S panels."))
   }
@@ -594,11 +597,19 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
       return(ErrorMessage)
       stop(ErrorMessage)
     }
+    
+    # Add a warning when SigmaVAR is a matrix with too many rows
+    if (is.matrix(SigmaVAR) && dim(SigmaVAR)[1] > S*q) {
+      warning(paste0("SigmaVAR is a stacked matrix with ", dim(SigmaVAR)[1] - S*q, " more rows than S*q. The last ", dim(SigmaVAR)[1] - S*q, " rows were ignored."))
+    }
+    # Add a warning when SigmaVAR is a matrix with too many columns
+    if (is.matrix(SigmaVAR) && dim(SigmaVAR)[2] > q) {
+      warning(paste0("SigmaVAR is a stacked matrix with ", dim(SigmaVAR)[2] - q, " more columns than q. The last ", dim(SigmaVAR)[2] - q, " columns were ignored."))
+    }
 
     # SigmaVAR
     if(length(dim(SigmaVAR)) < 2){
-      ErrorMessage <- (paste0("The residual covariance matrix SigmaVAR should be an S*q times q matrix or a q times q times S array, with S = ", S, " and q = ", q))
-      return(ErrorMessage)
+      ErrorMessage <- (paste0("The residual covariance matrix SigmaVAR should be an (S*q)*q matrix or a q*q*S array, with S = ", S, " and q = ", q))
       stop(ErrorMessage)
     }
     if(length(dim(SigmaVAR)) == 2){
@@ -610,7 +621,7 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
       }
       SigmaVAR <- SigmaVAR_studies
     }else if(length(dim(SigmaVAR)) > 3){
-      ErrorMessage <- (paste0("The residual covariance matrix SigmaVAR should be an S*q times q matrix or a q times q times S array, with S = ", S, " and q = ", q, ". Currently, it is of size ", dim(SigmaVAR)))
+      ErrorMessage <- (paste0("The residual covariance matrix SigmaVAR should be an (S*q)*q matrix or a q*q*S array, with S = ", S, " and q = ", q, ". Currently, it is of size ", dim(SigmaVAR)))
       return(ErrorMessage)
       stop(ErrorMessage)
     }
@@ -623,11 +634,22 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
     #  Gamma[teller:(teller+1),] <- Gamma.fromVAR(Phi[teller:(teller+1),], SigmaVAR[teller:(teller+1),])
     #  teller <- teller + q
     #}
+    
+    # Check SigmaVAR is numerical otherwise we won't be able to get Gamma
+    if (!is.null(SigmaVAR) && !is.numeric(SigmaVAR)) {
+      stop("SigmaVAR contains non-numerical values.")
+    }
+    
     Gamma_studies <- array(data=NA, dim=c(q,q,S))
     for(s in 1:S){
       Gamma_studies[1:q,1:q,s] <- Gamma.fromVAR(Phi[1:q,1:q,s], SigmaVAR[1:q,1:q,s])
     }
     Gamma <- Gamma_studies
+    
+    # Add a warning when SigmaVAR is an array with too many panels
+    if (length(dim(SigmaVAR)) > 2 && dim(SigmaVAR)[3] > S) {
+      warning(paste0("SigmaVAR is an array with ", dim(SigmaVAR)[3] - S, " more panels than S (the number of studies). The last ", dim(SigmaVAR)[3] - S, " panels were ignored."))
+    }
 
   }else if(is.null(SigmaVAR)){ # SigmaVAR unknown, calculate SigmaVAR from Gamma and Phi
 
