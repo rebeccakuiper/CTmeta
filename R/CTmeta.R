@@ -482,22 +482,31 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
   }
   if(Moderators == TRUE){
     if(dim(Mod)[1] != S){
-      ErrorMessage <- (paste0("The argument Mod should be a S times m matrix, with m the number of moderators to be included in the model.
-                   Thus, the number of rows of Mod should equal S = ", S, " not ", dim(Mod)[1], "."))
-      return(ErrorMessage)
+      ErrorMessage <- (paste0("The argument Mod should be a S*m matrix, with m the number of moderators to be included in the model. \n The number of rows of Mod should equal S = ", S, " not ", dim(Mod)[1], "."))
       stop(ErrorMessage)
     }
   }
+  if(Moderators == 0 & !is.null(Mod)) {
+    warning("Mod is specified but Moderators is FALSE. The model is fit without moderators.")
+  }
+  if(dim(Mod) > 2) {
+    stop("Mod should be an S*m matrix.")
+  }
   #
+  if (FEorRE == "FE") {
+    FEorRE <- 1
+  }
+  if (FEorRE == "RE") {
+    FEorRE <- 2
+  }
+  
   if(FEorRE != 1 & FEorRE != 2){
     ErrorMessage <- (paste0("The argument FEorRE should be 1 or 2; not ", FEorRE))
-    return(ErrorMessage)
     stop(ErrorMessage)
   }
   if(FEorRE == 2 & !is.null(BetweenLevel)){
     if(length(BetweenLevel) != S){
-      ErrorMessage <- (paste0("The argument BetweenLevel should be a S vector or S x 1 matrix.
-                   Thus, the number of elements in BetweenLevel should equal S = ", S, " not ", length(BetweenLevel), "."))
+      ErrorMessage <- (paste0("The argument BetweenLevel should be an S-length vector or an S*1 matrix. \n The number of elements in BetweenLevel should equal S = ", S, " not ", length(BetweenLevel), "."))
       return(ErrorMessage)
       stop(ErrorMessage)
     }
