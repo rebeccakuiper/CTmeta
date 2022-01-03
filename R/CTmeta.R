@@ -474,9 +474,11 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
   }
   #
   if(!is.logical(Moderators) & Moderators != FALSE & Moderators != TRUE){
-    ErrorMessage <- (paste0("The argument Moderators should be logical, that is, have the value T(RUE) or F(ALSE); or 1 or 0; not ", Moderators))
-    return(ErrorMessage)
+    ErrorMessage <- (paste0("The argument Moderators should be logical. Moderators should have the value TRUE or FALSE, or 1 or 0; not ", Moderators))
     stop(ErrorMessage)
+  }
+  if(length(Moderators) > 1) {
+    warning(paste0("Moderators is of length ", length(Moderators), ". Only the first value is used."))
   }
   if(Moderators == TRUE){
     if(dim(Mod)[1] != S){
