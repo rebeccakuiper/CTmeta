@@ -533,8 +533,7 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
   }
   #
   if(!is.logical(PrintPlot) & PrintPlot != FALSE & PrintPlot != TRUE){
-    ErrorMessage <- (paste0("The argument 'PrintPlot' should be T(RUE) or F(ALSE); or 1 or 0; not ", PrintPlot))
-    return(ErrorMessage)
+    ErrorMessage <- (paste0("The argument 'PrintPlot' should be T(RUE) or F(ALSE) (or 1 or 0), not ", PrintPlot))
     stop(ErrorMessage)
   }
 
