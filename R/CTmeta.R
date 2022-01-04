@@ -504,12 +504,12 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
   }
   
   if(FEorRE != 1 & FEorRE != 2){
-    ErrorMessage <- (paste0("The argument FEorRE should be 1 or 2; not ", FEorRE))
+    ErrorMessage <- (paste0("The argument FEorRE should be 1 or 2 (or 'FE' or 'RE'), not ", FEorRE))
     stop(ErrorMessage)
   }
   if(FEorRE == 2 & !is.null(BetweenLevel)){
     if(length(BetweenLevel) != S){
-      ErrorMessage <- (paste0("The argument BetweenLevel should be an S-length vector or an S*1 matrix. \n The number of elements in BetweenLevel should equal S = ", S, " not ", length(BetweenLevel), "."))
+      ErrorMessage <- (paste0("The argument BetweenLevel should be an S-length vector or an S*1 matrix. \n The number of elements in BetweenLevel should equal S = ", S, ", not ", length(BetweenLevel), "."))
       stop(ErrorMessage)
     }
   }
@@ -530,7 +530,7 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
   #
   if(!is.logical(PrintPlot) & PrintPlot != FALSE & PrintPlot != TRUE){
     ErrorMessage <- (paste0("The argument 'PrintPlot' should be T(RUE) or F(ALSE) (or 1 or 0), not ", PrintPlot))
-    stop(ErrorMessage)
+    warning(ErrorMessage)
   }
 
 
