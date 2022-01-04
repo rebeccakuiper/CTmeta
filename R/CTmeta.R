@@ -500,6 +500,14 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
     FEorRE <- 2
   }
   
+  if (FEorRE == 1 & !is.null(BetweenLevel)) {
+    warning("The model being fit is a fixed-effects model. BetweenLevel is ignored. Did you mean FEorRE = 2?")
+  }
+  
+  if (!is.null(BetweenLevel) && anyNA(BetweenLevel)) {
+    stop("There are NA values in BetweenLevel.")
+  }
+  
   if(FEorRE != 1 & FEorRE != 2){
     ErrorMessage <- (paste0("The argument FEorRE should be 1 or 2; not ", FEorRE))
     stop(ErrorMessage)
@@ -507,7 +515,6 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
   if(FEorRE == 2 & !is.null(BetweenLevel)){
     if(length(BetweenLevel) != S){
       ErrorMessage <- (paste0("The argument BetweenLevel should be an S-length vector or an S*1 matrix. \n The number of elements in BetweenLevel should equal S = ", S, " not ", length(BetweenLevel), "."))
-      return(ErrorMessage)
       stop(ErrorMessage)
     }
   }
