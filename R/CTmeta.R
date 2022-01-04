@@ -456,10 +456,6 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
 
   # Check DeltaTStar
   
-  if(length(DeltaTStar) == 0){
-    stop("DeltaTStar is not specified.")
-  }
-  
   if(length(DeltaTStar) != 1){
     ErrorMessage <- (paste0("The argument DeltaTStar should be a scalar (i.e. one number or a vector with one element). To inspect multiple DeltaTStar values, the analysis should be done for each value separately."))
     stop(ErrorMessage)
