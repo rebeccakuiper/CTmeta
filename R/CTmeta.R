@@ -476,8 +476,8 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
     warning(paste0("Moderators is of length ", length(Moderators), ". Only the first value is used."))
   }
   if(Moderators == TRUE){
-    if(dim(Mod)[1] != S){
-      ErrorMessage <- (paste0("The argument Mod should be a S*m matrix, with m the number of moderators to be included in the model. \n The number of rows of Mod should equal S = ", S, " not ", dim(Mod)[1], "."))
+    if(is.vector(Mod) || dim(Mod)[1] != S){
+      ErrorMessage <- (paste0("The argument Mod should be a S*m matrix, with m the number of moderators to be included in the model. \n The number of rows of Mod should equal S = ", S, ", not ", dim(Mod)[1], "."))
       stop(ErrorMessage)
     }
   }
