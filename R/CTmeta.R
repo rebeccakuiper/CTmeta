@@ -468,8 +468,7 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
   # Check other arguments
   #
   if(length(alpha) != 1){
-    ErrorMessage <- (paste0("The argument alpha should be a scalar, that is, one number, that is, a vector with one element. Currently, alpha = ", alpha))
-    return(ErrorMessage)
+    ErrorMessage <- (paste0("The argument alpha should be a scalar (i.e. one number or a vector with one element). Currently, alpha = ", alpha))
     stop(ErrorMessage)
   }
   #
