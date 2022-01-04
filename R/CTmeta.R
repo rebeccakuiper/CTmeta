@@ -410,7 +410,7 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
   
   # Check
   if(S != length(DeltaT)){
-    ErrorMessage <- (paste0("The length of the arguments N and DeltaT are not the same. They should both equate to S, the number of primary studies included in the meta-analysis. \n Here, the length of N is ", S, " and the length of DeltaT is ", length(DeltaT), "."))
+    ErrorMessage <- (paste0("The length of the arguments N and DeltaT are not the same. They should both be S, the number of primary studies included in the meta-analysis. \n Here, the length of N is ", S, " and the length of DeltaT is ", length(DeltaT), "."))
     stop(ErrorMessage)
   }
   #
@@ -488,7 +488,7 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
   if(Moderators == 0 & !is.null(Mod)) {
     warning("Mod is specified but Moderators is FALSE. The model is fit without moderators.")
   }
-  if(dim(Mod) > 2) {
+  if(!is.null(Mod) && length(dim(Mod)) != 2) {
     stop("Mod should be an S*m matrix.")
   }
   #
