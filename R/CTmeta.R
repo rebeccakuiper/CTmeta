@@ -410,7 +410,7 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
   
   # Check
   if(S != length(DeltaT)){
-    ErrorMessage <- (paste0("The length of the arguments N and DeltaT are not the same. They should both be S, the number of primary studies included in the meta-analysis. \n Here, the length of N is ", S, " and the length of DeltaT is ", length(DeltaT), "."))
+    ErrorMessage <- (paste0("The length of the arguments N and DeltaT are not the same. They should both be equal to S, the number of primary studies included in the meta-analysis. \n Here, the length of N is ", S, " and the length of DeltaT is ", length(DeltaT), "."))
     stop(ErrorMessage)
   }
   #
@@ -427,8 +427,7 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
       N <- matrix(N, nrow = S, ncol = 1)
     }
     if(dim(N)[1] != 1 & dim(N)[2] != 1){
-      ErrorMessage <- (paste0("The argument N should be a S x 1 matrix or an S-vector. Currently, it is of size ", dim(N)))
-      return(ErrorMessage)
+      ErrorMessage <- (paste0("The argument N should be a S x 1 matrix or an S-vector. In the given input, it is of size ", dim(N)[1], " x ", dim(N)[2]))
       stop(ErrorMessage)
     }
   }
@@ -437,39 +436,36 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
       DeltaT <- matrix(DeltaT, nrow = S, ncol = 1)
     }
     if(dim(DeltaT)[1] != 1 & dim(DeltaT)[2] != 1){
-      ErrorMessage <- (paste0("The argument DeltaT should be a S x 1 matrix or an S-vector. Currently, it is of size ", dim(DeltaT)))
-      return(ErrorMessage)
+      ErrorMessage <- (paste0("The argument DeltaT should be a S x 1 matrix or an S-vector. In the given input, it is of size ", dim(DeltaT)[2], " x ", dim(DeltaT)[2]))
       stop(ErrorMessage)
     }
   }
   #
   if(length(dim(N)) > 3){
-    ErrorMessage <- (paste0("The argument N should be a S x 1 matrix or an S-vector. Currently, it is of size ", dim(N)))
-    return(ErrorMessage)
+    ErrorMessage <- (paste0("The argument N should be a S x 1 matrix or an S-vector."))
     stop(ErrorMessage)
   }
   if(length(dim(DeltaT)) > 3){
-    ErrorMessage <- (paste0("The argument DeltaT should be a S x 1 matrix or an S-vector. Currently, it is of size ", dim(DeltaT)))
-    return(ErrorMessage)
+    ErrorMessage <- (paste0("The argument DeltaT should be a S x 1 matrix or an S-vector."))
     stop(ErrorMessage)
   }
 
   # Check DeltaTStar
   
   if(length(DeltaTStar) != 1){
-    ErrorMessage <- (paste0("The argument DeltaTStar should be a scalar (i.e. one number or a vector with one element). To inspect multiple DeltaTStar values, the analysis should be done for each value separately."))
+    ErrorMessage <- (paste0("The argument DeltaTStar should be a scalar (i.e. one number, or a vector with one element). To inspect multiple DeltaTStar values, the analysis should be done for each value separately."))
     stop(ErrorMessage)
   }
 
   # Check other arguments
   #
   if(length(alpha) != 1){
-    ErrorMessage <- (paste0("The argument alpha should be a scalar (i.e. one number or a vector with one element). Currently, alpha = ", alpha))
+    ErrorMessage <- (paste0("The argument alpha should be a scalar (i.e. one number or a vector with one element)."))
     stop(ErrorMessage)
   }
   #
   if(!is.logical(Moderators) & Moderators != FALSE & Moderators != TRUE){
-    ErrorMessage <- (paste0("The argument Moderators should be logical. Moderators should have the value TRUE or FALSE, or 1 or 0; not ", Moderators))
+    ErrorMessage <- (paste0("The argument 'Moderators' should be logical. 'Moderators' should have the value TRUE or FALSE (or 1 or 0), not ", Moderators))
     stop(ErrorMessage)
   }
   if(length(Moderators) > 1) {
@@ -477,7 +473,7 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
   }
   if(Moderators == TRUE){
     if(is.vector(Mod) || dim(Mod)[1] != S){
-      ErrorMessage <- (paste0("The argument Mod should be a S*m matrix, with m the number of moderators to be included in the model. \n The number of rows of Mod should equal S = ", S, ", not ", dim(Mod)[1], "."))
+      ErrorMessage <- (paste0("The argument Mod should be a S x m matrix, with m the number of moderators to be included in the model. \n The number of rows of Mod should equal S = ", S, ", not ", dim(Mod)[1], "."))
       stop(ErrorMessage)
     }
   }
@@ -485,7 +481,7 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
     warning("Mod is specified but Moderators is FALSE. The model is fit without moderators.")
   }
   if(!is.null(Mod) && length(dim(Mod)) != 2) {
-    stop("Mod should be an S*m matrix.")
+    stop("Mod should be an S x m matrix.")
   }
   #
   if (FEorRE == "FE") {
@@ -509,7 +505,7 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
   }
   if(FEorRE == 2 & !is.null(BetweenLevel)){
     if(length(BetweenLevel) != S){
-      ErrorMessage <- (paste0("The argument BetweenLevel should be an S-length vector or an S*1 matrix. \n The number of elements in BetweenLevel should equal S = ", S, ", not ", length(BetweenLevel), "."))
+      ErrorMessage <- (paste0("The argument BetweenLevel should be an S-length vector or an S x 1 matrix. \n The number of elements in BetweenLevel should be S = ", S, ", not ", length(BetweenLevel), "."))
       stop(ErrorMessage)
     }
   }
@@ -556,19 +552,16 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
   }
   
   if(length(Phi) == 1){
-    ErrorMessage <- (paste0("The argument Phi should not consist of one element: a meta-analysis on one single element is not meaningfull. Notably, it should be a stacked matrix of size S*q times q or array with dimensions q times q times S, with S = ", S, " the number of primary studies and q = ", q, " the number of variables."))
-    return(ErrorMessage)
+    ErrorMessage <- (paste0("The argument Phi should not consist of one element: a meta-analysis on one single element is not meaningful. \n It should instead be a stacked matrix of size (S*q) x q or an array with dimensions q x q x S, with S = ", S, " the number of primary studies and q = ", q, " the number of variables."))
     stop(ErrorMessage)
   }
   #
   if(is.null(dim(Phi))){
     if(!is.null(length(Phi))){
-      ErrorMessage <- (paste0("The argument Phi is not a stacked matrix of size S*q times q or array with dimensions q times q times S, with q = ", q, " and S = ", S, ". Currently, it is a vector with ", length(Phi), "elements."))
-      return(ErrorMessage)
+      ErrorMessage <- (paste0("The argument Phi is not a stacked matrix of size (S*q) x q nor an array with dimensions q x q x S, with q = ", q, " and S = ", S, ". In the given input, it is a vector with ", length(Phi), "elements."))
       stop(ErrorMessage)
     }else{
-      ErrorMessage <- (paste0("The argument Phi is not found: The lagged effects matrix Phi is unknown, but should be part of the input."))
-      return(ErrorMessage)
+      ErrorMessage <- (paste0("Phi is empty: The lagged effects matrix Phi is unknown."))
       stop(ErrorMessage)
     }
   }
@@ -581,7 +574,7 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
 
   # Phi
   if(length(dim(Phi)) < 2){
-    ErrorMessage <- (paste0("The lagged effects matrix Phi should be an (S*q)*q matrix or a q*q*S array, with S = ", S, " and q = ", q))
+    ErrorMessage <- (paste0("The lagged effects matrix Phi should be an (S*q) x q matrix or a q x q x S array, with S = ", S, " and q = ", q))
     stop(ErrorMessage)
   }
   if(length(dim(Phi)) == 2){
@@ -594,7 +587,7 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
     }
     Phi <- Phi_studies
   }else if(length(dim(Phi)) > 3){
-    ErrorMessage <- (paste0("The lagged effects matrix Phi should be an (S*q)*q matrix or a q*q*S array, with S = ", S, " and q = ", q, ". Currently, it is of size ", dim(Phi)))
+    ErrorMessage <- paste0("The lagged effects matrix Phi should be an (S*q) x q matrix or a q x q x S array, with S = ", S, " and q = ", q, ".")
     stop(ErrorMessage)
   }
 
@@ -605,8 +598,7 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
 
     # Check on SigmaVAR
     if(length(SigmaVAR) == 1){
-      ErrorMessage <- (paste0("The argument SigmaVAR should not consist of one element. Notably, it should be a stacked matrix of size S*q times q or array with dimensions q times q times S, with S = ", S, " the number of primary studies and q = ", q, " the number of variables."))
-      return(ErrorMessage)
+      ErrorMessage <- (paste0("The argument SigmaVAR should not consist of one element. Instead, it should be a stacked matrix of size S*q x q or array with dimensions q x q x S, with S = ", S, " the number of primary studies and q = ", q, " the number of variables."))
       stop(ErrorMessage)
     }
     
@@ -621,7 +613,7 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
 
     # SigmaVAR
     if(length(dim(SigmaVAR)) < 2){
-      ErrorMessage <- (paste0("The residual covariance matrix SigmaVAR should be an (S*q)*q matrix or a q*q*S array, with S = ", S, " and q = ", q))
+      ErrorMessage <- (paste0("The residual covariance matrix SigmaVAR should be an (S*q) x q matrix or a q x q x S array, with S = ", S, " and q = ", q))
       stop(ErrorMessage)
     }
     if(length(dim(SigmaVAR)) == 2){
@@ -633,8 +625,7 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
       }
       SigmaVAR <- SigmaVAR_studies
     }else if(length(dim(SigmaVAR)) > 3){
-      ErrorMessage <- (paste0("The residual covariance matrix SigmaVAR should be an (S*q)*q matrix or a q*q*S array, with S = ", S, " and q = ", q, ". Currently, it is of size ", dim(SigmaVAR)))
-      return(ErrorMessage)
+      ErrorMessage <- (paste0("The residual covariance matrix SigmaVAR should be an (S*q) x q matrix or a q x q x S array, with S = ", S, " and q = ", q, "."))
       stop(ErrorMessage)
     }
 
@@ -667,7 +658,7 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
 
     # Check on Gamma
     if(length(Gamma) == 1){
-      ErrorMessage <- (paste0("The argument Gamma should not consist of one element. Notably, it should be a stacked matrix of size S*q times q or array with dimensions q times q times S, with S = ", S, " the number of primary studies and q = ", q, " the number of variables."))
+      ErrorMessage <- (paste0("The argument Gamma should not consist of one element. Instead, it should be a stacked matrix of size S*q x q or an array with dimensions q x q x S, with S = ", S, " the number of primary studies and q = ", q, " the number of variables."))
       stop(ErrorMessage)
     }
 
@@ -687,8 +678,7 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
     }
     
     if(length(dim(Gamma)) < 2){
-      ErrorMessage <- (paste0("The covariance matrix Gamma should be an S*q times q matrix or a q times q times S array, with S = ", S, " and q = ", q))
-      return(ErrorMessage)
+      ErrorMessage <- (paste0("The covariance matrix Gamma should be an S*q x q matrix or a q x q x S array, with S = ", S, " and q = ", q))
       stop(ErrorMessage)
     }
     if(length(dim(Gamma)) == 2){
@@ -700,8 +690,7 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
       }
       Gamma <- Gamma_studies
     }else if(length(dim(Gamma)) > 3){
-      ErrorMessage <- (paste0("The covariance matrix Gamma should be an S*q times q matrix or a q times q times S array, with S = ", S, " and q = ", q, ". Currently, it is of size ", dim(Gamma)))
-      return(ErrorMessage)
+      ErrorMessage <- (paste0("The covariance matrix Gamma should be an S*q x q matrix or a q x q x S array, with S = ", S, " and q = ", q, "."))
       stop(ErrorMessage)
     }
 
