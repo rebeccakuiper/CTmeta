@@ -581,8 +581,7 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
 
   # Phi
   if(length(dim(Phi)) < 2){
-    ErrorMessage <- (paste0("The lagged effects matrix Phi should be an S*q times q matrix or a q times q times S array, with S = ", S, " and q = ", q))
-    return(ErrorMessage)
+    ErrorMessage <- (paste0("The lagged effects matrix Phi should be an (S*q)*q matrix or a q*q*S array, with S = ", S, " and q = ", q))
     stop(ErrorMessage)
   }
   if(length(dim(Phi)) == 2){
@@ -595,8 +594,7 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
     }
     Phi <- Phi_studies
   }else if(length(dim(Phi)) > 3){
-    ErrorMessage <- (paste0("The lagged effects matrix Phi should be an S*q times q matrix or a q times q times S array, with S = ", S, " and q = ", q, ". Currently, it is of size ", dim(Phi)))
-    return(ErrorMessage)
+    ErrorMessage <- (paste0("The lagged effects matrix Phi should be an (S*q)*q matrix or a q*q*S array, with S = ", S, " and q = ", q, ". Currently, it is of size ", dim(Phi)))
     stop(ErrorMessage)
   }
 
