@@ -963,7 +963,7 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
           eigenCovMx <- eigen(CovMx_metaan)
           lambda <- eigenCovMx$val
           E <- eigenCovMx$vec
-          Chi2 <- qchisq(p=0.05, df=(q*q), lower.tail=FALSE)
+          Chi2 <- qchisq(p=alpha, df=(q*q), lower.tail=FALSE)
           LB_vecPhi <- matrix(NA, nrow=q*q, ncol =q*q)
           UB_vecPhi <- matrix(NA, nrow=q*q, ncol =q*q)
           LL <- matrix(NA, nrow=q*q, ncol=2)
@@ -1095,7 +1095,7 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
           eigenCovMx <- eigen(CovMx_metaan)
           lambda <- eigenCovMx$val
           E <- eigenCovMx$vec
-          Chi2 <- qchisq(p=0.05, df=(q*q), lower.tail=FALSE)
+          Chi2 <- qchisq(p=alpha, df=(q*q), lower.tail=FALSE)
           LB_vecPhi <- matrix(NA, nrow=q*q, ncol =q*q)
           UB_vecPhi <- matrix(NA, nrow=q*q, ncol =q*q)
           LL <- matrix(NA, nrow=q*q, ncol=2)
