@@ -27,10 +27,9 @@ PhiPlot(
 )
 }
 \arguments{
-\item{DeltaT}{Optional. The time interval used. By default, DeltaT = 1.}
+\item{DeltaT}{Optional. The observed time interval. By default, DeltaT = 1.}
 
-\item{Phi}{Matrix of size q x q of (un)standardized discrete-time lagged effects arising from one primary study.  Alternatively, the overall Phi matrix that is output by CTmeta can be used. Note that the Phi (or Drift) matrix should be standardized to make a fair comparison between cross-lagged effects.
-It also takes a fitted object from the classes "varest" (from the VAR() function in vars package) and "ctsemFit" (from the ctFit() function in the ctsem package); see example below. From such an object, the (standardized) Drift matrix is calculated/extracted.}
+\item{Phi}{Matrix of size q x q of (un)standardized discrete-time lagged effects arising from one primary study.  Alternatively, the overall Phi matrix that is output by CTmeta can be used. Note,  the Phi (or Drift) matrix should be standardized to make a fair comparison between cross-lagged effects.  It also takes a fitted object from the classes "varest" (from the VAR() function in vars package) and "ctsemFit" (from the ctFit() function in the ctsem package); see example below. From such an object, the (standardized) Drift matrix is calculated/extracted.}
 
 \item{Drift}{Optional (either Phi or Drift). Underlying continuous-time lagged effects matrix (i.e., Drift matrix) of the discrete-time lagged effects matrix Phi(DeltaT). By default, input for Phi is used; only when Phi = NULL, will Drift be used.}
 
