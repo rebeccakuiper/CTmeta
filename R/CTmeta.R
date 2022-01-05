@@ -55,18 +55,33 @@
 #' ## Example without moderators ##
 #'
 #' # Fixed effects (FE) model #
-#'
-#' # Run CTmeta
+#' 
+#' # Run CTmeta with, for instance,
 #' CTma <- CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR)
-#' CTma
-#' summary(CTma)
+#' 
+#' CTma # this is equivant to print(CTma)
+#' summary(CTma, digits = 4)
+#' 
+#' # In Rstudio, using 'CTma$' lets you see what the output consists of. For example:
+#' CTma$summaryMetaAnalysis
+#' 
+#' # Note: there are multiple options for fitting the same model. For example:
+#' # CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR, Gamma)
+#' # CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR)        # implicitly: Gamma = NULL
+#' # CTmeta(N, DeltaT, DeltaTStar, Phi, Gamma = Gamma)   # implicitly: SigmaVAR = NULL
+#' # CTmeta(N, DeltaT, DeltaTStar, Phi, NULL, Gamma)     # explicitly: SigmaVAR = NULL
+#' #
+#' # Note: Do NOT use
+#' # CTmeta(N, DeltaT, DeltaTStar, Phi, Gamma)
+#' # In this case, CTmeta incorrectly uses SigmaVAR = Gamma.
+#' 
 #'
 #'
 #' # Random effects (RE) model #
 #' 
 #' # Without between-level analyses
 #'
-#' # this is the same input as above, but with the additional argument 'FEorRE = 2'
+#' # Use the same input as above with the additional argument 'FEorRE = 2'
 #' # we could also have 'FEorRE = "RE"' instead of 'FEorRE = 2'
 #' CTma <- CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR, FEorRE = 2)
 #' CTma
@@ -78,6 +93,8 @@
 #' CCTma <- Tmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR, FEorRE = 2, BetweenLevel = BetweenLevel) # Two-level RE meta-analysis example
 #' CTma
 #' summary(CTma)
+#' 
+#' # Note: this can also be done when there are moderators (see example below).
 #'
 #'
 #' ## Example with moderators ##
@@ -110,6 +127,16 @@
 #' funnel(CTma$summaryMetaAnalysis, label = 'out')
 #' forest(CTma$summaryMetaAnalysis)
 #' # The same can be done for the two-level analysis.
+#' 
+#' # Notes on funnel and forest plots:
+#' # - These plots are now based on the q*q elements in the study-specific 'Phi's and the S studies.
+#' # See below how to create these plots per element of Phi. This should then be done separately for all q*q elements.
+#' # - In case label names are too long or not insightful, they can be changed by using the Label argument.
+#' # For the funnel plot, one can also decide to not use the "label = 'out'" part.
+#' #
+#' # Notes on forest plots:
+#' # - For random-effects models of class "rma.mv" (see rma.mv) with multiple  values, the addpred argument can be used to specify for which level of the inner factor the prediction interval should be provided (since the intervals differ depending on the value).
+#' # - addpoly() can also be used.
 #' #
 #' # Note that when a univariate approach is taken (leading to multiple analyses), there should be one plot per analysis:
 #' # lapply(CTma$summaryMetaAnalysis_jk, funnel, label = 'out')
@@ -132,16 +159,25 @@
 #' ## Making a customized Phi-plot of resulting overall Phi ##
 #' 
 #' # This allows for more customization than 'PrintPlot = TRUE'
-#'
+#' 
+#' # Option 1: Using the plot option in the function:
+#' CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR, PrintPlot = TRUE)
+#' #
+#' # We can also store the plot as an object:
 #' CTma <- CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR, PrintPlot = TRUE)
+#' # And retrieve it:
 #' CTma$PhiPlot
 #'
+#' # Option 2: A customized Phi-plot can be made using the function 'PhiPlot' (see below) or by using the interactive web app from my website ($\url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}$).
+#'
+#' # Extract the q x q overall Phi matrix
 #' out_CTmeta <- CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR)
 #' overallPhi <- out_CTmeta$Overall_standPhi
 #' Title <- as.list(expression(Phi(Delta[t]) * " plot:",
 #'                  "How do the overall lagged parameters vary as a function of the time-interval?"))
 #' PhiPlot(DeltaTStar, overallPhi, Min = 0, Max = 40, Step = 0.5, Title = Title)
-#' # or
+#' 
+#' # Option 3: Using the function 'ggPhiPlot' instead of 'PhiPlot'.
 #' ggPhiPlot <- ggPhiPlot(DeltaTStar, overallPhi, Min = 0, Max = 40, Step = 0.5, Title = Title)
 #' ggPhiPlot$PhiPlot
 #'
@@ -150,231 +186,61 @@
 #'
 #' if (!require("restriktor")) install.packages("restriktor") # the function goric is in the restriktor package.
 #'                                                            # Authors of goric(): Vanbrabant and Kuiper.
-#' library(restriktor)
-#'
-#' out_CTmeta <- CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR)
-#' H1 <- "abs(overallPhi12) < abs(overallPhi21)"
-#' goric(out_CTmeta, H1, type = "gorica", comparison = "complement")
-#'
-#' out_CTmeta <- CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR)
-#' H1 <- "abs(overallPhi12) < abs(overallPhi21); abs(overallPhi11) < abs(overallPhi22)"
-#' goric(out_CTmeta, H1, type = "gorica", comparison = "complement")
-#'
-#' out_CTmeta <- CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR)
-#' est <- coef(out_CTmeta)  # or: est  <- out_CTmeta$Overall_vecStandPhi_DeltaTStar
-#' VCOV <- vcov(out_CTmeta) # or: VCOV <- out_CTmeta$CovMx_OverallPhi_DeltaTStar
-#' goric(est, VCOV = VCOV, H1, type = "gorica", comparison = "complement")
-#'
-#'
-#' ## What if primary studies report a (lagged) correlation matrix? ##
-#'
-#' q <- 2
-#' corr_YXYX <- matrix(c(1.00, 0.40, 0.63, 0.34,
-#'                       0.40, 1.00, 0.31, 0.63,
-#'                       0.63, 0.31, 1.00, 0.41,
-#'                       0.34, 0.63, 0.41, 1.00), byrow = T, ncol = 2*q)
-#' N <- matrix(c(643, 651, 473))
-#' DeltaT <- matrix(c(2, 3, 1))
-#' DeltaTStar <- 1
-#' #
-#' # Create input:
-#' out_1 <- TransPhi_Corr(DeltaTStar = DeltaT[1], DeltaT = 1, N = N[1], corr_YXYX)
-#' Phi_1 <- out_1$standPhi_DeltaTStar
-#' SigmaVAR_1 <- out_1$standSigmaVAR_DeltaTStar
-#' out_2 <- TransPhi_Corr(DeltaTStar = DeltaT[2], DeltaT = 1, N = N[2], corr_YXYX)
-#' Phi_2 <- out_2$standPhi_DeltaTStar
-#' SigmaVAR_2 <- out_2$standSigmaVAR_DeltaTStar
-#' out_3 <- TransPhi_Corr(DeltaTStar = DeltaT[3], DeltaT = 1, N = N[3], corr_YXYX)
-#' Phi_3 <- out_3$standPhi_DeltaTStar
-#' SigmaVAR_3 <- out_3$standSigmaVAR_DeltaTStar
-#' #
-#' Phi <- rbind(Phi_1, Phi_2, Phi_3) # This returns a stacked matrix of size S q times q.
-#' SigmaVAR <- rbind(SigmaVAR_1, SigmaVAR_2, SigmaVAR_3)
-#' out_CTmeta <- CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR)
-#' out_CTmeta$Overall_standPhi
-#'
-#'
-#' ##############################
-#'
-#'
-#' ### Examples with comments ###
-#'
-#'
-#' ## Example without moderators ##
-#'
-#' # Fixed effects model #
-#'
-#' # Run CTmeta with, for instance,
-#' CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR)
-#'
-#' # There are multiple options; use one of the following:
-#' CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR, Gamma, Moderators, Mod, 1) # The 1, here, says FEorRE = 1
-#' CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR, Gamma, Moderators, Mod)    # Notably, if Moderators = 0, 'Mod' is not inspected.
-#' CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR, Gamma, Moderators)
-#' CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR, Gamma)
-#' CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR)        # Says, implicitly, Gamma = NULL
-#' CTmeta(N, DeltaT, DeltaTStar, Phi, Gamma = Gamma)   # Says, implicitly, SigmaVAR = NULL
-#' CTmeta(N, DeltaT, DeltaTStar, Phi, NULL, Gamma)     # Says SigmaVAR = NULL
-#'
-#' # Note: Do NOT use
-#' #CTmeta(N, DeltaT, DeltaTStar, Phi, Gamma)
-#' # Then, CTmeta incorrectly uses SigmaVAR = Gamma.
-#'
-#' # Different types of output options are possible:
-#' CTma <- CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR)
-#' CTma # gives same as print(CTma)
-#' summary(CTma)
-#' print(CTma, digits = 4)
-#' summary(CTma, digits = 4)
-#' # In Rstudio, use 'CTma$' to see what output there is. For example:
-#' CTma$summaryMetaAnalysis
-#'
-#'
-#' # Random effects model #
-#'
-#' # Add "FEorRE = 2"; e.g.,
-#' CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR, FEorRE = 2)
-#'
-#' # Two-level RE meta-analysis example
-#' BetweenLevel <- c(1, 1, 2) # Assuming the first two studies used the same sample/dataset
-#' CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR, FEorRE = 2, BetweenLevel = BetweenLevel) # Two-level RE meta-analysis example
-#' # Note, one can also use this in case there are moderators (as in the example below).
-#'
-#'
-#' ## Example with moderators ##
-#'
-#' Mod <- matrix(c(64,65,47)) # 1 moderator
-#' #q <- dim(Phi)[2]; Mod <- matrix(cbind(c(64,65,47), c(78,89,34)), ncol = q); colnames(Mod) <- c("Mod1", "Mod2") # two moderators, in each column 1
-#' CTma <- CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR, Moderators = 1, Mod = Mod) # fixed effects model
-#' #CTma <- CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR, Moderators = 1, Mod = Mod, FEorRE = 2); CTma$tau2 # random effects model
-#' summary(CTma)
-#'
-#' # Two-level RE meta-analysis example
-#' Mod <- matrix(c(64,65,47)) # 1 moderator
-#' BetweenLevel <- c(1, 1, 2) # Assuming the first two studies used the same sample/dataset
-#' CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR, Moderators = 1, Mod = Mod, FEorRE = 2, BetweenLevel = BetweenLevel) # Two-level RE meta-analysis example
-#'
-#'
-#' ## funnel and forest plots ##
-#' CTma <- CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR, FEorRE = 2)
-#' funnel(CTma$summaryMetaAnalysis, label = 'out')
-#' forest(CTma$summaryMetaAnalysis)
-#' # One can do the same for the two-level analysis.
-#' #
-#' # Note, in case a univariate approach had to be taken, leading to multiple analyses, then one should create a plot per analysis:
-#' # lapply(CTma$summaryMetaAnalysis_jk, funnel, label = 'out')
-#' #
-#' # Notes on funnel and forest:
-#' # - These plots are now based on the q*q elements in the study-specific Phi's and the S studies.
-#' # See below, how you can create these plots per element of Phi. This should then be done separately for all q*q elements.
-#' # - In case label names are too long or not insightful, one can change them by using the Label argument.
-#' # In case of the funnel plot, one can also decide to not use the "label = 'out'" part.
-#'
-#' #
-#' # Notes on forest:
-#' # - For random-effects models of class "rma.mv" (see rma.mv) with multiple  values, the addpred argument can be used to specify for which level of the inner factor the prediction interval should be provided (since the intervals differ depending on the value).
-#' # - One can also look into the functionality of addpoly().
-#' #
-#' # In case you want to create a plot per element of the study-specific Phi's:
-#' #elt <- rep(F, (q*q))
-#' #elt[1] <- T # First element out of q*q true, so referring to element Phi11.
-#' #yi_Phi11 <- CTma$summaryMetaAnalysis$yi[elt]
-#' #vi_Phi11 <- CTma$summaryMetaAnalysis$vi[elt]
-#' #funnel(yi_Phi11, vi_Phi11, label = 'out')
-#' #forest(yi_Phi11, vi_Phi11)
-#' elt <- rep(F, (q*q))
-#' elt[2] <- T # Second element out of q*q true, so referring to element Phi12.
-#' yi_Phi12 <- CTma$summaryMetaAnalysis$yi[elt]
-#' vi_Phi12 <- CTma$summaryMetaAnalysis$vi[elt]
-#' funnel(yi_Phi12, vi_Phi12, label = 'out')
-#' forest(yi_Phi12, vi_Phi12)
-#'
-#'
-#' ## Make customized Phi-plot of resulting overall Phi ##
-#'
-#' # Option 1: Using the plot option in the function:
-#' CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR, PrintPlot = TRUE)
-#' # The plot can be stored and retrieved as an object as follows:
-#' # CTma <- CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR, PrintPlot = TRUE)
-#' # CTma$PhiPlot
-#'
-#'
-#' # Option 2: A customized Phi-plot can be made using the function 'PhiPlot' (see below) or by using the interactive web app from my website (\url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}).
-#' # Alternatively, one can use the function 'ggPhiPlot' instead of 'PhiPlot'.
-#'
-#' # Extract the (q times q) overall Phi matrix
-#' out_CTmeta <- CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR)
-#' # resulting overall Phi:
-#' overallPhi <- out_CTmeta$Overall_standPhi
-#'
-#' # Make Phi-plot:
-#' Title <- as.list(expression(paste0(Phi(Delta[t]), " plot:"),
-#'    "How do the overall lagged parameters vary as a function of the time-interval"))
-#' PhiPlot(DeltaTStar, overallPhi, Min = 0, Max = 40, Step = 0.5, Title = Title)
-#' # or
-#' ggPhiPlot(DeltaTStar, overallPhi, Min = 0, Max = 40, Step = 0.5, Title = Title)
-#' # The plot can be stored and retrieved as an object as follows:
-#' # ggPhiPlot <- ggPhiPlot(DeltaTStar, overallPhi, Min = 0, Max = 40, Step = 0.5, Title = Title)
-#' # ggPhiPlot$PhiPlot
-#'
-#'
-#' ## Evaluate dominance of (absolute values of) cross-lagged effects ##
-#'
-#' if (!require("restriktor")) install.packages("restriktor") # Use restriktor package for function goric().
-#'                                                            # Authors of goric(): Vanbrabant and Kuiper.
-#' #
-#' # If version from github needed:
+#' 
+#' # If needing the version from github:
 #' #if (!require("devtools")) install.packages("devtools")
 #' #library(devtools)
 #' #install_github("LeonardV/restriktor")
-#' #
+#' 
 #' library(restriktor)
-#'
+#' 
 #' # Option 1
-#' # Use CTmeta object
+#' # Using a CTmeta object
+#'
 #' out_CTmeta <- CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR)
-#' #
+#' 
 #' # Example 1: dominance of (absolute values of) cross-lagged effects
 #' # Specify hypothesis
 #' H1 <- "abs(overallPhi12) < abs(overallPhi21)"
-#' #H2 <- "abs(overallPhi12) > abs(overallPhi21)" # = complement of H1 and does not need to be specified, see below.
+#' H2 <- "abs(overallPhi12) > abs(overallPhi21)" # this is the complement of H1 and does not need to be specified:
 #' # Evaluate dominance of cross-lagged effects via AIC-type criterion called the GORICA (Altinisik, Nederhof, Hoijtink, Oldehinkel, Kuiper, accepted 2021).
-#' #goric(out_CTmeta, H1, H2, type = "gorica", comparison = "none")
+#' goric(out_CTmeta, H1, H2, type = "gorica", comparison = "none")
 #' # or, since H2 is complement of H1, equivalently:
 #' goric(out_CTmeta, H1, type = "gorica", comparison = "complement")
 #' #
 #' # Example 2: dominance of (absolute values of) cross-lagged effects and autoregressive effects
 #' H1 <- "abs(overallPhi12) < abs(overallPhi21); abs(overallPhi11) < abs(overallPhi22)"
-#' # Note that, now, specification of complement 'by hand' harder.
+#' # Note that, now, the specification of the complement 'by hand' is harder.
 #' goric(out_CTmeta, H1, type = "gorica", comparison = "complement")
-#' #
-#' #
+#' 
+#' 
 #' # Option 2
-#' # Extract the vectorized overall standardized overallPhi matrix and its covariance matrix
+#' # Extracting the vectorized overall standardized overallPhi matrix and its covariance matrix
 #' # using the functions coef() and vcov()
 #' out_CTmeta <- CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR)
 #' est <- coef(out_CTmeta)  # or: est  <- out_CTmeta$Overall_vecStandPhi_DeltaTStar
 #' VCOV <- vcov(out_CTmeta) # or: VCOV <- out_CTmeta$CovMx_OverallPhi_DeltaTStar
 #' goric(est, VCOV = VCOV, H1, type = "gorica", comparison = "complement")
+#' 
 #'
-#'
-#' ## What if primary studies report a (lagged) correlation matrix ##
-#'
-#' # Suppose, for ease, that all S=3 primary studies reported the following lagged correlation matrix:
+#' ## What if primary studies report a (lagged) correlation matrix? ##
+#' 
+#' # Suppose, for ease, that all S = 3 primary studies reported the following lagged correlation matrix:
 #' q <- 2
 #' corr_YXYX <- matrix(c(1.00, 0.40, 0.63, 0.34,
 #'                       0.40, 1.00, 0.31, 0.63,
 #'                       0.63, 0.31, 1.00, 0.41,
 #'                       0.34, 0.63, 0.41, 1.00), byrow = T, ncol = 2*q)
-#'
+#' 
 #' # In the example below, the same N and DeltaT(Star) values are used:
 #' N <- matrix(c(643, 651, 473))
 #' DeltaT <- matrix(c(2, 3, 1))
 #' DeltaTStar <- 1
-#'
+#' 
 #' # Use the function 'TransPhi_Corr' to calculate the corresponding standardized lagged effects matrix per primary study.
-#' # Note that one can already make the time-intervals equal via the arguments DeltaTStar and DeltaT, but CTmeta can as well.
-#' # In this example, I deliberately make the time-intervals unequal, such that the example is in line with the input (i.e., DeltaT <- matrix(c(2, 3, 1))) and such the resulting overall Phi should equal the Phi that underlies this lagged correlation matrix (which I check at the end).
+#' # Note: Time-intervals can be made equal using the arguments DeltaTStar and DeltaT.
+#' # In this example, the time-intervals are deliberately unequal, such that the example is in line with the input (i.e., DeltaT <- matrix(c(2, 3, 1))) and such the resulting overall Phi should equal the Phi that underlies this lagged correlation matrix (which is checked at the end).
+#' 
 #' out_1 <- TransPhi_Corr(DeltaTStar = DeltaT[1], DeltaT = 1, N = N[1], corr_YXYX)
 #' Phi_1 <- out_1$standPhi_DeltaTStar
 #' SigmaVAR_1 <- out_1$standSigmaVAR_DeltaTStar
@@ -384,23 +250,22 @@
 #' out_3 <- TransPhi_Corr(DeltaTStar = DeltaT[3], DeltaT = 1, N = N[3], corr_YXYX)
 #' Phi_3 <- out_3$standPhi_DeltaTStar
 #' SigmaVAR_3 <- out_3$standSigmaVAR_DeltaTStar
-#'
-#' # Make Phi
-#' Phi <- rbind(Phi_1, Phi_2, Phi_3) # This, returns a stacked matrix of size S q times q.
+#' 
+#' # Now we combine these to make the stacked matrix for Phi
+#' Phi <- rbind(Phi_1, Phi_2, Phi_3)
 #' SigmaVAR <- rbind(SigmaVAR_1, SigmaVAR_2, SigmaVAR_3)
 #' # For more details, see ?TransPhi_Corr
-#'
-#' # The example CTmeta() code above can be run using this Phi; e.g.,
-#' CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR)
-#'
-#' # The overall q-times-q (here, 2x2) lagged effects matrix Phi
+#' 
+#' # The overall q x q (here, 2 x 2) lagged effects matrix Phi
 #' out_CTmeta <- CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR)
 #' out_CTmeta$Overall_standPhi
-#' #
-#' # As a check, to see indeed that CTmeta works properly (where the resulting Phi is independent of the choise of N).
+#' 
+#' # Check that CTmeta works properly: the resulting Phi should be independent of the choice of N).
 #' TransPhi_Corr(DeltaTStar = 1, DeltaT = 1, N = 100, corr_YXYX)$standPhi_DeltaTStar
-#' # Note that is normally not a check you would do.
+#' # Note: this is not a check that is done normally.
 #'
+#'
+#' ##############################
 
 
 CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Moderators = 0, Mod = NULL, FEorRE = 1, BetweenLevel = NULL, Label = NULL, alpha=0.05, PrintPlot = FALSE) {
