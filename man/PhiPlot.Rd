@@ -2,8 +2,10 @@
 % Please edit documentation in R/Phi-plot.R
 \name{PhiPlot}
 \alias{PhiPlot}
-\title{Phi-plot of Phi based on its underlying drift matrix
-This function makes a Phi-plot of Phi(DeltaT) for a range of time intervals based on its underlying drift matrix. There is also an interactive web application on my website to create a Phi-plot: Phi-and-Psi-Plots and Find DeltaT (\url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}).}
+\title{PhiPlot: visualize how lagged parameters vary as function of the time interval.}
+\description{
+This function generates a plot illustrating how the lagged parameters vary as a function of the time-interval (DeltaT). The following options are available as input: the lagged effects matrix (Phi) from one primary study, the overall Phi matrix output from CTmeta or the underlying drift matrix (Drift) corresponding to either of the first two options are required as input.  An interactive web application offering the same functionality can be found on my website: Phi-and-Psi-Plots and Find DeltaT (https://www.uu.nl/staff/RMKuiper/Websites%20%2F%20Shiny%20apps).
+}
 \usage{
 PhiPlot(
   DeltaT = 1,
@@ -27,10 +29,10 @@ PhiPlot(
 \arguments{
 \item{DeltaT}{Optional. The time interval used. By default, DeltaT = 1.}
 
-\item{Phi}{Matrix of size q times q of (un)standardized lagged effects. Note that the Phi (or Drift) matrix should be standardized to make a fair comparison between cross-lagged effects.
+\item{Phi}{Matrix of size q x q of (un)standardized discrete-time lagged effects arising from one primary study.  Alternatively, the overall Phi matrix that is output by CTmeta can be used. Note that the Phi (or Drift) matrix should be standardized to make a fair comparison between cross-lagged effects.
 It also takes a fitted object from the classes "varest" (from the VAR() function in vars package) and "ctsemFit" (from the ctFit() function in the ctsem package); see example below. From such an object, the (standardized) Drift matrix is calculated/extracted.}
 
-\item{Drift}{Optional (either Phi or Drift). Underlying continuous-time lagged effects matrix (i.e., Drift matrix) of the discrete-time lagged effects matrix Phi(DeltaT). By default, input for Phi is used; only when Phi = NULL, Drift will be used.}
+\item{Drift}{Optional (either Phi or Drift). Underlying continuous-time lagged effects matrix (i.e., Drift matrix) of the discrete-time lagged effects matrix Phi(DeltaT). By default, input for Phi is used; only when Phi = NULL, will Drift be used.}
 
 \item{Stand}{Optional. Indicator for whether Phi (or Drift) should be standardized (1) or not (0). In case Stand = 1, one of the following matrices should be input as well: SigmaVAR, Sigma, or Gamma  (or it is subtracted from a varest or ctsemFit object). By default, Stand = 0.}
 
@@ -61,10 +63,7 @@ It also takes a fitted object from the classes "varest" (from the VAR() function
 \value{
 This function returns a Phi-plot for a range of time intervals.
 }
-\description{
-Phi-plot of Phi based on its underlying drift matrix
-This function makes a Phi-plot of Phi(DeltaT) for a range of time intervals based on its underlying drift matrix. There is also an interactive web application on my website to create a Phi-plot: Phi-and-Psi-Plots and Find DeltaT (\url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}).
-}
+
 \examples{
 
 # library(CTmeta)
@@ -74,28 +73,29 @@ This function makes a Phi-plot of Phi(DeltaT) for a range of time intervals base
 ## Example 1 ##
 
 # Phi(DeltaT)
-DeltaT <- 1
-Phi <- myPhi[1:2,1:2]
+DeltaT <- 1             # save the observed time-interval (DeltaT)
+Phi <- myPhi[1:2,1:2]   # select a portion of myPhi that corresponds to one primary study
 # or: Drift
-Drift <- myDrift
+Drift <- myDrift        # OR select the drift matrix
 
 # Example 1.1: unstandardized Phi #
 #
 # Make plot of Phi
-PhiPlot(DeltaT, Phi)
-PhiPlot(DeltaT, Phi, Min = 0, Max = 10, Step = 0.01)           # Specifying range x-axis and precision
-PhiPlot(DeltaT, Drift = Drift, Min = 0, Max = 10, Step = 0.01) # Using Drift instead of Phi
+PhiPlot(DeltaT, Phi)                                           # generate Phi-Plot
+PhiPlot(DeltaT, Phi, Min = 0, Max = 10, Step = 0.01)           # specify range of x-axis and precision
+PhiPlot(DeltaT, Drift = Drift, Min = 0, Max = 10, Step = 0.01) # using Drift instead of Phi
 
 
 # Example 1.2: standardized Phi #
-q <- dim(Phi)[1]
-SigmaVAR <- diag(q) # for ease
-PhiPlot(DeltaT, Phi, Stand = 1, SigmaVAR = SigmaVAR)
+q <- dim(Phi)[1]                                      # SigmaVAR must be specified for standardization
+SigmaVAR <- diag(q)                                   # for ease                          
+PhiPlot(DeltaT, Phi, Stand = 1, SigmaVAR = SigmaVAR)  # standardize Phi using the Stand arugment
 
 
 ## Example 2: input from fitted object of class "varest" ##
 
-DeltaT <- 1
+DeltaT <- 1           
+
 data <- myData
 if (!require("vars")) install.packages("vars")
 library(vars)
@@ -109,13 +109,13 @@ PhiPlot(DeltaT, out_VAR, Stand = 1)
 
 
 ## Example 3: Change plot options ##
-DeltaT <- 1
-Phi <- myPhi[1:2,1:2]
+DeltaT <- 1             
+Phi <- myPhi[1:2,1:2]    
 q <- dim(Phi)[1]
-SigmaVAR <- diag(q) # for ease
+SigmaVAR <- diag(q) 
 #
 WhichElements <- matrix(1, ncol = q, nrow = q) # Now, all elements are 1
-diag(WhichElements) <- 0 # Now, the autoregressive parameters are excluded by setting the diagonals to 0.
+diag(WhichElements) <- 0                       # Now, the autoregressive parameters are excluded by setting the diagonals to 0.
 Lab <- c("12", "21")
 Labels <- NULL
 for(i in 1:length(Lab)){
@@ -124,7 +124,8 @@ for(i in 1:length(Lab)){
 }
 Col <- c(1,2)
 Lty <- c(1,2)
+
 # Standardized Phi
-PhiPlot(DeltaT = 1, Phi, Stand = 1, SigmaVAR = SigmaVAR, Min = 0, Max = 10, Step = 0.05, WhichElements = WhichElements, Labels = Labels, Col = Col, Lty = Lty)
+PhiPlot(DeltaT = 1, Phi, Stand = 1, SigmaVAR = SigmaVAR, Min = 0, Max = 10, Step = 0.05, WhichElements = WhichElements, Labels = Labels, Col = Col, Lty = Lty, MaxMinPhi=TRUE)
 
 }
