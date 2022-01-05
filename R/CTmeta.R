@@ -138,17 +138,17 @@
 #'
 #' out_CTmeta <- CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR)
 #' overallPhi <- out_CTmeta$Overall_standPhi
-#' Title <- as.list(expression(paste0(Phi(Delta[t]), " plot:"),
-#'    "How do the overall lagged parameters vary as a function of the time-interval?"))
+#' Title <- as.list(expression(Phi(Delta[t]) * " plot:",
+#'                  "How do the overall lagged parameters vary as a function of the time-interval?"))
 #' PhiPlot(DeltaTStar, overallPhi, Min = 0, Max = 40, Step = 0.5, Title = Title)
 #' # or
 #' ggPhiPlot <- ggPhiPlot(DeltaTStar, overallPhi, Min = 0, Max = 40, Step = 0.5, Title = Title)
 #' ggPhiPlot$PhiPlot
 #'
 #'
-#' ## Evaluate dominance of (absolute values of) cross-lagged effects ##
+#' ## Evaluating the dominance of (absolute values of) cross-lagged effects ##
 #'
-#' if (!require("restriktor")) install.packages("restriktor") # Use restriktor package for function goric().
+#' if (!require("restriktor")) install.packages("restriktor") # the function goric is in the restriktor package.
 #'                                                            # Authors of goric(): Vanbrabant and Kuiper.
 #' library(restriktor)
 #'
@@ -166,7 +166,7 @@
 #' goric(est, VCOV = VCOV, H1, type = "gorica", comparison = "complement")
 #'
 #'
-#' ## What if primary studies report a (lagged) correlation matrix ##
+#' ## What if primary studies report a (lagged) correlation matrix? ##
 #'
 #' q <- 2
 #' corr_YXYX <- matrix(c(1.00, 0.40, 0.63, 0.34,
@@ -188,7 +188,7 @@
 #' Phi_3 <- out_3$standPhi_DeltaTStar
 #' SigmaVAR_3 <- out_3$standSigmaVAR_DeltaTStar
 #' #
-#' Phi <- rbind(Phi_1, Phi_2, Phi_3) # This, returns a stacked matrix of size S q times q.
+#' Phi <- rbind(Phi_1, Phi_2, Phi_3) # This returns a stacked matrix of size S q times q.
 #' SigmaVAR <- rbind(SigmaVAR_1, SigmaVAR_2, SigmaVAR_3)
 #' out_CTmeta <- CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR)
 #' out_CTmeta$Overall_standPhi
