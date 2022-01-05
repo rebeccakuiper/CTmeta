@@ -24,7 +24,7 @@ SigmaVARPlot(
 )
 }
 \description{
-This function generates a plot illustrating how the elements of a discrete-time residual covariance matrix (SigmaVAR) vary as a function of the time-interval (DeltaT).  Note, the discrete-time residual covariance matrix (SigmaVAR) is called 'Psi' in Kuiper and Hamaker (??DATE??).  An interactive web application offering the same functionality can be found on my website: Phi-and-Psi-Plots and Find DeltaT (https://www.uu.nl/staff/RMKuiper/Websites%20%2F%20Shiny%20apps).}).
+This function generates a plot illustrating how the elements of a discrete-time residual covariance matrix (SigmaVAR) vary as a function of the time-interval (DeltaT).  Note, the discrete-time residual covariance matrix (SigmaVAR) is called 'Psi' in Kuiper and Hamaker (??DATE??).  An interactive web application offering the same functionality can be found on my website: Phi-and-Psi-Plots and Find DeltaT (\url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}).
 }
 \arguments{
 \item{DeltaT}{Optional. The observed time interval. By default, DeltaT = 1.}
