@@ -30,34 +30,31 @@
 #'
 #' # library(CTmeta)
 #'
-#' ##################################################################################################
+#' ##################### Setting up the parameters for the input ####################################
 #' # Input needed in examples below with q=2 variables and S=3 primary studies
 #' #
 #' N <- matrix(c(643, 651, 473))
 #' DeltaT <- matrix(c(2, 3, 1))
 #' DeltaTStar <- 1
 #' #
-#' # I will use the example matrices stored in the package:
+#' # We will use the example matrices stored in the package:
 #' Phi <- myPhi
 #' SigmaVAR <- mySigmaVAR
 #' Gamma <- myGamma # Note: CTmeta does not need both SigmaVAR and Gamma, as denomstrated below.
-#' # These are all three stacked matrices of size S*q times q.
+#' # These are all three stacked matrices of size (S*q) x q.
 #' # The CTmeta function will standardize these matrices (to make comparison of effects meaningful).
 #' #
-#' Moderators = 0 # By default set to 0. Hence, not per se needed, as demonstrated below.
+#' Moderators <- 0 # By default set to 0. Hence, not needed per se, as demonstrated below.
 #' ##################################################################################################
 #'
 #'
 #' # Below, you can find example code. Note that, here, only 3 primary studies are used.
-#' # In practice, one would normally have (many) more, but the code stays (more or less) the same.
-#'
-#'
-#' ### Examples without comments ###
+#' # In practice, there would normally be (many) more, but the code stays (more or less) the same.
 #'
 #'
 #' ## Example without moderators ##
 #'
-#' # Fixed effects model #
+#' # Fixed effects (FE) model #
 #'
 #' # Run CTmeta
 #' CTma <- CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR)
@@ -66,38 +63,58 @@
 #'
 #'
 #' # Random effects (RE) model #
+#' 
+#' # Without between-level analyses
 #'
-#' CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR, FEorRE = 2)
+#' # this is the same input as above, but with the additional argument 'FEorRE = 2'
+#' # we could also have 'FEorRE = "RE"' instead of 'FEorRE = 2'
+#' CTma <- CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR, FEorRE = 2)
+#' CTma
+#' summary(CTma)
+#' 
+#' # With between-level analyses
 #'
 #' BetweenLevel <- c(1, 1, 2) # Assuming the first two studies used the same sample/dataset
-#' CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR, FEorRE = 2, BetweenLevel = BetweenLevel) # Two-level RE meta-analysis example
+#' CCTma <- Tmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR, FEorRE = 2, BetweenLevel = BetweenLevel) # Two-level RE meta-analysis example
+#' CTma
+#' summary(CTma)
 #'
 #'
 #' ## Example with moderators ##
+#' 
+#' # One moderator, fixed effects model
 #'
-#' Mod <- matrix(c(64,65,47)) # 1 moderator
+#' Mod <- matrix(c(64,65,47)) # Moderator matrix
 #' CTma <- CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR, Moderators = 1, Mod = Mod) # fixed effects model
 #' summary(CTma)
+#' 
+#' # Two moderators, random effects model
 #'
-#' q <- dim(Phi)[2]; Mod <- matrix(cbind(c(64,65,47), c(78,89,34)), ncol = q); colnames(Mod) <- c("Mod1", "Mod2") # two moderators, in each column 1
-#' CTma <- CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR, Moderators = 1, Mod = Mod, FEorRE = 2); CTma$tau2 # random effects model
+#' q <- dim(Phi)[2] # q is the number of variables; Phi has q columns
+#' Mod <- matrix(cbind(c(64,65,47), c(78,89,34)), ncol = q) # one moderator in each column
+#' colnames(Mod) <- c("Mod1", "Mod2")
+#' CTma <- CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR, Moderators = 1, Mod = Mod, FEorRE = 2) # random effects model
+#' CTma$tau2
 #' summary(CTma)
+#' 
+#' # One moderator, 2-level random effects model
 #'
 #' Mod <- matrix(c(64,65,47)) # 1 moderator
 #' BetweenLevel <- c(1, 1, 2) # Assuming the first two studies used the same sample/dataset.
-#' CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR, Moderators = 1, Mod = Mod, FEorRE = 2, BetweenLevel = BetweenLevel) # Two-level RE meta-analysis example
+#' CTma <- CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR, Moderators = 1, Mod = Mod, FEorRE = 2, BetweenLevel = BetweenLevel) # Two-level RE meta-analysis example
+#' summary(CTma)
 #'
 #'
 #' ## funnel and forest plots ##
 #' CTma <- CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR, FEorRE = 2)
 #' funnel(CTma$summaryMetaAnalysis, label = 'out')
 #' forest(CTma$summaryMetaAnalysis)
-#' # One can do the same for the two-level analysis.
+#' # The same can be done for the two-level analysis.
 #' #
-#' # Note, in case a univariate approach had to be taken, leading to multiple analyses, then one should create a plot per analysis:
+#' # Note that when a univariate approach is taken (leading to multiple analyses), there should be one plot per analysis:
 #' # lapply(CTma$summaryMetaAnalysis_jk, funnel, label = 'out')
 #' #
-#' # In case you want to create a plot per element of the study-specific Phi's:
+#' # To create a plot per element of the study-specific 'Phi's:
 #' #elt <- rep(F, (q*q))
 #' #elt[1] <- T # First element out of q*q true, so referring to element Phi11.
 #' #yi_Phi11 <- CTma$summaryMetaAnalysis$yi[elt]
@@ -112,7 +129,9 @@
 #' forest(yi_Phi12, vi_Phi12)
 #'
 #'
-#' ## Make customized Phi-plot of resulting overall Phi ##
+#' ## Making a customized Phi-plot of resulting overall Phi ##
+#' 
+#' # This allows for more customization than 'PrintPlot = TRUE'
 #'
 #' CTma <- CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR, PrintPlot = TRUE)
 #' CTma$PhiPlot
@@ -120,7 +139,7 @@
 #' out_CTmeta <- CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR)
 #' overallPhi <- out_CTmeta$Overall_standPhi
 #' Title <- as.list(expression(paste0(Phi(Delta[t]), " plot:"),
-#'    "How do the overall lagged parameters vary as a function of the time-interval"))
+#'    "How do the overall lagged parameters vary as a function of the time-interval?"))
 #' PhiPlot(DeltaTStar, overallPhi, Min = 0, Max = 40, Step = 0.5, Title = Title)
 #' # or
 #' ggPhiPlot <- ggPhiPlot(DeltaTStar, overallPhi, Min = 0, Max = 40, Step = 0.5, Title = Title)
