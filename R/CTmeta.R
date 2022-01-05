@@ -714,21 +714,18 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
 
     # Check on SigmaVAR
     if(length(SigmaVAR) == 1){
-      ErrorMessage <- (paste0("The argument SigmaVAR should not consist of one element. It should be a stacked matrix of size S*q times q or array with dimensions q times q times S, with S = ", S, " the number of primary studies and q = ", q, " the number of variables."))
-      return(ErrorMessage)
+      ErrorMessage <- (paste0("The argument SigmaVAR should not consist of one element only. It should be a stacked matrix of size (S*q) x q or an array with dimensions q x q x S, with S = ", S, " the number of primary studies and q = ", q, " the number of variables."))
       stop(ErrorMessage)
     }
     # Check on Gamma
     if(length(Gamma) == 1){
-      ErrorMessage <- (paste0("The argument Gamma should not consist of one element. It should be a stacked matrix of size S*q times q or array with dimensions q times q times S, with S = ", S, " the number of primary studies and q = ", q, " the number of variables."))
-      return(ErrorMessage)
+      ErrorMessage <- (paste0("The argument Gamma should not consist of one element only. It should be a stacked matrix of size (S*q) x q or an array with dimensions q x q x S, with S = ", S, " the number of primary studies and q = ", q, " the number of variables."))
       stop(ErrorMessage)
     }
 
     # SigmaVAR
     if(length(dim(SigmaVAR)) < 2){
-      ErrorMessage <- (paste0("The residual covariance matrix SigmaVAR should be an S*q times q matrix or a q times q times S array, with S = ", S, " and q = ", q))
-      return(ErrorMessage)
+      ErrorMessage <- (paste0("The residual covariance matrix SigmaVAR should be an S*q x q matrix or a q x q x S array, with S = ", S, " and q = ", q))
       stop(ErrorMessage)
     }
     if(length(dim(SigmaVAR)) == 2){
@@ -740,15 +737,13 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
       }
       SigmaVAR <- SigmaVAR_studies
     }else if(length(dim(SigmaVAR)) > 3){
-      ErrorMessage <- (paste0("The residual covariance matrix SigmaVAR should be an S*q times q matrix or a q times q times S array, with S = ", S, " and q = ", q, ". Currently, it is of size ", dim(SigmaVAR)))
-      return(ErrorMessage)
+      ErrorMessage <- (paste0("The residual covariance matrix SigmaVAR should be an (S*q) x q matrix or a q x q x S array, with S = ", S, " and q = ", q, "."))
       stop(ErrorMessage)
     }
 
     # Gamma
     if(length(dim(Gamma)) < 2){
-      ErrorMessage <- (paste0("The covariance matrix Gamma should be an S*q times q matrix or a q times q times S array, with S = ", S, " and q = ", q))
-      return(ErrorMessage)
+      ErrorMessage <- (paste0("The covariance matrix Gamma should be an (S*q) x q matrix or a q x q x S array, with S = ", S, " and q = ", q))
       stop(ErrorMessage)
     }
     if(length(dim(Gamma)) == 2){
@@ -760,9 +755,7 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
       }
       Gamma <- Gamma_studies
     }else if(length(dim(Gamma)) > 3){
-      ErrorMessage <- (paste0("The covariance matrix Gamma should be an S*q times q matrix or a q times q times S array, with S = ", S, " and q = ", q, ". Currently, it is of size ", dim(Gamma)))
-      return(ErrorMessage)
-      return(ErrorMessage)
+      ErrorMessage <- (paste0("The covariance matrix Gamma should be an (S*q) x q matrix or a q x q x S array, with S = ", S, " and q = ", q, "."))
       stop(ErrorMessage)
     }
 
@@ -784,7 +777,7 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
       #Warning <- array(data=NA, dim=c(S))
       #
       # Studies where Phi has complex eigenvalues or at least one negative eigenvalue
-      messageTrans <- "All eigenvalues are positive and real. Hence, the Phi's are transformed to Phi(DeltaT*) to account for the time-interval dependency and standardized (to make comparison of effects meaningful)."
+      messageTrans <- "All eigenvalues are positive and real. Therefore, the 'Phi's are transformed to Phi(DeltaT*) to account for the time-interval dependency and are standardized to make comparison of effects meaningful."
       for(s in 1:S){
         EV <- eigen(Phi[,,s])$values
         if(any(is.complex(EV))){ StudiesComplexEV <- c(StudiesComplexEV, s) }
@@ -794,24 +787,24 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
       ratioDeltaT <- DeltaTStar / DeltaT
       # If the studies for which the EV are neg or complex have integer ratioDeltaT then it is fine, otherwise it is not
       if(!is.null(StudiesComplexEV) | !is.null(StudiesNegEV)){
-        messageTrans <- "Some studies have eigenvalues of Phi that are negative and/or real, but for those studies the ratio DeltaT*/DeltaT is integer. Therefore, the Phi's are transformed to Phi(DeltaT*) to account for the time-interval dependency."
+        messageTrans <- "Some studies have eigenvalues of Phi that are negative and/or real, but for those studies the ratio DeltaT*/DeltaT is an integer. Therefore, the 'Phi's are transformed to Phi(DeltaT*) to account for the time-interval dependency."
         #if(any(!is.integer(ratioDeltaT[StudiesComplexEV]))){ # NB ik moet checken of als ik deel door hoogste geheel getal er dan geen rest waarde is!!
         if( any( (ratioDeltaT[StudiesComplexEV] %% 1) == 0 ) ){
           Trans <- 0
-          messageTrans <- "There is at least one study for which the eigenvalues of Phi are complex and for which the ratio DeltaT*/DeltaT is not integer. Therefore, dummy variables are used to account for the time-interval dependency."
+          messageTrans <- "There is at least one study for which the eigenvalues of Phi are complex and for which the ratio DeltaT*/DeltaT is not an integer. Therefore, dummy variables are used to account for the time-interval dependency."
         }
         if( any( (ratioDeltaT[StudiesNegEV] %% 1) == 0 ) ){
           Trans <- 0
-          messageTrans <- "There is at least one study for which the eigenvalues of Phi are negative and for which the ratio DeltaT*/DeltaT is not integer. Therefore, dummy variables are used to account for the time-interval dependency."
+          messageTrans <- "There is at least one study for which the eigenvalues of Phi are negative and for which the ratio DeltaT*/DeltaT is not an integer. Therefore, dummy variables are used to account for the time-interval dependency."
         }
         if( any( (ratioDeltaT[StudiesComplexEV] %% 1) == 0 ) & any( (ratioDeltaT[StudiesNegEV] %% 1) == 0 ) ){
           Trans <- 0
-          messageTrans <- "There is at least one study for which the eigenvalues of Phi are complex and/or negative and for which the ratio DeltaT*/DeltaT is not integer. Therefore, dummy variables are used to account for the time-interval dependency."
+          messageTrans <- "There is at least one study for which the eigenvalues of Phi are complex and/or negative and for which the ratio DeltaT*/DeltaT is not an integer. Therefore, dummy variables are used to account for the time-interval dependency."
         }
       }
       #
       #
-      messageMultivar <- "For each study, the covariance matrix is positive definite. Hence, a multivariate approach is used."
+      messageMultivar <- "For each study, the covariance matrix is positive definite. Therefore, a multivariate approach is used."
       if(Trans == 1){
         # Calculate standardized transformed Phi
         messagePhi <- matrix(NA, ncol = 1, nrow = S)
@@ -1274,7 +1267,7 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
         q <- sqrt(length(vecPhi))
         overallPhi <- matrix(vecPhi, byrow = T, ncol = q) # resulting overall Phi
         # Make Phi-plot:
-        Title <- as.list(expression(Phi(Delta[t])~plot), "How do the overall lagged parameters vary as a function of the time-interval")
+        Title <- as.list(expression(Phi(Delta[t])~plot), "How do the overall lagged parameters vary as a function of the time-interval?")
         min <- min(DeltaT)
         max <- max(DeltaT)
         step <- (max - min + 1)/50 #(max - min + 1)/10
