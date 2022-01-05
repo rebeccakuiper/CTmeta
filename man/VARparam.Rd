@@ -6,6 +6,11 @@
 \usage{
 VARparam(DeltaT = 1, Drift, Sigma = NULL, Gamma = NULL)
 }
+
+\description{
+This function transforms continuous-time model (un)standardized lagged parameters and the corresponding residual covariance matrix into their discrete-time model counterparts. An interactive web application offering the same functionality can be found at my website: \url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}.
+}
+
 \arguments{
 \item{DeltaT}{Optional. The time interval used. By default, DeltaT = 1.}
 
@@ -20,9 +25,7 @@ Note that if Drift and Sigma are known, Gamma can be calculated; hence, either S
 \value{
 The output renders the discrete-times equivalent matrices of the continuous-time ones.
 }
-\description{
-The discrete-time lagged-effects model matrices corresponding to the continuous-time ones. The interactive web application 'Phi-and-Psi-Plots and Find DeltaT' also contains this functionality, you can find it on my website: \url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}.
-}
+
 \examples{
 
 # library(CTmeta)

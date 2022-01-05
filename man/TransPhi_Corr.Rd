@@ -7,6 +7,12 @@
 \usage{
 TransPhi_Corr(DeltaTStar, DeltaT = 1, N = NULL, corr_YXYX, alpha = 0.05)
 }
+
+\description{
+This function calculates standardized discrete-time lagged effects, their covariance matrix, and corresponding elliptical 95\% confidence intervals (CIs) from a correlation matrix with contemporaneous and lagged correlations.  Subsquently, it transforms the time-dependent quantities to reflect scenarios in which another time-interval was used.  An interactive web application offering the same functionality can be found on my website: Standardizing and/or transforming lagged regression estimates
+(\url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}).
+}
+
 \arguments{
 \item{DeltaTStar}{The time interval to which the standardized lagged effects matrix (Phi) should be transformed to.}
 
@@ -21,9 +27,7 @@ TransPhi_Corr(DeltaTStar, DeltaT = 1, N = NULL, corr_YXYX, alpha = 0.05)
 \value{
 This function returns the vectorized transformed standardized lagged effects (i.e., for DeltaTStar) and - if N is part of input - their covariance matrix and the corresponding elliptical/multivariate 95\% CI; SigmaVAR: residual covariance matrix for DeltaTStar; and Gamma: stationary covariance matrix.
 }
-\description{
-Calculates the (vectorized) transformed standardized Phi, their covariance matrix, the corresponding elliptical 95\% confidence interval (CI) from a correlation matrix with contemporaneous and lagged correlations. There is also an interactive web application on my website: Standardizing and/or transforming lagged regression estimates (\url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}).
-}
+
 \examples{
 
 # library(CTmeta)

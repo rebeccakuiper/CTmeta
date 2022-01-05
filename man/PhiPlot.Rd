@@ -4,7 +4,7 @@
 \alias{PhiPlot}
 \title{PhiPlot: visualize how lagged parameters vary as function of the time interval.}
 \description{
-This function generates a plot illustrating how the lagged parameters vary as a function of the time-interval (DeltaT). The following options are available as input: the lagged effects matrix (Phi) from one primary study, the overall Phi matrix output from CTmeta or the underlying drift matrix (Drift) corresponding to either of the first two options are required as input.  An interactive web application offering the same functionality can be found on my website: Phi-and-Psi-Plots and Find DeltaT (https://www.uu.nl/staff/RMKuiper/Websites%20%2F%20Shiny%20apps).
+This function generates a plot illustrating how the lagged parameters vary as a function of the time-interval (DeltaT). The following options are available as input: the lagged effects matrix (Phi) from one primary study, the overall Phi matrix output from CTmeta or the underlying drift matrix (Drift) corresponding to either of the first two options are required as input.  An interactive web application offering the same functionality can be found on my website: Phi-and-Psi-Plots and Find DeltaT (\url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}). 
 }
 \usage{
 PhiPlot(
