@@ -15,7 +15,7 @@
 #' @param BetweenLevel Optional. Needed in case of a 2-level multilevel meta-analysis. BetweenLevel should be a vector of length S or an S x 1 matrix (with one value for each study). It will only be used if FEorRE = 2 (i.e., in a random-effects model). Then, one can add a between-level to the random part (e.g., sample number if multiple studies use the sample such that there is dependency between those studies). Note that the within level is Study number. By default, BetweenLevel = NULL.
 #' @param Label Optional. If one creates, for example, a funnel or forest plot, the labeling used in the rma.mv function is used. Label should be a q*q*S-vector (namely one value for each of the elements in a study-specific Phi (of size q x q) and for each study). It will only be used when the multivariate approach can be used (in case of the univariate approach, it will always use the labeling Study 1 to Study S). By default, Label = NULL; in this case the labeling will be Study 1 Phi11, Study Phi 12, ..., Study 1 Phi qq, ... Study S Phi11, ..., Study S Phiqq.
 #' @param alpha Optional. The alpha level in determining the (1-alpha)*100\% confidence interval (CI). By default, alpha = 0.05, resulting in a 95\% CI.
-#' @param PrintPlot Optional. Indicator (TRUE/FALSE or 1/0) for rendering a Phi-plot (TRUE or 1) or not (FALSE or 0). By default, PrintPlot = FALSE.
+#' @param PrintPlot Optional. Indicator (TRUE/FALSE or 1/0) for rendering a Phi-plot (TRUE or 1) or not (FALSE or 0). Note: Phi-plots are only rendered for models with no moderators. By default, PrintPlot = FALSE.
 #'
 #' @return The output comprises, among others, the overall vectorized transformed standardized lagged effects, their covariance matrix, and the corresponding elliptical/multivariate 95\% CI.
 #' @importFrom fastDummies dummy_cols
@@ -395,6 +395,12 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
 #  #######################################################################################################################
 
   S <- length(N) #dim(N)[1]
+  
+  # The plot cannot be rendered when there are moderators in the model
+  if (PrintPlot == TRUE & Moderators == 1) {
+    PrintPlot <- FALSE
+    warning("The Phi-plot cannot be rendered when there are moderators in the model.")
+  }
   
   # Return an error if there are any NAs in N
   if (anyNA(N)) {stop("There are NA values in N.")}
