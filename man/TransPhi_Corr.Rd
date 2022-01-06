@@ -8,7 +8,7 @@
 TransPhi_Corr(DeltaTStar, DeltaT = 1, N = NULL, corr_YXYX, alpha = 0.05)
 }
 
-\description{
+\description{ test
 This function calculates standardized discrete-time lagged effects, their covariance matrix, and corresponding elliptical 95\% confidence intervals (CIs) from a correlation matrix with contemporaneous and lagged correlations.  Subsquently, it transforms the time-dependent quantities to reflect scenarios in which another time-interval was used.  An interactive web application offering the same functionality can be found on my website: Standardizing and/or transforming lagged regression estimates
 (\url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}).
 }
