@@ -62,8 +62,7 @@ CTMparam <- function(DeltaT, Phi, SigmaVAR = NULL, Gamma = NULL) {
 
   # Checks:
   if(length(DeltaT) != 1){
-    ErrorMessage <- (paste0("The argument DeltaT should be a scalar, that is, one number, that is, a vector with one element."))
-    return(ErrorMessage)
+    ErrorMessage <- (paste0("The argument DeltaT should be a scalar (i.e., one number or a vector with one element."))
     stop(ErrorMessage)
   }
   #
@@ -155,8 +154,6 @@ if(is.null(B)){
   #if (any(is.na(logm(Phi)) == TRUE)){ # In that case, there does not exist a solution A=-B for Phi # Note: logm(Phi) can (sometimes) exist when an EV < 0... so, I use the next check:
   if (any(is.na(log(Eigen_ParamVAR)))){ # In that case, there does not exist a solution A=-B for Phi
     ErrorMessage <- "'Phi' does not have a CTM-equivalent drift matrix. That is, there is no positive autocorrelation (as in the first-order continuous-time models), since one or more eigenvalues (have real parts which) are negative."
-    final <- list(ErrorMessage = ErrorMessage)
-    return(final)
     stop(ErrorMessage)
   }
   # I at first wanted to filter out those where the real part of the eigenvalue of Phi is negative, but I don't think that is correct in all complex cases, so I decided to do the check above.
@@ -206,22 +203,22 @@ if(is.null(SigmaVAR) & is.null(Gamma)){
 Eigen_ParamCTM <- eigen(B)$val # = -log(Eigen_ParamVAR) / DeltaT
 
 StableProcess <- FALSE
-StableProcess_message <- "The process is NOT stable, it is exploding (since not all (real parts of) the eigenvalues of Drift are positive or, equivalenty, not all absolute values of the eigenvalues of Phi are smaller than one)."
+StableProcess_message <- "The process is NOT stable: it is exploding (since not all (real parts of) the eigenvalues of Drift are positive or, equivalently, not all absolute values of the eigenvalues of Phi are smaller than one)."
 if(all(Re(Eigen_ParamCTM) > 0)){
   if(all(abs(Eigen_ParamVAR) < 1)){
     StableProcess <- TRUE
-    StableProcess_message <- "The process is stable, it is restore to its equilibrium (since all (real parts of) the eigenvalues of Drift are positive or, equivalenty, all absolute values of the eigenvalues of Phi are smaller than one)."
+    StableProcess_message <- "The process is stable, it is returning to its equilibrium (since all (real parts of) the eigenvalues of Drift are positive or, equivalently, all absolute values of the eigenvalues of Phi are smaller than one)."
   }
 }
 
 UniqueSolution <- FALSE
-UniqueSolution_message <- "The resulting drift matrix Drift is NOT unique, there exist multiple solutions (since the eigenvalues of Drift (and thus also Phi) are complex, that is, have a non-zero imaginary part)."
+UniqueSolution_message <- "The resulting drift matrix Drift is NOT unique, multiple solutions exist (since the eigenvalues of Drift (and thus also Phi) are complex, that is, have a non-zero imaginary part)."
 if(all(Im(Eigen_ParamCTM) == 0)){
   UniqueSolution <- TRUE
-  UniqueSolution_message <- "The resulting drift matrix Drift is unique (since the eigenvalues of Drift (and thus also Phi) are, that is, have a zero imaginary part)."
+  UniqueSolution_message <- "The resulting drift matrix Drift is unique (since the eigenvalues of Drift (and thus also Phi) are real, that is, have a zero imaginary part)."
 }else if(all(abs(Im(Eigen_ParamCTM)) < base::pi/DeltaT)){
   UniqueSolution <- TRUE
-  UniqueSolution_message <- "The resulting drift matrix Drift is unique for your sampling frequency, that is, for your used DeltaT (since the imaginary part of the complex eigenvalues of Drift lie in (-pi/DeltaT, pi/DeltaT)); i.e., you measured frequently enough to know that it is this drift matrix and not another solution (which do exist, as can be seen from the plots)."
+  UniqueSolution_message <- "The resulting drift matrix Drift is unique for your sampling frequency, that is, for the DeltaT you used (since the imaginary part of the complex eigenvalues of Drift lie in (-pi/DeltaT, pi/DeltaT)); i.e., you measured frequently enough to know that this drift matrix is the solution, and not another (which do exist, as can be seen from the plots)."
 }
 #
 ##Multiple solutions - only if q=2!
