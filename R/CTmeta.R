@@ -13,7 +13,7 @@
 #' @param Mod Optional. An S x m matrix of m moderators to be included in the analysis when 'Moderators = TRUE'. By default, Mod = NULL.
 #' @param FEorRE Optional. Indicator (1/2 or FE/RE) whether continuous-time meta-analysis should use a fixed-effects model (1 or 'FE') or random-effects model (2 or 'RE'). By default, FEorRE = 1.
 #' @param BetweenLevel Optional. Needed in case of a 2-level multilevel meta-analysis. BetweenLevel should be a vector of length S or an S x 1 matrix (with one value for each study). It will only be used if FEorRE = 2 (i.e., in a random-effects model). Then, one can add a between-level to the random part (e.g., sample number if multiple studies use the sample such that there is dependency between those studies). Note that the within level is Study number. By default, BetweenLevel = NULL.
-#' @param Label Optional. If one creates, for example, a funnel or forest plot, the labeling used in the rma.mv function is used. Label should be a q*q*S-vector (namely one value for each of the elements in a study-specific Phi (of size q x q) and for each study). It will only be used when the multivariate approach can be used (in case of the univariate approach, it will always use the labeling Study 1 to Study S). By default, Label = NULL; in this case the labeling will be Study 1 Phi11, Study Phi 12, ..., Study 1 Phi qq, ... Study S Phi11, ..., Study S Phiqq.
+#' @param Label Optional. Label should be a character vector of length q*q*S (with one value for each of the elements in a study-specific Phi (of size q x q) and for each study), or a matrix with dimensions (q*q) x S (where each column contains the labels for a specific study), or an array with S panels of dimensions q x q. Used when creating a funnel or forest plot using the output of the function. Note: It will only be used when the multivariate approach can be used (in case of the univariate approach, it will always use the labeling Study 1 to Study S). By default, Label = NULL; in this case the labeling will be Study 1 Phi11, Study Phi 12, ..., Study 1 Phi qq, ... Study S Phi11, ..., Study S Phiqq.
 #' @param alpha Optional. The alpha level in determining the (1-alpha)*100\% confidence interval (CI). By default, alpha = 0.05, resulting in a 95\% CI.
 #' @param PrintPlot Optional. Indicator (TRUE/FALSE or 1/0) for rendering a Phi-plot (TRUE or 1) or not (FALSE or 0). Note: Phi-plots are only rendered for models with no moderators. By default, PrintPlot = FALSE.
 #'
@@ -280,6 +280,12 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
 
   S <- length(N) #dim(N)[1]
   
+  if(length(Phi) == S){
+    q <- 1
+  }else{
+    q <- dim(Phi)[2]
+  }
+  
   # The plot cannot be rendered when there are moderators in the model
   if (PrintPlot == TRUE & Moderators == 1) {
     PrintPlot <- FALSE
@@ -402,15 +408,31 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
   #
   if(!is.null(Label)){
     if(length(Label) != q*q*S){
-      ErrorMessage <- (paste0("The argument Label should be a q*q*S vector.
-                     Thus, the number of elements in Label should equal q*q*S = ", q*q*S, " not ", length(Label), "."))
-        return(ErrorMessage)
+      ErrorMessage <- (paste0("The argument Label should be a vector of length q*q*S. \n The number of elements in Label should equal q*q*S = ", q*q*S, ", not ", length(Label), "."))
         stop(ErrorMessage)
     }
     if(!is.character(Label)){
-      ErrorMessage <- (paste0("The argument Label should be a character (containing q*q*S labels/names)."))
-      return(ErrorMessage)
+      ErrorMessage <- (paste0("The argument Label should be a character vector (containing q*q*S labels/names)."))
       stop(ErrorMessage)
+    }
+  }
+  
+  if (length(dim(Label) > 1)) {
+    if (is.matrix(Label)) {
+      if (dim(Label)[1] != q*q | dim(Label)[2] != S) {
+        stop("Label is a matrix with the wrong dimensions. It shoudl have dimensions (q*q) x S.")
+      }
+    }
+    if (length(dim(Label)) > 3) {
+      stop("Label is an array with more than three dimensions.")
+    }
+    if (length(dim(Label)) == 3) {
+      if (dim(Label)[3] != S) {
+        stop("Label has more panels than S, the number of studies.")
+      }
+      if (dim(Label)[1] != q | dim(Label)[2] != q) {
+        stop("The panels of Label have dimensions other than q x q.")
+      }
     }
   }
   #
@@ -454,12 +476,6 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
       ErrorMessage <- (paste0("Phi is empty: The lagged effects matrix Phi is unknown."))
       stop(ErrorMessage)
     }
-  }
-
-  if(length(Phi) == S){
-    q <- 1
-  }else{
-    q <- dim(Phi)[2]
   }
 
   # Phi
@@ -768,9 +784,13 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
         }
         overallPhi <- rep(sub, S)
         #
-        Label_S <- paste0("Study ", rep(1:S, each = q*q))
-        Label_S
-        Label_Phi <- paste0(Label_S, " Phi", overallPhi)
+        if (is.null(Label)){
+          Label_S <- paste0("Study ", rep(1:S, each = q*q))
+          Label_S
+          Label_Phi <- paste0(Label_S, " Phi", overallPhi)
+        } else {
+          Label_Phi <- Label
+        }
         #
         #
         if(Moderators == 1){
