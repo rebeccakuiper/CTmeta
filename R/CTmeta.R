@@ -1182,7 +1182,6 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
         if(is.null(phi_plot$ErrorMessage)){
           PhiPlot <- phi_plot$PhiPlot
         }else{
-          return(ErrorMessage)
           stop(ErrorMessage)
         }
       }
@@ -1327,7 +1326,6 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
 
       if(PrintPlot == T){
         final[["PhiPlot"]] <- PhiPlot
-        print(PhiPlot)
       }
 
       class(final) <- c("CTmeta", "list")
