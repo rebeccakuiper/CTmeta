@@ -2,7 +2,7 @@
 #'
 #' Continuous-time meta-analysis (CTmeta) on standardized lagged effects (Phi) taking into account the various time-intervals used in the primary studies. There is also an interactive web application on my website to perform CTmeta: \url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}.
 #'
-#' @param N Number of persons (panel data) or number of measurement occasions - 1 (time series data) used in the S primary studies. Matrix of size S x 1 or vector of length S.
+#' @param N Number of persons (panel data) or number of measurement occasions - 1 (time series data) used in each of the S primary studies. Matrix of size S x 1 or vector of length S.
 #' @param DeltaT The time intervals used in the S primary studies. Matrix of size S x 1 or vector of length S. Note that all the time intervals should be on the same scale (e.g., two time-intervals of 60 minutes and 2 hours, should be either 60 and 120 or 1 and 2).
 #' @param DeltaTStar The time interval (scalar) to which the standardized lagged effects matrix should be transformed to.
 #' @param Phi Stacked matrix of size (S*q) x q or array with dimensions q x q x S of (un)standardized lagged effects matrices for all S primary studies in the meta-analysis, with q the number of variables (leading to a q x q lagged effects matrix in a single primary study). Note: In case primary studies report (lagged) correlation matrices, the function 'TransPhi_Corr' can be used to transform those to the corresponding standardized lagged effects matrices (see ?TransPhi_Corr and examples below).
@@ -491,9 +491,14 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
     ErrorMessage <- paste0("The lagged effects matrix Phi should be an (S*q) x q matrix or a q x q x S array, with S = ", S, " and q = ", q, ".")
     stop(ErrorMessage)
   }
+  
+  if(!is.null(SigmaVAR) & !is.null(Gamma)) {
+    warning("SigmaVAR and Gamma are both specified. The model will be fit using the specified Gamma.")
+    SigmaVAR <- NULL
+  }
 
   if(is.null(SigmaVAR) & is.null(Gamma)){ # Both SigmaVAR and Gamma unknown
-    ErrorMessage <- (paste0("The arguments SigmaVAR and Gamma are not specified. At least one of them must be specified. In case of first matrix, specify 'SigmaVAR = SigmaVAR'."))
+    ErrorMessage <- (paste0("The arguments SigmaVAR and Gamma are not specified. One of them must be specified. In case of first matrix, specify 'SigmaVAR = SigmaVAR'."))
     stop(ErrorMessage)
   }else if(is.null(Gamma)){ # Gamma unknown, calculate Gamma from SigmaVAR and Phi
 
