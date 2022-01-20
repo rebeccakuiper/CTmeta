@@ -7,7 +7,7 @@
 #' Can also be a fitted object of the class "varest" (from the VAR() function in vars package) or "ctsemFit" (from the ctFit() function in the ctsem package); see example below. The (standardized) Drift matrix is calculated/extracted from these objects.
 #' @param Drift Optional (either Phi or Drift). Matrix of size q x q of (un)standardized continuous-time lagged effects (called the drift matrix). Note that Phi(DeltaT) = expm(Drift*DeltaT). If both Phi and Drift are specified, Phi is used and Drift is ignored.
 #' @param t_min Optional. The time from which the area is taken into account. By default, t_min = 0.
-#' @param t_max Optional. The time until which the area is taken into account. By default, t_max = "inf".
+#' @param t_max Optional. The time until which the area is taken into account. By default, t_max = Inf.
 #'
 #' @return For each (i,j), the output renders the area under the curve for Phi_ij.
 #' @importFrom expm expm
@@ -60,12 +60,11 @@
 #' Area(DeltaT = DeltaT, Phi = out_VAR)
 #'
 
-Area <- function(DeltaT = 1, Phi = NULL, Drift = NULL, t_min = 0, t_max = "inf") {
+Area <- function(DeltaT = 1, Phi = NULL, Drift = NULL, t_min = 0, t_max = Inf) {
 
   # Checks:
   if(length(DeltaT) != 1){
-    ErrorMessage <- (paste0("The argument DeltaT should be a scalar, that is, one number, that is, a vector with one element. Currently, DeltaT = ", DeltaT))
-    return(ErrorMessage)
+    ErrorMessage <- (paste0("The argument DeltaT should be a scalar (i.e., one number or a vector with one element)."))
     stop(ErrorMessage)
   }
   #
@@ -77,7 +76,6 @@ Area <- function(DeltaT = 1, Phi = NULL, Drift = NULL, t_min = 0, t_max = "inf")
       B <- -CTMp$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
     }else{
       ErrorMessage <- CTMp$ErrorMessage
-      return(ErrorMessage)
       stop(ErrorMessage)
     }
   } else if(any(class(Phi) == "ctsemFit")){
@@ -93,13 +91,11 @@ Area <- function(DeltaT = 1, Phi = NULL, Drift = NULL, t_min = 0, t_max = "inf")
           B <- -CTMp$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
         }else{
           ErrorMessage <- CTMp$ErrorMessage
-          return(ErrorMessage)
           stop(ErrorMessage)
         }
       }else{ # is.null(Phi)
-        ErrorMessage <- ("Either the drift matrix Drift or the autoregressive matrix Phi should be input to the function.")
+        ErrorMessage <- ("Either the drift matrix Drift or the autoregressive matrix Phi should be part of the input.")
         #("Note that Phi(DeltaT) = expm(-B*DeltaT).")
-        return(ErrorMessage)
         stop(ErrorMessage)
       }
     }else{ # !is.null(Drift)
@@ -109,8 +105,8 @@ Area <- function(DeltaT = 1, Phi = NULL, Drift = NULL, t_min = 0, t_max = "inf")
     if(length(B) > 1){
       Check_B_or_Phi(B)
       if(all(Re(eigen(B)$val) < 0)){
-        cat("All (the real parts of) the eigenvalues of the drift matrix Drift are positive. Therefore. I assume the input for Drift was B = -A instead of A (or -Phi instead of Phi). I will use Drift = -B = A.")
-        cat("Note that Phi(DeltaT) = expm(-B*DeltaT) = expm(A*DeltaT) = expm(Drift*DeltaT).")
+        cat("All (the real parts of) the eigenvalues of the drift matrix Drift are positive. Therefore, it is assumed the input for Drift was B = -A instead of A (or -Phi instead of Phi). Drift = -B = A is used.")
+        cat(" Note that Phi(DeltaT) = expm(-B*DeltaT) = expm(A*DeltaT) = expm(Drift*DeltaT).")
         B = -B
       }
       if(any(Re(eigen(B)$val) < 0)){
@@ -131,7 +127,7 @@ Area <- function(DeltaT = 1, Phi = NULL, Drift = NULL, t_min = 0, t_max = "inf")
 
 
   Area_full <- solve(B)
-  if(t_max == "inf"){
+  if(t_max == Inf){
     expB_max <- matrix(0, nrow = q, ncol = q)
   }else{
     expB_max <- expm(-B*t_max)
