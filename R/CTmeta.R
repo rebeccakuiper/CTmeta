@@ -1182,12 +1182,12 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
         max <- max(DeltaT)
         step <- (max - min + 1)/50 #(max - min + 1)/10
         #PhiPlot(DeltaTStar, overallPhi, Min = min, Max = max, Step = step, Title = Title)
-        phi_plot <- ggPhiPlot(DeltaTStar, overallPhi, Min = min, Max = max, Step = step, Title = Title)
-        PhiPlot <- phi_plot$PhiPlot
-        if(is.null(phi_plot$ErrorMessage)){
+        # can the plot be made?
+        if (class(try(ggPhiPlot(DeltaTStar, overallPhi, Min = min, Max = max, Step = step, Title = Title))) == "try-error") {
+          message("\n The model was fit, but the Phi-plot could not be produced: 'Phi' does not have a CTM-equivalent drift matrix. That is, there is no positive autocorrelation (as in the first-order continuous-time models), since one or more eigenvalues (have real parts which) are negative.")
+        } else {
+          phi_plot <- ggPhiPlot(DeltaTStar, overallPhi, Min = min, Max = max, Step = step, Title = Title)
           PhiPlot <- phi_plot$PhiPlot
-        }else{
-          stop(ErrorMessage)
         }
       }
       #
