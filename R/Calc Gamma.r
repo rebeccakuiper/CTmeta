@@ -48,9 +48,8 @@ Gamma.fromCTM <- function(Drift, Sigma) {
     # Drift = A = -B
     # B is drift matrix that is pos def, so Phi(DeltaT) = expm(-B*DeltaT)
     if(is.null(Drift)){
-      ErrorMessage <- ("The drift matrix Drift should be input to the function.")
+      ErrorMessage <- ("The drift matrix Drift should be part of the input.")
       #("Note that Phi(DeltaT) = expm(-B*DeltaT).")
-      return(ErrorMessage)
       stop(ErrorMessage)
     }else{ # !is.null(Drift)
       B <- -Drift
@@ -80,7 +79,6 @@ Gamma.fromCTM <- function(Drift, Sigma) {
     # Check on Sigma
     if(is.null(Sigma)){ # Sigma unknown
       ErrorMessage <- (paste0("The argument Sigma is NULL, but should be part of the input."))
-      return(ErrorMessage)
       stop(ErrorMessage)
     }else if(!is.null(Sigma)){ # Sigma known
       # Check on Sigma

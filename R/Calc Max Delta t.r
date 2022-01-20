@@ -62,8 +62,7 @@ MaxDeltaT <- function(DeltaT = 1, Phi = NULL, Drift = NULL) {
 
   # Checks:
   if(length(DeltaT) != 1){
-    ErrorMessage <- (paste0("The argument DeltaT should be a scalar, that is, one number, that is, a vector with one element. Currently, DeltaT = ", DeltaT))
-    return(ErrorMessage)
+    ErrorMessage <- (paste0("The argument DeltaT should be a scalar (i.e., one number or a vector with one element."))
     stop(ErrorMessage)
   }
   #
@@ -75,7 +74,6 @@ MaxDeltaT <- function(DeltaT = 1, Phi = NULL, Drift = NULL) {
       B <- -CTMp$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
     }else{
       ErrorMessage <- CTMp$ErrorMessage
-      return(ErrorMessage)
       stop(ErrorMessage)
     }
   } else if(any(class(Phi) == "ctsemFit")){
@@ -91,13 +89,11 @@ MaxDeltaT <- function(DeltaT = 1, Phi = NULL, Drift = NULL) {
           B <- -CTMp$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
         }else{
           ErrorMessage <- CTMp$ErrorMessage
-          return(ErrorMessage)
           stop(ErrorMessage)
         }
       }else{ # is.null(Phi)
-        ErrorMessage <- ("Either the drift matrix Drift or the autoregressive matrix Phi should be input to the function.")
+        ErrorMessage <- ("Either the drift matrix Drift or the autoregressive matrix Phi should be part of the input.")
         #("Note that Phi(DeltaT) = expm(-B*DeltaT).")
-        return(ErrorMessage)
         stop(ErrorMessage)
       }
     }else{ # !is.null(Drift)

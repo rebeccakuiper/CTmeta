@@ -84,7 +84,6 @@ DiagDeltaT <- function(Phi = NULL, SigmaVAR = NULL, Drift = NULL, Sigma = NULL, 
       Drift <- CTMp$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
     }else{
       ErrorMessage <- CTMp$ErrorMessage
-      return(ErrorMessage)
       stop(ErrorMessage)
     }
   } else if(any(class(Phi) == "ctsemFit")){
@@ -132,9 +131,8 @@ DiagDeltaT <- function(Phi = NULL, SigmaVAR = NULL, Drift = NULL, Sigma = NULL, 
           }
         }
       }else{ # is.null(Drift)
-        ErrorMessage <- ("Either the drift matrix Drift or the autoregressive matrix Phi should be input to the function.")
+        ErrorMessage <- ("Either the drift matrix Drift or the autoregressive matrix Phi should be part of the input.")
         #("Note that Phi(DeltaT) = expm(-B*DeltaT).")
-        return(ErrorMessage)
         stop(ErrorMessage)
       }
     }else{ # Phi not NULL
@@ -155,15 +153,13 @@ DiagDeltaT <- function(Phi = NULL, SigmaVAR = NULL, Drift = NULL, Sigma = NULL, 
         Drift <- CTMp$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
       }else{
         ErrorMessage <- CTMp$ErrorMessage
-        return(ErrorMessage)
         stop(ErrorMessage)
       }
     }
 
     # Check on SigmaVAR, Sigma, and Gamma
     if(is.null(SigmaVAR) & is.null(Gamma) & is.null(Sigma)){ # All three unknown
-      ErrorMessage <- (paste0("The arguments SigmaVAR, Sigma, or Gamma are not found: one should be part of the input. Notably, in case of the first matrix, specify 'SigmaVAR = SigmaVAR'."))
-      return(ErrorMessage)
+      ErrorMessage <- (paste0("The arguments SigmaVAR, Sigma, and Gamma are not specified. One of them must be specified. If specifying SigmaVAR, do not forget the name the argument (i.e., specify 'SigmaVAR = yourSigmaVAR'."))
       stop(ErrorMessage)
     }else if(is.null(Gamma)){ # Gamma unknown
 

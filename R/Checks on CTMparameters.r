@@ -71,9 +71,8 @@ ChecksCTM <- function(Drift, Sigma = NULL, Gamma = NULL) {
     # Drift = A = -B
     # B is drift matrix that is pos def, so Phi(DeltaT) = expm(-B*DeltaT)
     if(is.null(Drift)){
-      ErrorMessage <- ("The drift matrix Drift should be input to the function.")
+      ErrorMessage <- ("The drift matrix Drift should be part of the input.")
       #("Note that Phi(DeltaT) = expm(-B*DeltaT).")
-      return(ErrorMessage)
       stop(ErrorMessage)
     }else{ # !is.null(Drift)
       B <- -Drift
@@ -107,8 +106,7 @@ ChecksCTM <- function(Drift, Sigma = NULL, Gamma = NULL) {
 
     # Check on Sigma and Gamma - need Sigma
     if(is.null(Sigma) & is.null(Gamma)){ # Both Sigma and Gamma unknown
-      ErrorMessage <- (paste0("Both Sigma and Gamma are NULL; one should be part of the input."))
-      return(ErrorMessage)
+      ErrorMessage <- (paste0("Both Sigma and Gamma are NULL. One of them must be part of the input."))
       stop(ErrorMessage)
     }
     if(!is.null(Sigma)){ # Sigma known
