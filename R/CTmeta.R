@@ -2,7 +2,7 @@
 #'
 #' Continuous-time meta-analysis (CTmeta) on standardized lagged effects (Phi) taking into account the various time-intervals used in the primary studies. There is also an interactive web application on my website to perform CTmeta: \url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}.
 #'
-#' @param N Number of persons (panel data) or number of measurement occasions - 1 (time series data) used in each of the S primary studies. Matrix of size S x 1 or vector of length S.
+#' @param N Number of persons (panel data) used in each of the S primary studies, or number of measurement occasions - 1 (time series data) used in each of the S primary studies. Matrix of size S x 1 or vector of length S.
 #' @param DeltaT The time intervals used in the S primary studies. Matrix of size S x 1 or vector of length S. Note that all the time intervals should be on the same scale (e.g., two time-intervals of 60 minutes and 2 hours, should be either 60 and 120 or 1 and 2).
 #' @param DeltaTStar The time interval (scalar) to which the standardized lagged effects matrix should be transformed to.
 #' @param Phi Stacked matrix of size (S*q) x q or array with dimensions q x q x S of (un)standardized lagged effects matrices for all S primary studies in the meta-analysis, with q the number of variables (leading to a q x q lagged effects matrix in a single primary study). Note: In case primary studies report (lagged) correlation matrices, the function 'TransPhi_Corr' can be used to transform those to the corresponding standardized lagged effects matrices (see ?TransPhi_Corr and examples below).
@@ -10,9 +10,9 @@
 #' @param Gamma Optional (either SigmaVAR or Gamma). Stacked matrix of size (S*q) x q or array with dimensions q x q x S of stationary covariance matrices, i.e., the contemporaneous covariance matrices of the data sets.
 #' Note that if Phi and Gamma are known, SigmaVAR can be calculated. Hence, only SigmaVAR or Gamma is needed as input (if only Gamma, then use 'Gamma = YourGamma' or 'SigmaVAR = NULL'. See examples below).
 #' @param Moderators Optional. Indicator (TRUE/FALSE or 1/0) whether there are moderators to be included (TRUE or 1) or not (FALSE or 0). By default, Moderators = 0.
-#' @param Mod Optional. An S x m matrix of m moderators to be included in the analysis when 'Moderators = TRUE'. By default, Mod = NULL.
+#' @param Mod Optional. An S x m matrix of m moderators to be included in the analysis when 'Moderators = TRUE'. Moderators can be numerical or categorical. By default, Mod = NULL.
 #' @param FEorRE Optional. Indicator (1/2 or FE/RE) whether continuous-time meta-analysis should use a fixed-effects model (1 or 'FE') or random-effects model (2 or 'RE'). By default, FEorRE = 1.
-#' @param BetweenLevel Optional. Needed in case of a 2-level multilevel meta-analysis. BetweenLevel is a factor variable. The input should be a vector of length S or an S x 1 matrix (with one value for each study). It will only be used if FEorRE = 2 (i.e., in a random-effects model). In a random-effects model, a between-level factor can be added to the random part (relating to e.g. sample used if multiple studies use the same sample, leading to dependency between those studies). Note that the within level factor is Study number. By default, BetweenLevel = NULL.
+#' @param BetweenLevel Optional. Needed for a 2-level multilevel meta-analysis. BetweenLevel is a factor variable. The input should be a vector of length S or an S x 1 matrix (with one value for each study). It will only be used if FEorRE = 2 (i.e., in a random-effects model). In a random-effects model, a between-level factor can be added to the random part (relating to e.g. sample used if multiple studies use the same sample, leading to dependency between those studies). Note that the within level factor is Study number. By default, BetweenLevel = NULL.
 #' @param Label Optional. Label should be a character vector of length q*q*S (with one value for each of the elements in a study-specific Phi (of size q x q) and for each study), or a matrix with dimensions (q*q) x S (where each column contains the labels for a specific study), or an array with S panels of dimensions q x q. Used when creating a funnel or forest plot using the output of the function. Note: It will only be used when the multivariate approach can be used (in case of the univariate approach, it will always use the labeling Study 1 to Study S). By default, Label = NULL; in this case the labeling will be Study 1 Phi11, Study Phi 12, ..., Study 1 Phi qq, ... Study S Phi11, ..., Study S Phiqq.
 #' @param alpha Optional. The alpha level in determining the (1-alpha)*100\% confidence interval (CI). By default, alpha = 0.05, resulting in a 95\% CI.
 #' @param PrintPlot Optional. Indicator (TRUE/FALSE or 1/0) for rendering a Phi-plot (TRUE or 1) or not (FALSE or 0). Note: Phi-plots are only rendered for models with no moderators. By default, PrintPlot = FALSE.
@@ -498,7 +498,7 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
   }
 
   if(is.null(SigmaVAR) & is.null(Gamma)){ # Both SigmaVAR and Gamma unknown
-    ErrorMessage <- (paste0("The arguments SigmaVAR and Gamma are not specified. One of them must be specified. In case of first matrix, specify 'SigmaVAR = SigmaVAR'."))
+    ErrorMessage <- (paste0("The arguments SigmaVAR and Gamma are not specified. One of them must be specified. If specifying SigmaVAR, do not forget the name the argument (i.e., specify 'SigmaVAR = yourSigmaVAR'."))
     stop(ErrorMessage)
   }else if(is.null(Gamma)){ # Gamma unknown, calculate Gamma from SigmaVAR and Phi
 
