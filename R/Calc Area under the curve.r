@@ -1,13 +1,15 @@
 #' Area under the curves in the Phi(DeltaT)-plot
 #'
-#' Area under the curves in the Phi(DeltaT)-plot, for time-intervals from 0 to infinity and optionally for a user-specified range. The interactive web application 'Phi-and-Psi-Plots and Find DeltaT' also contains this functionality, you can find it on my website: \url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}.
+#' Area under the curves in the Phi(DeltaT)-plot. Area is taken for time intervals between 0 and infinity and optionally for a user-specified range. The interactive web application 'Phi-and-Psi-Plots and Find DeltaT' also contains this functionality: \url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}.
 #'
-#' @param DeltaT Optional. The time interval used (only of interest if Phi is part of input). By default, DeltaT = 1.
-#' @param Phi Matrix of size q times q of (un)standardized lagged effects.
-#' It also takes a fitted object from the classes "varest" (from the VAR() function in vars package) and "ctsemFit" (from the ctFit() function in the ctsem package); see example below. From such an object, the (standardized) Drift matrix is calculated/extracted.
-#' @param Drift Optional (either Phi or Drift). Matrix of size q times q of (un)standardized continuous-time lagged effects, called drift matrix. Note that Phi(DeltaT) = expm(Drift*DeltaT). By default, input for Phi is used; only when Phi = NULL, Drift will be used.
+#' @param DeltaT Optional. The time interval used (only of interest if Phi is also part of the input). By default, DeltaT = 1.
+#' @param Phi Matrix of size q x q of (un)standardized lagged effects.
+#' Can also be a fitted object of the class "varest" (from the VAR() function in vars package) or "ctsemFit" (from the ctFit() function in the ctsem package); see example below. The (standardized) Drift matrix is calculated/extracted from these objects.
+#' @param Drift Optional (either Phi or Drift). Matrix of size q x q of (un)standardized continuous-time lagged effects (called the drift matrix). Note that Phi(DeltaT) = expm(Drift*DeltaT). If both Phi and Drift are specified, Phi is used and Drift is ignored.
+#' @param t_min Optional. The time from which the area is taken into account. By default, t_min = 0.
+#' @param t_max Optional. The time until which the area is taken into account. By default, t_max = "inf".
 #'
-#' @return The output renders, per element (i,j), the area under the curve for Phi_ij.
+#' @return For each (i,j), the output renders the area under the curve for Phi_ij.
 #' @importFrom expm expm
 #' @export
 #' @examples
@@ -17,29 +19,32 @@
 #' ## Example 1 ##
 #'
 #' ##################################################################################################
-#' # Input needed in examples below with q=2 variables.
-#' # I will use the example matrices stored in the package:
+#' # Input needed in the examples below; q=2 variables.
+#' # We use the example matrices stored in the package:
+#' # specifying Phi and not Drift
 #' DeltaT <- 1
 #' Phi <- myPhi[1:2, 1:2]
-#' # or: Drift
+#' # specifying Drift and not Phi
 #' DeltaT <- 1
 #' Drift <- myDrift
+#' # note that in this example, Phi and Drift are taken from the same dataset and thus specifying one or the other gives the same results
 #' ##################################################################################################
 #'
+#' # Input: Phi
 #' Area(DeltaT = DeltaT, Phi = Phi)
 #' # or
 #' Area(DeltaT, Phi)
-#' # or, since DeltaT = 1
+#' # or, since DeltaT = 1, as per default:
 #' Area(Phi = Phi)
 #'
-#' # If you would use the drift matrix Drift as input, then use:
+#' # Input: Drift
 #' Area(DeltaT, Drift = Drift)
 #'
-#' # If, for instance, the time-interval range from 1 to 2 should be inspected (and not 0 to infinity), then use:
+#' # If inspecting the time interval from e.g. 1 to 2 (instead of 0 to infinity):
 #' Area(DeltaT, Phi, t_min = 1, t_max = 2)
 #'
 #'
-#' # Note that the function 'PhiPlot' can help for visualization of the curves in the Phi(DeltaT)-plot.
+#' # The function 'PhiPlot' can help for visualization of the curves in the Phi(DeltaT)-plot.
 #' PhiPlot(DeltaT, Phi)
 #'
 #'
@@ -48,9 +53,11 @@
 #' data <- myData
 #' if (!require("vars")) install.packages("vars")
 #' library(vars)
+#' 
 #' out_VAR <- VAR(data, p = 1)
 #' DeltaT <- 1
-#' Area(DeltaT, out_VAR)
+#' 
+#' Area(DeltaT = DeltaT, Phi = out_VAR)
 #'
 
 Area <- function(DeltaT = 1, Phi = NULL, Drift = NULL, t_min = 0, t_max = "inf") {
