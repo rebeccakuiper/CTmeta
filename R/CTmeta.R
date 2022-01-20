@@ -415,7 +415,7 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
   if (length(dim(Label) > 1)) {
     if (is.matrix(Label)) {
       if (dim(Label)[1] != q*q | dim(Label)[2] != S) {
-        stop("Label is a matrix with the wrong dimensions. It shoudl have dimensions (q*q) x S.")
+        stop("Label is a matrix with the wrong dimensions. It should have dimensions (q*q) x S.")
       }
     }
     if (length(dim(Label)) > 3) {
@@ -1184,7 +1184,7 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
         #PhiPlot(DeltaTStar, overallPhi, Min = min, Max = max, Step = step, Title = Title)
         # can the plot be made?
         if (class(try(ggPhiPlot(DeltaTStar, overallPhi, Min = min, Max = max, Step = step, Title = Title))) == "try-error") {
-          message("\n The model was fit, but the Phi-plot could not be produced: 'Phi' does not have a CTM-equivalent drift matrix. That is, there is no positive autocorrelation (as in the first-order continuous-time models), since one or more eigenvalues (have real parts which) are negative.")
+          message("\n The model was fit, but the Phi-plot could not be produced.")
         } else {
           phi_plot <- ggPhiPlot(DeltaTStar, overallPhi, Min = min, Max = max, Step = step, Title = Title)
           PhiPlot <- phi_plot$PhiPlot
