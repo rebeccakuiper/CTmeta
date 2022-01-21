@@ -150,9 +150,9 @@ if (any(Re(eigenvalDrift) <= 0)){
 if (is.complex(eigenvalDrift) == TRUE){
   if(all(Im(eigenvalDrift) > -base::pi/1)){
     if(all(Im(eigenvalDrift) < base::pi/1)){
-      cat("The drift matrix 'Drift' has complex eigenvalues and -vectors, but is a unique solution for Phi(1). \n (nl imaginary part of the complex eigenvalues of drift matrix lie in (-pi/1, pi/1)). \n")
+      cat("The drift matrix 'Drift' has complex eigenvalues and eigenvectors, but is a unique solution for Phi(1). \n (nl imaginary part of the complex eigenvalues of drift matrix lie in (-pi/1, pi/1)). \n")
       ChecksAreFine <- FALSE
-      error <- append(error, "Note: The drift matrix 'Drift' has complex eigenvalues and -vectors, but is a unique solution for Phi(1). \n (nl imaginary part of the complex eigenvalues of drift matrix lie in (-pi/1, pi/1)).")
+      error <- append(error, "Note: The drift matrix 'Drift' has complex eigenvalues and eigenvectors, but is a unique solution for Phi(1). \n (nl imaginary part of the complex eigenvalues of drift matrix lie in (-pi/1, pi/1)).")
     }
   } else{
     cat("The drift matrix 'Drift' has complex eigenvalues and -vectors and is not a unique solution for this Phi(1). \n (nl imaginary part of the complex eigenvalues of drift matrix do NOT lie in (-pi/1, pi/1)). \n")
