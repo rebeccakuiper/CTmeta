@@ -63,12 +63,41 @@
 Area <- function(DeltaT = 1, Phi = NULL, Drift = NULL, t_min = 0, t_max = Inf) {
 
   # Checks:
-  if(length(DeltaT) != 1){
-    ErrorMessage <- (paste0("The argument DeltaT should be a scalar (i.e., one number or a vector with one element)."))
+  if(length(DeltaT) != 1 | !is.numeric(DeltaT)){
+    ErrorMessage <- (paste0("The argument DeltaT should be a scalar (i.e., one number or a vector with one numerical element)."))
     stop(ErrorMessage)
   }
+  if(DeltaT == 0) {
+    stop("DeltaT cannot be 0, as this would imply a lack of time interval.")
+  }
+  if(DeltaT == Inf | DeltaT == -Inf) {
+    stop("DeltaT must be a real number, not Inf or -Inf.")
+  }
   #
+  if(!is.null(Phi) & !is.null(Drift)) {
+    warning("Both Phi and Drift are specified. Drift is ignored.")
+  }
+  #
+  if(!is.numeric(Drift) & !is.null(Drift)) {
+    stop("Drift contains non-numerical values.")
+  }
+  #
+  if(length(t_min) > 1 || (!is.numeric(t_min) | t_min %in% c(Inf, -Inf))) {
+    stop("t_min should be a scalar (i.e., a real number or a vector with one numerical element).")
+  }
+  if(length(t_max) > 1 || (!is.numeric(t_max) | t_max == -Inf)) {
+    stop("t_max should be a number.")
+  }
+  if(t_min > t_max) {
+    warning("t_min is larger than t_max. The values in Area_range will be negative.")
+  }
   # Check on Phi
+  if(anyNA(Phi) | anyNA(Drift)) {
+    stop("There are missing values in Phi or Drift.")
+  }
+  if(!is.numeric(Phi) & !is.null(Phi) & !(any(class(Phi) %in% c("varest", "ctsemFit")))) {
+    stop("Phi contains non-numerical values.")
+  }
   if(any(class(Phi) == "varest")){
     Phi <- Acoef(Phi)[[1]]
     CTMp <- CTMparam(DeltaT, Phi)
@@ -105,7 +134,7 @@ Area <- function(DeltaT = 1, Phi = NULL, Drift = NULL, t_min = 0, t_max = Inf) {
     if(length(B) > 1){
       Check_B_or_Phi(B)
       if(all(Re(eigen(B)$val) < 0)){
-        cat("All (the real parts of) the eigenvalues of the drift matrix Drift are positive. Therefore, it is assumed the input for Drift was B = -A instead of A (or -Phi instead of Phi). Drift = -B = A is used.")
+        cat("All (the real parts of) the eigenvalues of the drift matrix Drift are positive. Therefore, it is assumed the input for Drift was B = -A instead of A (or -Phi instead of Phi, or -DeltaT instead of DeltaT). Drift = -B = A is used.")
         cat(" Note that Phi(DeltaT) = expm(-B*DeltaT) = expm(A*DeltaT) = expm(Drift*DeltaT).")
         B = -B
       }
