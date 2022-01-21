@@ -1,14 +1,15 @@
 #' Checks on CT estimates
 #'
-#' Checks on the continuous-time lagged-effects model matrices (like check whether matrices are positive-definite). The interactive web application 'Phi-and-Psi-Plots and Find DeltaT' also contains this functionality, you can find it on my website: \url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}.
+#' Various checks on the continuous-time lagged-effects model matrices (e.g. check whether matrices are positive-definite). The interactive web application 'Phi-and-Psi-Plots and Find DeltaT': \url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}.
 #'
-#' @param Drift Matrix of size q times q of (un)standardized continuous-time lagged effects, called drift matrix. Note that Phi(DeltaT) = expm(Drift*DeltaT). By default, input for Phi is used; only when Phi = NULL, Drift will be used.
+#' @param Drift Matrix of size q x q of (un)standardized continuous-time lagged effects, called the drift matrix. Note that Phi(DeltaT) = expm(Drift*DeltaT). By default, input for Phi is used; only when Phi = NULL, Drift will be used.
 #' It also takes a fitted object from the class "ctsemFit" (from the ctFit() function in the ctsem package); see example below. From such an object, the (standardized) Drift matrix is extracted.
-#' @param Sigma Residual covariance matrix of the first-order continuous-time (CT-VAR(1)) model, that is, the diffusion matrix. By default, input for SigmaVAR is used; only when SigmaVAR = NULL, Sigma will be used.
+#' @param Sigma Optional (either Sigma or Gamma). Residual covariance matrix of the first-order continuous-time (CT-VAR(1)) model, i.e. the diffusion matrix. By default, input for SigmaVAR is used; only when SigmaVAR = NULL, Sigma will be used.
+#' Note that if Drift and Sigma are known, Gamma can be calculated: hence, only one out of SigmaVAR, Sigma, and Gamma is needed as input.
 #' @param Gamma Optional (either Sigma or Gamma). Stationary covariance matrix, that is, the contemporaneous covariance matrix of the data. By default, input for SigmaVAR is used; only when SigmaVAR = NULL, Gamma will be used.
-#' Note that if Drift and Sigma are known, Gamma can be calculated; hence, only one out of SigmaVAR, Sigma, and Gamma is needed as input.
+#' Note that if Drift and Sigma are known, Gamma can be calculated: hence, only one out of SigmaVAR, Sigma, and Gamma is needed as input.
 #'
-#' @return The output renders the conclusions from the checks on the continuous-time lagged-effects model matrices.
+#' @return The output provides conclusions from the checks on the continuous-time lagged-effects model matrices: whether any problems were found, the exact errors that were found, the Drift, Sigma and Gamma matrices and their eigenvalues.
 #' @importFrom expm expm
 #' @export
 #' @examples
@@ -19,7 +20,7 @@
 #'
 #' ##################################################################################################
 #' # Input needed in examples below with q=2 variables.
-#' # I will use the example matrix stored in the package:
+#' # We use the example matrix stored in the package:
 #' Drift <- myDrift
 #' #
 #' q <- dim(Drift)[1]
@@ -36,8 +37,8 @@
 #' ## Example 2: input from fitted object of class "ctsemFit" ##
 #' #
 #' #data <- myData
-#' #if (!require("ctsemFit")) install.packages("ctsemFit")
-#' #library(ctsemFit)
+#' #if (!require("ctsem")) install.packages("ctsem")
+#' #library(ctsem)
 #' #out_CTM <- ctFit(...)
 #' #ChecksCTM(out_CTM)
 #'
