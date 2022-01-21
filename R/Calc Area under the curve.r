@@ -70,8 +70,8 @@ Area <- function(DeltaT = 1, Phi = NULL, Drift = NULL, t_min = 0, t_max = Inf) {
   if(DeltaT == 0) {
     stop("DeltaT cannot be 0, as this would imply a lack of time interval.")
   }
-  if(DeltaT == Inf | DeltaT == -Inf) {
-    stop("DeltaT must be a real number, not Inf or -Inf.")
+  if(DeltaT == Inf | DeltaT < 0) {
+    stop("DeltaT must be a finite positive number.")
   }
   #
   if(!is.null(Phi) & !is.null(Drift)) {
@@ -134,7 +134,7 @@ Area <- function(DeltaT = 1, Phi = NULL, Drift = NULL, t_min = 0, t_max = Inf) {
     if(length(B) > 1){
       Check_B_or_Phi(B)
       if(all(Re(eigen(B)$val) < 0)){
-        cat("All (the real parts of) the eigenvalues of the drift matrix Drift are positive. Therefore, it is assumed the input for Drift was B = -A instead of A (or -Phi instead of Phi, or -DeltaT instead of DeltaT). Drift = -B = A is used.")
+        cat("All (the real parts of) the eigenvalues of the drift matrix Drift are positive. Therefore, it is assumed the input for Drift was B = -A instead of A (or -Phi instead of Phi). Drift = -B = A is used.")
         cat(" Note that Phi(DeltaT) = expm(-B*DeltaT) = expm(A*DeltaT) = expm(Drift*DeltaT).")
         B = -B
       }
