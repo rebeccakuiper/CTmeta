@@ -9,7 +9,7 @@
 #' @param t_min Optional. The time from which the area is taken into account. By default, t_min = 0.
 #' @param t_max Optional. The time until which the area is taken into account. By default, t_max = Inf.
 #'
-#' @return For each (i,j), the output renders the area under the curve for Phi_ij.
+#' @return For each (i,j), the output renders the area under the curve for Phi_ij. Area is the total area under the curve; and Area_range is the area under the specifed range of time.
 #' @importFrom expm expm
 #' @export
 #' @examples
