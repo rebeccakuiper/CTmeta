@@ -30,9 +30,7 @@ library(CTmeta)
 
 ## Introduction
 
-This package was initially created to perform meta-analysis on time-interval dependent discrete-time lagged effects parameter estimates (e.g., CLPM or VAR(1) estimates). The method utilized depends on an underlying continuous-time (CT) model; hence, its name CTmeta.
-However, since its creation, many more functions have been added; including functions to transform, standardize, and plot the time-interval dependent discrete-time lagged effects parameters.
-
+CTmeta was created to implement meta-analyses of lagged effects parameter estimates from discrete-time (DT) models. The method utilized depends on an underlying continuous-time (CT) model, hence its name CTmeta.  Since its creation, many functions have been added including functions to transform, standardize, and plot the time-interval dependent DT lagged effects parameters.
 
 More specifically, functionalities include:
 
