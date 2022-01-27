@@ -207,7 +207,7 @@ CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR, FEorRE = 2)
 
 ### Example with moderators ###
 Mod <- matrix(c(64,65,47)) # 1 moderator
-#Mod <- matrix(cbind(c(64,65,47), c(78,89,34)), ncol = q); colnames(Mod) <- c("Mod1", "Mod2") # two moderators, in each column 1
+#Mod <- matrix(cbind(c(64,65,47), c(78,89,34)), ncol = q); colnames(Mod) <- c("Mod1", "Mod2")  # two moderators, in each column 1
 
 ## Fixed effects model (default) ##
 CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR, Moderators = 1, Mod = Mod)
@@ -230,7 +230,7 @@ summary(CTma, digits = 4)
 CTma$summaryMetaAnalysis
 ```
 
-This results, among other things, in a 2\*2 overall Phi matrix (if q=2). Although the varying time-intervals are corrected for, this overall Phi matrix is also dependent on the chosen time-interval (DeltaTStar). To obtain insight into this, a Phi-plot of the resulting overall Phi can be made. This is demonstrated in Section 1.1.
+This results, among other things, in a 2 x 2 overall Phi matrix (if q=2). Although the varying time-intervals are corrected for, this overall Phi matrix is also dependent on the chosen time-interval (DeltaTStar). To obtain insight into this, a Phi-plot of the resulting overall Phi can be made. This is demonstrated in Section 1.1.
 
 A major point of interest with regards to lagged relationships is to determine the 'causal dominant' variable, that is, the variable with the highest predictive power. In this example, we are interested in the asking the question: Is current Stress a stronger predictor for Anxiety on the next time-interval or is current Anxiety a stronger predictor for Stress on the next time-interval? To evaluate the dominance of (overall) lagged effects, an AIC-type criterion called the GORICA can be used (Altinisik, Nederhof, Hoijtink, Oldehinkel, Kuiper, conditionally accepted). This method is included in the restriktor package and is demonstrated in Section 1.2.
 
@@ -248,7 +248,7 @@ CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR, PrintPlot = TRUE)
 ```
 
 ```{r}
-# Option 2: Use my interactive web application:  (\url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}).
+# Option 2: Use the interactive web application:  (\url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}).
 ```
 
 ```{r}
@@ -355,7 +355,7 @@ out_CTmeta$Overall_standPhi
 
 ### 2.1 Plots
 
-This example focuses on the time-interval dependency of (cross-)lagged relationships for one study.  However, in can also be used on the overall (cross-)lagged relationships resulting from CTmeta.  Let us investigate the (cross-)lagged relationship between Stress and Anxiety (i.e., between q=2 variables), represented by a 2\*2 discrete-time lagged effects matrix,Phi, and a 2*2 discrete-time residual covariance matrix, SigmaVAR (called Psi in Kuiper and Hamaker). 
+This example focuses on the time-interval dependency of (cross-)lagged relationships for one study.  However, in can also be used for the overall (cross-)lagged relationships resulting from CTmeta.  Let us investigate the (cross-)lagged relationship between Stress and Anxiety (i.e., between q=2 variables), represented by a 2 x 2 discrete-time lagged effects matrix, Phi, and a 2 x 2 discrete-time residual covariance matrix, SigmaVAR (called Psi in Kuiper and Hamaker). 
 
 Note: Both the lagged effects matrix (Phi) and the residual covariance matrix (SigmaVAR) vary with the time-interval (DeltaT). For example, if Stress and Anxiety were measured every hour, Phi would reflect the lagged relationship between current Stress and Anxiety levels and the Stress and Anxiety levels over one hour. Likewise, the residual covariance matrix (SigmaVAR) would reflect the scenario in which the measurements of Stress and Anxiety were taken every hour.
 
@@ -438,9 +438,7 @@ SigmaVARPlot(DeltaT, Phi, SigmaVAR, Stand = 1)
 # Like in the Phi-plot, the plot can be customized (but there is no ggplot variant)
 ```
 
-One can also use the following continuous-time matrices to generate Phi- and SigmaVAR-plots: 
-- Drift: the underlying continuous time lagged effect matrix of the discrete-time lagged effects matrix 
-- Sigma: the residual covariance matrix of the first-order continuous-time (CT-VAR(1)) model (also called diffusion matrix). 
+One can also use the following continuous-time matrices to generate Phi- and SigmaVAR-plots: Drift, the underlying continuous-time lagged effects matrix, and Sigma, the residual covariance matrix of the first-order continuous-time model (also called the diffusion matrix). 
 
 ```{r, echo=T, results='hide'}
 # Calculate the continuous-time equivalent of Phi, that is, the underlying drift matrix

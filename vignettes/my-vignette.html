@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="R. M. Kuiper" />
+
+
+<title>Introduction to CTmeta: functions for lagged effects model parameters</title>
+
+<script src="data:application/javascript;base64,Ly8gUGFuZG9jIDIuOSBhZGRzIGF0dHJpYnV0ZXMgb24gYm90aCBoZWFkZXIgYW5kIGRpdi4gV2UgcmVtb3ZlIHRoZSBmb3JtZXIgKHRvCi8vIGJlIGNvbXBhdGlibGUgd2l0aCB0aGUgYmVoYXZpb3Igb2YgUGFuZG9jIDwgMi44KS4KZG9jdW1lbnQuYWRkRXZlbnRMaXN0ZW5lcignRE9NQ29udGVudExvYWRlZCcsIGZ1bmN0aW9uKGUpIHsKICB2YXIgaHMgPSBkb2N1bWVudC5xdWVyeVNlbGVjdG9yQWxsKCJkaXYuc2VjdGlvbltjbGFzcyo9J2xldmVsJ10gPiA6Zmlyc3QtY2hpbGQiKTsKICB2YXIgaSwgaCwgYTsKICBmb3IgKGkgPSAwOyBpIDwgaHMubGVuZ3RoOyBpKyspIHsKICAgIGggPSBoc1tpXTsKICAgIGlmICghL15oWzEtNl0kL2kudGVzdChoLnRhZ05hbWUpKSBjb250aW51ZTsgIC8vIGl0IHNob3VsZCBiZSBhIGhlYWRlciBoMS1oNgogICAgYSA9IGguYXR0cmlidXRlczsKICAgIHdoaWxlIChhLmxlbmd0aCA+IDApIGgucmVtb3ZlQXR0cmlidXRlKGFbMF0ubmFtZSk7CiAgfQp9KTsK"></script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+
+<style type="text/css">
+  code {
+    white-space: pre;
+  }
+  .sourceCode {
+    overflow: visible;
+  }
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<link rel="stylesheet" href="data:text/css,body%20%7B%0Abackground%2Dcolor%3A%20%23fff%3B%0Amargin%3A%201em%20auto%3B%0Amax%2Dwidth%3A%20700px%3B%0Aoverflow%3A%20visible%3B%0Apadding%2Dleft%3A%202em%3B%0Apadding%2Dright%3A%202em%3B%0Afont%2Dfamily%3A%20%22Open%20Sans%22%2C%20%22Helvetica%20Neue%22%2C%20Helvetica%2C%20Arial%2C%20sans%2Dserif%3B%0Afont%2Dsize%3A%2014px%3B%0Aline%2Dheight%3A%201%2E35%3B%0A%7D%0A%23TOC%20%7B%0Aclear%3A%20both%3B%0Amargin%3A%200%200%2010px%2010px%3B%0Apadding%3A%204px%3B%0Awidth%3A%20400px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Aborder%2Dradius%3A%205px%3B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Afont%2Dsize%3A%2013px%3B%0Aline%2Dheight%3A%201%2E3%3B%0A%7D%0A%23TOC%20%2Etoctitle%20%7B%0Afont%2Dweight%3A%20bold%3B%0Afont%2Dsize%3A%2015px%3B%0Amargin%2Dleft%3A%205px%3B%0A%7D%0A%23TOC%20ul%20%7B%0Apadding%2Dleft%3A%2040px%3B%0Amargin%2Dleft%3A%20%2D1%2E5em%3B%0Amargin%2Dtop%3A%205px%3B%0Amargin%2Dbottom%3A%205px%3B%0A%7D%0A%23TOC%20ul%20ul%20%7B%0Amargin%2Dleft%3A%20%2D2em%3B%0A%7D%0A%23TOC%20li%20%7B%0Aline%2Dheight%3A%2016px%3B%0A%7D%0Atable%20%7B%0Amargin%3A%201em%20auto%3B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dcolor%3A%20%23DDDDDD%3B%0Aborder%2Dstyle%3A%20outset%3B%0Aborder%2Dcollapse%3A%20collapse%3B%0A%7D%0Atable%20th%20%7B%0Aborder%2Dwidth%3A%202px%3B%0Apadding%3A%205px%3B%0Aborder%2Dstyle%3A%20inset%3B%0A%7D%0Atable%20td%20%7B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dstyle%3A%20inset%3B%0Aline%2Dheight%3A%2018px%3B%0Apadding%3A%205px%205px%3B%0A%7D%0Atable%2C%20table%20th%2C%20table%20td%20%7B%0Aborder%2Dleft%2Dstyle%3A%20none%3B%0Aborder%2Dright%2Dstyle%3A%20none%3B%0A%7D%0Atable%20thead%2C%20table%20tr%2Eeven%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Ap%20%7B%0Amargin%3A%200%2E5em%200%3B%0A%7D%0Ablockquote%20%7B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Apadding%3A%200%2E25em%200%2E75em%3B%0A%7D%0Ahr%20%7B%0Aborder%2Dstyle%3A%20solid%3B%0Aborder%3A%20none%3B%0Aborder%2Dtop%3A%201px%20solid%20%23777%3B%0Amargin%3A%2028px%200%3B%0A%7D%0Adl%20%7B%0Amargin%2Dleft%3A%200%3B%0A%7D%0Adl%20dd%20%7B%0Amargin%2Dbottom%3A%2013px%3B%0Amargin%2Dleft%3A%2013px%3B%0A%7D%0Adl%20dt%20%7B%0Afont%2Dweight%3A%20bold%3B%0A%7D%0Aul%20%7B%0Amargin%2Dtop%3A%200%3B%0A%7D%0Aul%20li%20%7B%0Alist%2Dstyle%3A%20circle%20outside%3B%0A%7D%0Aul%20ul%20%7B%0Amargin%2Dbottom%3A%200%3B%0A%7D%0Apre%2C%20code%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0Aborder%2Dradius%3A%203px%3B%0Acolor%3A%20%23333%3B%0Awhite%2Dspace%3A%20pre%2Dwrap%3B%20%0A%7D%0Apre%20%7B%0Aborder%2Dradius%3A%203px%3B%0Amargin%3A%205px%200px%2010px%200px%3B%0Apadding%3A%2010px%3B%0A%7D%0Apre%3Anot%28%5Bclass%5D%29%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Acode%20%7B%0Afont%2Dfamily%3A%20Consolas%2C%20Monaco%2C%20%27Courier%20New%27%2C%20monospace%3B%0Afont%2Dsize%3A%2085%25%3B%0A%7D%0Ap%20%3E%20code%2C%20li%20%3E%20code%20%7B%0Apadding%3A%202px%200px%3B%0A%7D%0Adiv%2Efigure%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0Aimg%20%7B%0Abackground%2Dcolor%3A%20%23FFFFFF%3B%0Apadding%3A%202px%3B%0Aborder%3A%201px%20solid%20%23DDDDDD%3B%0Aborder%2Dradius%3A%203px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Amargin%3A%200%205px%3B%0A%7D%0Ah1%20%7B%0Amargin%2Dtop%3A%200%3B%0Afont%2Dsize%3A%2035px%3B%0Aline%2Dheight%3A%2040px%3B%0A%7D%0Ah2%20%7B%0Aborder%2Dbottom%3A%204px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Apadding%2Dbottom%3A%202px%3B%0Afont%2Dsize%3A%20145%25%3B%0A%7D%0Ah3%20%7B%0Aborder%2Dbottom%3A%202px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Afont%2Dsize%3A%20120%25%3B%0A%7D%0Ah4%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23f7f7f7%3B%0Amargin%2Dleft%3A%208px%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Ah5%2C%20h6%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23ccc%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Aa%20%7B%0Acolor%3A%20%230033dd%3B%0Atext%2Ddecoration%3A%20none%3B%0A%7D%0Aa%3Ahover%20%7B%0Acolor%3A%20%236666ff%3B%20%7D%0Aa%3Avisited%20%7B%0Acolor%3A%20%23800080%3B%20%7D%0Aa%3Avisited%3Ahover%20%7B%0Acolor%3A%20%23BB00BB%3B%20%7D%0Aa%5Bhref%5E%3D%22http%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0Aa%5Bhref%5E%3D%22https%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0A%0Acode%20%3E%20span%2Ekw%20%7B%20color%3A%20%23555%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Edt%20%7B%20color%3A%20%23902000%3B%20%7D%20%0Acode%20%3E%20span%2Edv%20%7B%20color%3A%20%2340a070%3B%20%7D%20%0Acode%20%3E%20span%2Ebn%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Efl%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Ech%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Est%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Eco%20%7B%20color%3A%20%23888888%3B%20font%2Dstyle%3A%20italic%3B%20%7D%20%0Acode%20%3E%20span%2Eot%20%7B%20color%3A%20%23007020%3B%20%7D%20%0Acode%20%3E%20span%2Eal%20%7B%20color%3A%20%23ff0000%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Efu%20%7B%20color%3A%20%23900%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Eer%20%7B%20color%3A%20%23a61717%3B%20background%2Dcolor%3A%20%23e3d2d2%3B%20%7D%20%0A" type="text/css" />
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Introduction to CTmeta: functions for lagged effects model parameters</h1>
+<h4 class="author">R. M. Kuiper</h4>
+
+
+<div id="TOC">
+<ul>
+<li><a href="#introduction">Introduction</a>
+<ul>
+<li><a href="#more-details">More details</a></li>
+<li><a href="#installation-and-descriptions">Installation and descriptions</a></li>
+<li><a href="#usage">Usage</a></li>
+</ul></li>
+<li><a href="#examples">Examples</a>
+<ul>
+<li><a href="#example-1-ctmeta">Example 1: CTmeta</a>
+<ul>
+<li><a href="#phi-plot-of-resulting-overall-phi">1.1: Phi-plot of resulting overall Phi</a></li>
+<li><a href="#evaluate-dominance-of-overall-phi-using-gorica">1.2: Evaluate dominance of overall Phi using GORICA</a></li>
+<li><a href="#a-lagged-correlation-matrix-as-input">1.3: A (lagged) correlation matrix as input</a></li>
+</ul></li>
+<li><a href="#example-2-time-interval-dependency">Example 2: Time-interval dependency</a>
+<ul>
+<li><a href="#plots">2.1 Plots</a>
+<ul>
+<li><a href="#area-under-curves-in-phi-plot">2.1.1 Area under curves in Phi-plot</a></li>
+<li><a href="#maximum-or-minimum-of-curves-in-phi-plot">2.1.2 Maximum or minimum of curves in Phi-plot</a></li>
+</ul></li>
+<li><a href="#transformations">2.2 Transformations</a>
+<ul>
+<li><a href="#discrete-time---continuous-time">2.2.1 Discrete-time &lt;-&gt; continuous-time</a></li>
+<li><a href="#gamma">2.2.2 Gamma</a></li>
+<li><a href="#checks">2.2.3 Checks</a></li>
+<li><a href="#standardization">2.2.4 Standardization</a></li>
+<li><a href="#same-time-interval">2.2.5 Same time-interval</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#example-3-correlated-residuals">Example 3: Correlated residuals</a></li>
+</ul></li>
+</ul>
+</div>
+
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(CTmeta)</span></code></pre></div>
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
+<p>CTmeta was created to preform meta-analysis on time-interval dependent discrete-time (DT) lagged effects parameters estimates (e.g., CLPM or VAR(1) estimates). Its method utilizes an underlying continuous-time (CT) model, hence the name CTmeta. Since its creation, many functions have been added, including functions to transform, standardize, and plot the time-interval dependent DT lagged effects parameters.</p>
+<p>More specifically, some of functionalities include:</p>
+<ul>
+<li><p>Rendering plots that illustrate how the VAR(1) model lagged parameters (Phi) and residual covariance matrix (SigmaVAR) vary as a function of the time interval (DeltaT). See the functions ‘PhiPlot’ and ‘SigmaVARPlot’, respectively.</p></li>
+<li><p>Determining the time-interval (DeltaT) for which each element of Phi(DeltaT) reaches its minimum or maximum. See the function ‘MaxDeltaT’.</p></li>
+<li><p>Rendering the time interval for which the VAR(1) model residual covariance matrix is a diagonal matrix. See the function ‘DiagDeltaT’.</p></li>
+<li><p>Rendering standardized lagged effects from their unstandardized counterparts; or from cross-correlations and their covariance matrix. See the functions ‘StandPhi’ and ‘TransPhi_Corr’, respectively. These functions also render the univariate (i.e., simultaneous) and multivariate (i.e., elliptical) confidence intervals of the (un)standardized lagged effects.</p></li>
+<li><p>Transforming (un)standardized VAR(1) model lagged parameters and the residual covariance matrix to reflect scenarios in which another time-interval is used. See the function ‘StandTransPhi’. This function also renders the univariate (i.e., simultaneous) and multivariate (i.e., elliptical) confidence intervals of the (un)standardized lagged effects.</p></li>
+<li><p>Transforming VAR(1) model lagged parameters and the residual covariance matrix into their (un)standardized counterparts in the underlying CT(1) model and vice versa. See the functions ‘CTMparam’ and ‘VARparam’, respectively.</p></li>
+</ul>
+<p>Please find examples demonstrating the application of these functions below.</p>
+<div id="more-details" class="section level3">
+<h3>More details</h3>
+<p>More details about the methods and derivations can be found in:</p>
+<ul>
+<li><p>Kuiper, R. M., and Hamaker, E.L. (unpublished). Correlated residuals: What they do (not) represent.</p></li>
+<li><p>Kuiper, R. M., &amp; Ryan, O. (2020). Meta-analysis of Lagged Regression Models: A Continuous-time Approach. Structural Equation Modeling, 27(3). <a href="https://doi.org/10.1080/10705511.2019.1652613" class="uri">https://doi.org/10.1080/10705511.2019.1652613</a></p></li>
+</ul>
+</div>
+<div id="installation-and-descriptions" class="section level3">
+<h3>Installation and descriptions</h3>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Install R package</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Note: Make sure you have Rtools (and a version which is compatible with your R version).</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(devtools) </span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="fu">install_github</span>(<span class="st">&quot;rebeccakuiper/CTmeta&quot;</span>)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Load package</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(CTmeta)</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="co"># In case you use functions from this CTmeta package, please cite it:</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="fu">citation</span>(<span class="st">&quot;CTmeta&quot;</span>)</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="co"># To look at the description of a function including example code, use ?functionname:</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>?Area</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>?ChecksCTM</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>?CTmeta</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>?CTMparam</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>?DiagDeltaT</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>?Gamma.fromCTM</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>?Gamma.fromVAR</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>?ggPhiPlot</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>?MaxDeltaT</span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>?PhiPlot</span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>?SigmaVARPlot</span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>?StandPhi</span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>?StandTransPhi</span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>?TransPhi_Corr</span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>?VARparam</span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a><span class="co"># To obtain an overview of all functions in the package and their arguments:</span></span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a><span class="fu">lsf.str</span>(<span class="st">&quot;package:CTmeta&quot;</span>) </span></code></pre></div>
+</div>
+<div id="usage" class="section level3">
+<h3>Usage</h3>
+<p>Area(DeltaT = 1, Phi, …)</p>
+<p>ChecksCTM(Drift, Sigma)</p>
+<p>CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR, …)</p>
+<p>CTMparam(DeltaT, Phi, SigmaVAR, …)</p>
+<p>DiagDeltaT &lt;- function(Phi, SigmaVAR, …)</p>
+<p>Gamma.fromCTM(Drift, Sigma)</p>
+<p>Gamma.fromVAR(Phi, SigmaVAR)</p>
+<p>ggPhiPlot(DeltaT = 1, Phi, …)</p>
+<p>MaxDeltaT(DeltaT = 1, Phi, …)</p>
+<p>PhiPlot(DeltaT = 1, Phi, …)</p>
+<p>SigmaVARPlot(DeltaT = 1, Phi, SigmaVAR, …)</p>
+<p>StandPhi(N = NULL, Phi, SigmaVAR, …)</p>
+<p>StandTransPhi(DeltaTStar, DeltaT = 1, N = NULL, Phi, SigmaVAR, …)</p>
+<p>TransPhi_Corr(DeltaTStar, DeltaT = 1, N = NULL, corr_YXYX, …)</p>
+<p>VARparam(DeltaT = 1, Drift, Sigma, …)</p>
+</div>
+</div>
+<div id="examples" class="section level1">
+<h1>Examples</h1>
+<div id="example-1-ctmeta" class="section level2">
+<h2>Example 1: CTmeta</h2>
+<p>In this simple example, the functionality of CTmeta is demonstrated using S = 3 primary studies. These three studies investigate the (cross-)lagged relationship between q = 2 variables: Stress and Anxiety. Thus, each study generates a 2 x 2 lagged effects matrix. All studies used different samples, different sample sizes, and collected the data using different time-intervals.</p>
+<p>The function CTmeta requires the following arguments as input: N, DeltaT, DeltaTStar, Phi, and one of SigmaVAR or Gamma, details are included below.</p>
+<p>Setting up the arguments for CTmeta:</p>
+<ul>
+<li>N: Save the sample size of each study in a S x 1 matrix.</li>
+</ul>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>N <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">643</span>, <span class="dv">651</span>, <span class="dv">473</span>))</span></code></pre></div>
+<ul>
+<li>DeltaT: Save the time-interval used in each study in a S x 1 matrix.</li>
+</ul>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>DeltaT <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">1</span>))</span></code></pre></div>
+<ul>
+<li>DeltaTStar: Save the constant representing the time-interval of interest (preferably, falling within the range of the inspected time-intervals).</li>
+</ul>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>DeltaTStar <span class="ot">&lt;-</span> <span class="dv">1</span></span></code></pre></div>
+<ul>
+<li>Phi: The lagged effects matrix. For each of the S = 3 studies, retrieve the q x q lagged effects matrix; in this specific example, there are three 2 x 2 lagged effects matrices. Stack the three matrices to form the lagged effects matrix (Phi) with dimensions S*q x q. This argument has an example matrix stored in the package:</li>
+</ul>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>Phi <span class="ot">&lt;-</span> myPhi</span></code></pre></div>
+<ul>
+<li>SigmaVAR: The residual covariance matrix. For each of the S = 3 studies, retrieve the q x q residual covariance matrix. Stack the matrices to form a residual covariance matrix (SigmaVAR) with dimensions S*q x q. This argument has an example matrix stored in the package:</li>
+</ul>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>SigmaVAR <span class="ot">&lt;-</span> mySigmaVAR</span></code></pre></div>
+<ul>
+<li>Gamma: The stacked stationary covariance matrix. For each of the S = 3 studies, generate the q x q stationary covariance matrix. Then, stack the matrices to form the stationary covariance matrix (Gamma) with dimensions S*q x q. This argument has an example matrix stored in the package:</li>
+</ul>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>Gamma <span class="ot">&lt;-</span> myGamma <span class="co"># Note: CTmeta does not need both SigmaVAR and Gamma</span></span></code></pre></div>
+<p>The CTmeta function will standardize these matrices (Phi, SigmaVAR, Gamma) to make the comparisons and weighted averages of effects meaningful.</p>
+<p>An example of a stacked matrix of size (3*2) x 2 is presented below.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>Phi</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span>      [,<span class="dv">1</span>] [,<span class="dv">2</span>]</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">1</span>,] <span class="fl">0.25</span> <span class="fl">0.10</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">2</span>,] <span class="fl">0.20</span> <span class="fl">0.36</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">3</span>,] <span class="fl">0.35</span> <span class="fl">0.20</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">4</span>,] <span class="fl">0.30</span> <span class="fl">0.46</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">5</span>,] <span class="fl">0.15</span> <span class="fl">0.00</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">6</span>,] <span class="fl">0.10</span> <span class="fl">0.26</span></span></code></pre></div>
+<p>Note: The lagged effects matrix (Phi) varies as a function of the time interval (DeltaT), hence the notation Phi(DeltaT). For instance, if Stress and Anxiety are measured every hour, Phi reflects the lagged relationship between initial Stress and Anxiety levels and Stress and Anxiety levels after one hour. This relationship is stronger than (different from) a scenario in which Stress and Anxiety are measured daily (24 hours).</p>
+<p>As with regular meta-analysis, one can choose between a fixed-effects and random-effects model and moderators can also be included. Notably, the default is a fixed-effects model, but if one wants to generalize the results beyond the included studies, then one should use a random-effects model (‘FEorRE = 2’). In case the lagged effects matrices stacked in Phi are expected to be different / incomparable due to some study characteristics, then these should be included in the model. If, for example, some studies investigated the Stress-Anxiety relationship among students while other studies did this in a business context, a moderator can be included by adding a dummy variable for context. Note that when the effect for this moderator is significant, then there is a significant difference in the Stress-Anxiety relationship between the two subgroups.</p>
+<p>The following code will demonstrate the use of CTmeta for different types of meta-analyses. Note, only the output for the last model (the random-effects model with moderators) is shown.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="do">### Example without moderators </span><span class="al">###</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="do">## Fixed effects model (default) ##</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="fu">CTmeta</span>(N, DeltaT, DeltaTStar, Phi, SigmaVAR)</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="do">## Random effects model ##</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="fu">CTmeta</span>(N, DeltaT, DeltaTStar, Phi, SigmaVAR, <span class="at">FEorRE =</span> <span class="dv">2</span>)</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="do">### Example with moderators </span><span class="al">###</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>Mod <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">64</span>,<span class="dv">65</span>,<span class="dv">47</span>)) <span class="co"># 1 moderator</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a><span class="co">#Mod &lt;- matrix(cbind(c(64,65,47), c(78,89,34)), ncol = q); colnames(Mod) &lt;- c(&quot;Mod1&quot;, &quot;Mod2&quot;)  # two moderators, in each column 1</span></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a><span class="do">## Fixed effects model (default) ##</span></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a><span class="fu">CTmeta</span>(N, DeltaT, DeltaTStar, Phi, SigmaVAR, <span class="at">Moderators =</span> <span class="dv">1</span>, <span class="at">Mod =</span> Mod)</span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Random effects model ##</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">CTmeta</span>(N, DeltaT, DeltaTStar, Phi, SigmaVAR, <span class="at">Moderators =</span> <span class="dv">1</span>, <span class="at">Mod =</span> Mod, <span class="at">FEorRE =</span> <span class="dv">2</span>) </span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> </span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> The overall estimates obtained with CTmeta and their <span class="dv">95</span>% elliptical<span class="sc">/</span>multivariate confidence interval<span class="sc">:</span> </span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> </span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span>              Overall_Phi LB     UB    </span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> overallPhi11 <span class="sc">-</span><span class="fl">1.019</span>      <span class="sc">-</span><span class="fl">1.924</span> <span class="sc">-</span><span class="fl">0.114</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> overallPhi12 <span class="sc">-</span><span class="fl">0.340</span>      <span class="sc">-</span><span class="fl">0.869</span>  <span class="fl">0.188</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> overallPhi21 <span class="sc">-</span><span class="fl">0.125</span>      <span class="sc">-</span><span class="fl">0.605</span>  <span class="fl">0.354</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> overallPhi22 <span class="sc">-</span><span class="fl">0.846</span>      <span class="sc">-</span><span class="fl">1.577</span> <span class="sc">-</span><span class="fl">0.114</span></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> </span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> Note<span class="sc">:</span> A random<span class="sc">-</span>effects model is used. The tau<span class="sc">^</span><span class="dv">2</span> values can be obtained via <span class="st">&#39;$tau2&#39;</span>; see <span class="st">&#39;$summaryMetaAnalysis&#39;</span> <span class="cf">for</span> more information.</span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> </span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> CTmeta Messages<span class="sc">:</span> </span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> <span class="sc">-</span> All eigenvalues are positive and real. Hence, the Phi<span class="st">&#39;s are transformed to Phi(DeltaT*) to account for the time-interval dependency and standardized (to make comparison of effects meaningful).</span></span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a><span class="st">&gt; - For each study, the covariance matrix is positive definite. Hence, a multivariate approach is used.</span></span></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Different output options are possible ##</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>CTma <span class="ot">&lt;-</span> <span class="fu">CTmeta</span>(N, DeltaT, DeltaTStar, Phi, SigmaVAR, <span class="at">Moderators =</span> <span class="dv">1</span>, <span class="at">Mod =</span> Mod, <span class="at">FEorRE =</span> <span class="dv">2</span>)</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>CTma</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> </span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> The overall estimates obtained with CTmeta and their <span class="dv">95</span>% elliptical<span class="sc">/</span>multivariate confidence interval<span class="sc">:</span> </span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> </span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span>              Overall_Phi LB     UB    </span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> overallPhi11 <span class="sc">-</span><span class="fl">1.019</span>      <span class="sc">-</span><span class="fl">1.924</span> <span class="sc">-</span><span class="fl">0.114</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> overallPhi12 <span class="sc">-</span><span class="fl">0.340</span>      <span class="sc">-</span><span class="fl">0.869</span>  <span class="fl">0.188</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> overallPhi21 <span class="sc">-</span><span class="fl">0.125</span>      <span class="sc">-</span><span class="fl">0.605</span>  <span class="fl">0.354</span></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> overallPhi22 <span class="sc">-</span><span class="fl">0.846</span>      <span class="sc">-</span><span class="fl">1.577</span> <span class="sc">-</span><span class="fl">0.114</span></span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> </span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> Note<span class="sc">:</span> A random<span class="sc">-</span>effects model is used. The tau<span class="sc">^</span><span class="dv">2</span> values can be obtained via <span class="st">&#39;$tau2&#39;</span>; see <span class="st">&#39;$summaryMetaAnalysis&#39;</span> <span class="cf">for</span> more information.</span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> </span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> CTmeta Messages<span class="sc">:</span> </span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> <span class="sc">-</span> All eigenvalues are positive and real. Hence, the Phi<span class="st">&#39;s are transformed to Phi(DeltaT*) to account for the time-interval dependency and standardized (to make comparison of effects meaningful).</span></span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a><span class="st">&gt; - For each study, the covariance matrix is positive definite. Hence, a multivariate approach is used.</span></span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a><span class="st">print(CTma)</span></span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a><span class="st">&gt; </span></span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a><span class="st">&gt; The overall estimates obtained with CTmeta and their 95% elliptical/multivariate confidence interval: </span></span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a><span class="st">&gt; </span></span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a><span class="st">&gt;              Overall_Phi LB     UB    </span></span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a><span class="st">&gt; overallPhi11 -1.019      -1.924 -0.114</span></span>
+<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a><span class="st">&gt; overallPhi12 -0.340      -0.869  0.188</span></span>
+<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a><span class="st">&gt; overallPhi21 -0.125      -0.605  0.354</span></span>
+<span id="cb12-26"><a href="#cb12-26" aria-hidden="true" tabindex="-1"></a><span class="st">&gt; overallPhi22 -0.846      -1.577 -0.114</span></span>
+<span id="cb12-27"><a href="#cb12-27" aria-hidden="true" tabindex="-1"></a><span class="st">&gt; </span></span>
+<span id="cb12-28"><a href="#cb12-28" aria-hidden="true" tabindex="-1"></a><span class="st">&gt; Note: A random-effects model is used. The tau^2 values can be obtained via &#39;</span><span class="sc">$</span>tau2<span class="st">&#39;; see &#39;</span><span class="sc">$</span>summaryMetaAnalysis<span class="st">&#39; for more information.</span></span>
+<span id="cb12-29"><a href="#cb12-29" aria-hidden="true" tabindex="-1"></a><span class="st">&gt; </span></span>
+<span id="cb12-30"><a href="#cb12-30" aria-hidden="true" tabindex="-1"></a><span class="st">&gt; CTmeta Messages: </span></span>
+<span id="cb12-31"><a href="#cb12-31" aria-hidden="true" tabindex="-1"></a><span class="st">&gt; - All eigenvalues are positive and real. Hence, the Phi&#39;</span>s are transformed to <span class="fu">Phi</span>(DeltaT<span class="sc">*</span>) to account <span class="cf">for</span> the time<span class="sc">-</span>interval dependency and <span class="fu">standardized</span> (to make comparison of effects meaningful).</span>
+<span id="cb12-32"><a href="#cb12-32" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> <span class="sc">-</span> For each study, the covariance matrix is positive definite. Hence, a multivariate approach is used.</span>
+<span id="cb12-33"><a href="#cb12-33" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(CTma)</span>
+<span id="cb12-34"><a href="#cb12-34" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> <span class="sc">+------------------+-------------+---------+---------+</span></span>
+<span id="cb12-35"><a href="#cb12-35" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> <span class="er">|</span>                  <span class="er">|</span> Overall_Phi <span class="sc">|</span>      LB <span class="sc">|</span>      UB <span class="sc">|</span></span>
+<span id="cb12-36"><a href="#cb12-36" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> <span class="sc">+</span><span class="er">==================</span><span class="sc">+</span><span class="er">=============</span><span class="sc">+</span><span class="er">=========</span><span class="sc">+</span><span class="er">=========</span><span class="sc">+</span></span>
+<span id="cb12-37"><a href="#cb12-37" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> <span class="er">|</span> overallPhi11     <span class="sc">|</span>      <span class="sc">-</span><span class="fl">1.019</span> <span class="sc">|</span>  <span class="sc">-</span><span class="fl">1.924</span> <span class="sc">|</span> <span class="sc">-</span><span class="fl">0.1139</span> <span class="sc">|</span></span>
+<span id="cb12-38"><a href="#cb12-38" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> <span class="sc">+------------------+-------------+---------+---------+</span></span>
+<span id="cb12-39"><a href="#cb12-39" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> <span class="er">|</span> overallPhi12     <span class="sc">|</span>     <span class="sc">-</span><span class="fl">0.3405</span> <span class="sc">|</span> <span class="sc">-</span><span class="fl">0.8688</span> <span class="sc">|</span>  <span class="fl">0.1878</span> <span class="sc">|</span></span>
+<span id="cb12-40"><a href="#cb12-40" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> <span class="sc">+------------------+-------------+---------+---------+</span></span>
+<span id="cb12-41"><a href="#cb12-41" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> <span class="er">|</span> overallPhi21     <span class="sc">|</span>     <span class="sc">-</span><span class="fl">0.1254</span> <span class="sc">|</span> <span class="sc">-</span><span class="fl">0.6053</span> <span class="sc">|</span>  <span class="fl">0.3545</span> <span class="sc">|</span></span>
+<span id="cb12-42"><a href="#cb12-42" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> <span class="sc">+------------------+-------------+---------+---------+</span></span>
+<span id="cb12-43"><a href="#cb12-43" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> <span class="er">|</span> overallPhi22     <span class="sc">|</span>     <span class="sc">-</span><span class="fl">0.8457</span> <span class="sc">|</span>  <span class="sc">-</span><span class="fl">1.577</span> <span class="sc">|</span> <span class="sc">-</span><span class="fl">0.1144</span> <span class="sc">|</span></span>
+<span id="cb12-44"><a href="#cb12-44" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> <span class="sc">+------------------+-------------+---------+---------+</span></span>
+<span id="cb12-45"><a href="#cb12-45" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(CTma, <span class="at">digits =</span> <span class="dv">4</span>)</span>
+<span id="cb12-46"><a href="#cb12-46" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> </span>
+<span id="cb12-47"><a href="#cb12-47" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> The overall estimates obtained with CTmeta and their <span class="dv">95</span>% elliptical<span class="sc">/</span>multivariate confidence interval<span class="sc">:</span> </span>
+<span id="cb12-48"><a href="#cb12-48" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> </span>
+<span id="cb12-49"><a href="#cb12-49" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span>              Overall_Phi LB      UB     </span>
+<span id="cb12-50"><a href="#cb12-50" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> overallPhi11 <span class="sc">-</span><span class="fl">1.0189</span>     <span class="sc">-</span><span class="fl">1.9240</span> <span class="sc">-</span><span class="fl">0.1139</span></span>
+<span id="cb12-51"><a href="#cb12-51" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> overallPhi12 <span class="sc">-</span><span class="fl">0.3405</span>     <span class="sc">-</span><span class="fl">0.8688</span>  <span class="fl">0.1878</span></span>
+<span id="cb12-52"><a href="#cb12-52" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> overallPhi21 <span class="sc">-</span><span class="fl">0.1254</span>     <span class="sc">-</span><span class="fl">0.6053</span>  <span class="fl">0.3545</span></span>
+<span id="cb12-53"><a href="#cb12-53" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> overallPhi22 <span class="sc">-</span><span class="fl">0.8457</span>     <span class="sc">-</span><span class="fl">1.5770</span> <span class="sc">-</span><span class="fl">0.1144</span></span>
+<span id="cb12-54"><a href="#cb12-54" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> </span>
+<span id="cb12-55"><a href="#cb12-55" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> Note<span class="sc">:</span> A random<span class="sc">-</span>effects model is used. The tau<span class="sc">^</span><span class="dv">2</span> values can be obtained via <span class="st">&#39;$tau2&#39;</span>; see <span class="st">&#39;$summaryMetaAnalysis&#39;</span> <span class="cf">for</span> more information.</span>
+<span id="cb12-56"><a href="#cb12-56" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> </span>
+<span id="cb12-57"><a href="#cb12-57" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> CTmeta Messages<span class="sc">:</span> </span>
+<span id="cb12-58"><a href="#cb12-58" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> <span class="sc">-</span> All eigenvalues are positive and real. Hence, the Phi<span class="st">&#39;s are transformed to Phi(DeltaT*) to account for the time-interval dependency and standardized (to make comparison of effects meaningful).</span></span>
+<span id="cb12-59"><a href="#cb12-59" aria-hidden="true" tabindex="-1"></a><span class="st">&gt; - For each study, the covariance matrix is positive definite. Hence, a multivariate approach is used.</span></span>
+<span id="cb12-60"><a href="#cb12-60" aria-hidden="true" tabindex="-1"></a><span class="st">summary(CTma, digits = 4)</span></span>
+<span id="cb12-61"><a href="#cb12-61" aria-hidden="true" tabindex="-1"></a><span class="st">&gt; +------------------+-------------+---------+---------+</span></span>
+<span id="cb12-62"><a href="#cb12-62" aria-hidden="true" tabindex="-1"></a><span class="st">&gt; |                  | Overall_Phi |   LB    |   UB    |</span></span>
+<span id="cb12-63"><a href="#cb12-63" aria-hidden="true" tabindex="-1"></a><span class="st">&gt; +==================+=============+=========+=========+</span></span>
+<span id="cb12-64"><a href="#cb12-64" aria-hidden="true" tabindex="-1"></a><span class="st">&gt; |   overallPhi11   |   -1.0189   | -1.9240 | -0.1139 |</span></span>
+<span id="cb12-65"><a href="#cb12-65" aria-hidden="true" tabindex="-1"></a><span class="st">&gt; +------------------+-------------+---------+---------+</span></span>
+<span id="cb12-66"><a href="#cb12-66" aria-hidden="true" tabindex="-1"></a><span class="st">&gt; |   overallPhi12   |   -0.3405   | -0.8688 | 0.1878  |</span></span>
+<span id="cb12-67"><a href="#cb12-67" aria-hidden="true" tabindex="-1"></a><span class="st">&gt; +------------------+-------------+---------+---------+</span></span>
+<span id="cb12-68"><a href="#cb12-68" aria-hidden="true" tabindex="-1"></a><span class="st">&gt; |   overallPhi21   |   -0.1254   | -0.6053 | 0.3545  |</span></span>
+<span id="cb12-69"><a href="#cb12-69" aria-hidden="true" tabindex="-1"></a><span class="st">&gt; +------------------+-------------+---------+---------+</span></span>
+<span id="cb12-70"><a href="#cb12-70" aria-hidden="true" tabindex="-1"></a><span class="st">&gt; |   overallPhi22   |   -0.8457   | -1.5770 | -0.1144 |</span></span>
+<span id="cb12-71"><a href="#cb12-71" aria-hidden="true" tabindex="-1"></a><span class="st">&gt; +------------------+-------------+---------+---------+</span></span>
+<span id="cb12-72"><a href="#cb12-72" aria-hidden="true" tabindex="-1"></a><span class="st"># In Rstudio, use &#39;</span>CTma<span class="sc">$</span><span class="st">&#39; to see what output options are available. For example:</span></span>
+<span id="cb12-73"><a href="#cb12-73" aria-hidden="true" tabindex="-1"></a><span class="st">CTma$summaryMetaAnalysis</span></span>
+<span id="cb12-74"><a href="#cb12-74" aria-hidden="true" tabindex="-1"></a><span class="st">&gt; </span></span>
+<span id="cb12-75"><a href="#cb12-75" aria-hidden="true" tabindex="-1"></a><span class="st">&gt; Multivariate Meta-Analysis Model (k = 12; method: ML)</span></span>
+<span id="cb12-76"><a href="#cb12-76" aria-hidden="true" tabindex="-1"></a><span class="st">&gt; </span></span>
+<span id="cb12-77"><a href="#cb12-77" aria-hidden="true" tabindex="-1"></a><span class="st">&gt;   logLik  Deviance       AIC       BIC      AICc </span></span>
+<span id="cb12-78"><a href="#cb12-78" aria-hidden="true" tabindex="-1"></a><span class="st">&gt;  25.2754    9.0869  -14.5508   -5.8225  669.4492   </span></span>
+<span id="cb12-79"><a href="#cb12-79" aria-hidden="true" tabindex="-1"></a><span class="st">&gt; </span></span>
+<span id="cb12-80"><a href="#cb12-80" aria-hidden="true" tabindex="-1"></a><span class="st">&gt; Variance Components:</span></span>
+<span id="cb12-81"><a href="#cb12-81" aria-hidden="true" tabindex="-1"></a><span class="st">&gt; </span></span>
+<span id="cb12-82"><a href="#cb12-82" aria-hidden="true" tabindex="-1"></a><span class="st">&gt; outer factor: Study      (nlvls = 3)</span></span>
+<span id="cb12-83"><a href="#cb12-83" aria-hidden="true" tabindex="-1"></a><span class="st">&gt; inner factor: overallPhi (nlvls = 4)</span></span>
+<span id="cb12-84"><a href="#cb12-84" aria-hidden="true" tabindex="-1"></a><span class="st">&gt; </span></span>
+<span id="cb12-85"><a href="#cb12-85" aria-hidden="true" tabindex="-1"></a><span class="st">&gt;             estim    sqrt  k.lvl  fixed  level </span></span>
+<span id="cb12-86"><a href="#cb12-86" aria-hidden="true" tabindex="-1"></a><span class="st">&gt; tau^2.1    0.0039  0.0627      3     no     11 </span></span>
+<span id="cb12-87"><a href="#cb12-87" aria-hidden="true" tabindex="-1"></a><span class="st">&gt; tau^2.2    0.0003  0.0162      3     no     12 </span></span>
+<span id="cb12-88"><a href="#cb12-88" aria-hidden="true" tabindex="-1"></a><span class="st">&gt; tau^2.3    0.0000  0.0000      3     no     21 </span></span>
+<span id="cb12-89"><a href="#cb12-89" aria-hidden="true" tabindex="-1"></a><span class="st">&gt; tau^2.4    0.0027  0.0516      3     no     22 </span></span>
+<span id="cb12-90"><a href="#cb12-90" aria-hidden="true" tabindex="-1"></a><span class="st">&gt; </span></span>
+<span id="cb12-91"><a href="#cb12-91" aria-hidden="true" tabindex="-1"></a><span class="st">&gt;      rho.11   rho.12   rho.21   rho.22    11  12  21  22 </span></span>
+<span id="cb12-92"><a href="#cb12-92" aria-hidden="true" tabindex="-1"></a><span class="st">&gt; 11        1   1.0000  -1.0000   1.0000     -  no  no  no </span></span>
+<span id="cb12-93"><a href="#cb12-93" aria-hidden="true" tabindex="-1"></a><span class="st">&gt; 12   1.0000        1  -1.0000   1.0000     3   -  no  no </span></span>
+<span id="cb12-94"><a href="#cb12-94" aria-hidden="true" tabindex="-1"></a><span class="st">&gt; 21  -1.0000  -1.0000        1  -1.0000     3   3   -  no </span></span>
+<span id="cb12-95"><a href="#cb12-95" aria-hidden="true" tabindex="-1"></a><span class="st">&gt; 22   1.0000   1.0000  -1.0000        1     3   3   3   - </span></span>
+<span id="cb12-96"><a href="#cb12-96" aria-hidden="true" tabindex="-1"></a><span class="st">&gt; </span></span>
+<span id="cb12-97"><a href="#cb12-97" aria-hidden="true" tabindex="-1"></a><span class="st">&gt; Test for Residual Heterogeneity:</span></span>
+<span id="cb12-98"><a href="#cb12-98" aria-hidden="true" tabindex="-1"></a><span class="st">&gt; QE(df = 4) = 28.1058, p-val &lt; .0001</span></span>
+<span id="cb12-99"><a href="#cb12-99" aria-hidden="true" tabindex="-1"></a><span class="st">&gt; </span></span>
+<span id="cb12-100"><a href="#cb12-100" aria-hidden="true" tabindex="-1"></a><span class="st">&gt; Test of Moderators (coefficients 1:8):</span></span>
+<span id="cb12-101"><a href="#cb12-101" aria-hidden="true" tabindex="-1"></a><span class="st">&gt; QM(df = 8) = 404.0761, p-val &lt; .0001</span></span>
+<span id="cb12-102"><a href="#cb12-102" aria-hidden="true" tabindex="-1"></a><span class="st">&gt; </span></span>
+<span id="cb12-103"><a href="#cb12-103" aria-hidden="true" tabindex="-1"></a><span class="st">&gt; Model Results:</span></span>
+<span id="cb12-104"><a href="#cb12-104" aria-hidden="true" tabindex="-1"></a><span class="st">&gt; </span></span>
+<span id="cb12-105"><a href="#cb12-105" aria-hidden="true" tabindex="-1"></a><span class="st">&gt;                    estimate      se     zval    pval    ci.lb    ci.ub </span></span>
+<span id="cb12-106"><a href="#cb12-106" aria-hidden="true" tabindex="-1"></a><span class="st">&gt; overallPhi11        -1.0189  0.3143  -3.2419  0.0012  -1.6350  -0.4029   ** </span></span>
+<span id="cb12-107"><a href="#cb12-107" aria-hidden="true" tabindex="-1"></a><span class="st">&gt; overallPhi12        -0.3405  0.1891  -1.8004  0.0718  -0.7112   0.0302    . </span></span>
+<span id="cb12-108"><a href="#cb12-108" aria-hidden="true" tabindex="-1"></a><span class="st">&gt; overallPhi21        -0.1254  0.1696  -0.7396  0.4596  -0.4578   0.2070      </span></span>
+<span id="cb12-109"><a href="#cb12-109" aria-hidden="true" tabindex="-1"></a><span class="st">&gt; overallPhi22        -0.8457  0.2732  -3.0958  0.0020  -1.3812  -0.3103   ** </span></span>
+<span id="cb12-110"><a href="#cb12-110" aria-hidden="true" tabindex="-1"></a><span class="st">&gt; overallPhi11:Mod.    0.0248  0.0052   4.7253  &lt;.0001   0.0145   0.0350  *** </span></span>
+<span id="cb12-111"><a href="#cb12-111" aria-hidden="true" tabindex="-1"></a><span class="st">&gt; overallPhi12:Mod.    0.0072  0.0031   2.3397  0.0193   0.0012   0.0133    * </span></span>
+<span id="cb12-112"><a href="#cb12-112" aria-hidden="true" tabindex="-1"></a><span class="st">&gt; overallPhi21:Mod.    0.0047  0.0027   1.7351  0.0827  -0.0006   0.0101    . </span></span>
+<span id="cb12-113"><a href="#cb12-113" aria-hidden="true" tabindex="-1"></a><span class="st">&gt; overallPhi22:Mod.    0.0234  0.0045   5.1741  &lt;.0001   0.0146   0.0323  *** </span></span>
+<span id="cb12-114"><a href="#cb12-114" aria-hidden="true" tabindex="-1"></a><span class="st">&gt; </span></span>
+<span id="cb12-115"><a href="#cb12-115" aria-hidden="true" tabindex="-1"></a><span class="st">&gt; ---</span></span>
+<span id="cb12-116"><a href="#cb12-116" aria-hidden="true" tabindex="-1"></a><span class="st">&gt; Signif. codes:  0 &#39;</span><span class="sc">**</span><span class="er">*</span><span class="st">&#39; 0.001 &#39;</span><span class="sc">**</span><span class="st">&#39; 0.01 &#39;</span><span class="sc">*</span><span class="st">&#39; 0.05 &#39;</span>.<span class="st">&#39; 0.1 &#39;</span> <span class="st">&#39; 1</span></span></code></pre></div>
+<p>This results, among other things, in a 2 x 2 overall Phi matrix (if q=2). Although the varying time-intervals are corrected for, this overall Phi matrix is also dependent on the chosen time-interval (DeltaTStar). To obtain insight into this, a Phi-plot of the resulting overall Phi can be made. This is demonstrated in Section 1.1.</p>
+<p>A major point of interest with regards to lagged relationships is to determine the ‘causal dominant’ variable, that is, the variable with the highest predictive power. In this example, we are interested in the asking the question: Is current Stress a stronger predictor for Anxiety on the next time-interval or is current Anxiety a stronger predictor for Stress on the next time-interval? To evaluate the dominance of (overall) lagged effects, an AIC-type criterion called the GORICA can be used (Altinisik, Nederhof, Hoijtink, Oldehinkel, Kuiper, conditionally accepted). This method is included in the restriktor package and is demonstrated in Section 1.2.</p>
+<p>Finally, in the example above, the lagged effects matrices (stacked in Phi) were obtained from each primary study. It is also possible that some or all studies report a (lagged) correlation matrix. Section 1.3 demonstrates how (lagged) correlation matrices can be used in CTmeta.</p>
+<div id="phi-plot-of-resulting-overall-phi" class="section level3">
+<h3>1.1: Phi-plot of resulting overall Phi</h3>
+<p>Make customized Phi-plot of resulting overall Phi:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Option 1: Use the plot option in the &#39;CTmeta&#39; function. </span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="fu">CTmeta</span>(N, DeltaT, DeltaTStar, Phi, SigmaVAR, <span class="at">PrintPlot =</span> <span class="cn">TRUE</span>) </span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> </span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> The overall estimates obtained with CTmeta and their <span class="dv">95</span>% elliptical<span class="sc">/</span>multivariate confidence interval<span class="sc">:</span> </span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> </span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span>              Overall_Phi LB     UB   </span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> overallPhi11 <span class="fl">0.519</span>       <span class="fl">0.4771</span> <span class="fl">0.562</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> overallPhi12 <span class="fl">0.139</span>       <span class="fl">0.0964</span> <span class="fl">0.181</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> overallPhi21 <span class="fl">0.198</span>       <span class="fl">0.1638</span> <span class="fl">0.233</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> overallPhi22 <span class="fl">0.624</span>       <span class="fl">0.5897</span> <span class="fl">0.659</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> </span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> CTmeta Messages<span class="sc">:</span> </span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> <span class="sc">-</span> All eigenvalues are positive and real. Hence, the Phi<span class="st">&#39;s are transformed to Phi(DeltaT*) to account for the time-interval dependency and standardized (to make comparison of effects meaningful).</span></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a><span class="st">&gt; - For each study, the covariance matrix is positive definite. Hence, a multivariate approach is used.</span></span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Option 2: Use the interactive web application:  (\url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}).</span></span></code></pre></div>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Option 3: Use the &#39;PhiPlot&#39; function. </span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="co"># First, extract the (q times q) overall Phi matrix</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>out_CTmeta <span class="ot">&lt;-</span> <span class="fu">CTmeta</span>(N, DeltaT, DeltaTStar, Phi, SigmaVAR)</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="co"># resulting overall Phi:</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>overallPhi <span class="ot">&lt;-</span> out_CTmeta<span class="sc">$</span>Overall_standPhi</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Make Phi-plot:</span></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>Title <span class="ot">&lt;-</span> <span class="fu">as.list</span>(<span class="fu">expression</span>(<span class="fu">Phi</span>(Delta[t])<span class="sc">~</span>plot), </span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>                 <span class="st">&quot;How do the overall lagged parameters vary as a function of the time-interval&quot;</span>)</span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a><span class="fu">PhiPlot</span>(DeltaTStar, overallPhi, <span class="at">Min =</span> <span class="dv">0</span>, <span class="at">Max =</span> <span class="dv">40</span>, <span class="at">Step =</span> <span class="fl">0.5</span>, <span class="at">Title =</span> Title)</span></code></pre></div>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Option 4: The function &#39;ggPhiPlot&#39; can be used instead of &#39;PhiPlot&#39;.</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>phi_plot <span class="ot">&lt;-</span> <span class="fu">ggPhiPlot</span>(DeltaTStar, overallPhi, <span class="at">Min =</span> <span class="dv">0</span>, <span class="at">Max =</span> <span class="dv">40</span>, <span class="at">Step =</span> <span class="fl">0.5</span>, <span class="at">Title =</span> Title)</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(phi_plot<span class="sc">$</span>PhiPlot)</span></code></pre></div>
+</div>
+<div id="evaluate-dominance-of-overall-phi-using-gorica" class="section level3">
+<h3>1.2: Evaluate dominance of overall Phi using GORICA</h3>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Evaluate dominance of overall lagged effects matrix overallPhi ##</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract the vectorized overall standardized Phi matrix and its covariance matrix</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="co"># using the functions coef() and vcov()</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>out_CTmeta <span class="ot">&lt;-</span> <span class="fu">CTmeta</span>(N, DeltaT, DeltaTStar, Phi, SigmaVAR)</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>est <span class="ot">&lt;-</span> <span class="fu">coef</span>(out_CTmeta) <span class="co"># or: est &lt;- out_CTmeta$Overall_vecStandPhi_DeltaTStar</span></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>VCOV <span class="ot">&lt;-</span> <span class="fu">vcov</span>(out_CTmeta) <span class="co"># or: VCOV &lt;- out_CTmeta$CovMx_OverallPhi_DeltaTStar</span></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Specify hypothesis</span></span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>H1 <span class="ot">&lt;-</span> <span class="st">&quot;overallPhi12 &lt; overallPhi21&quot;</span></span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a><span class="co">#H2 &lt;- &quot;overallPhi12 &gt; overallPhi21&quot;</span></span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Evaluate dominance of cross-lagged using the GORICA </span></span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">require</span>(<span class="st">&quot;restriktor&quot;</span>)) <span class="fu">install.packages</span>(<span class="st">&quot;restriktor&quot;</span>) </span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> Loading required package<span class="sc">:</span> restriktor</span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> This is restriktor <span class="fl">0.3</span><span class="dv">-100</span></span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> restriktor is BETA software<span class="sc">!</span> Please report any bugs.</span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Use restriktor package for function goric().</span></span>
+<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Authors of goric(): Vanbrabant and Kuiper.</span></span>
+<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(restriktor)</span>
+<span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a><span class="co">#goric(est, VCOV = VCOV, H1, H2, type = &quot;gorica&quot;, comparison = &quot;none&quot;) </span></span>
+<span id="cb17-22"><a href="#cb17-22" aria-hidden="true" tabindex="-1"></a><span class="co"># or equivalently:</span></span>
+<span id="cb17-23"><a href="#cb17-23" aria-hidden="true" tabindex="-1"></a><span class="fu">goric</span>(est, <span class="at">VCOV =</span> VCOV, H1, <span class="at">type =</span> <span class="st">&quot;gorica&quot;</span>, <span class="at">comparison =</span> <span class="st">&quot;complement&quot;</span>)</span>
+<span id="cb17-24"><a href="#cb17-24" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> <span class="fu">restriktor</span> (<span class="fl">0.3</span><span class="dv">-100</span>)<span class="sc">:</span> generalized order<span class="sc">-</span>restriced information criterion approximation<span class="sc">:</span></span>
+<span id="cb17-25"><a href="#cb17-25" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> </span>
+<span id="cb17-26"><a href="#cb17-26" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> Results<span class="sc">:</span></span>
+<span id="cb17-27"><a href="#cb17-27" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span>         model  loglik  penalty   gorica  gorica.weights</span>
+<span id="cb17-28"><a href="#cb17-28" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> <span class="dv">1</span>          H1  <span class="fl">12.370</span>    <span class="fl">3.500</span>  <span class="sc">-</span><span class="fl">17.739</span>           <span class="fl">0.936</span></span>
+<span id="cb17-29"><a href="#cb17-29" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> <span class="dv">2</span>  complement   <span class="fl">9.690</span>    <span class="fl">3.500</span>  <span class="sc">-</span><span class="fl">12.379</span>           <span class="fl">0.064</span></span>
+<span id="cb17-30"><a href="#cb17-30" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> <span class="sc">---</span></span>
+<span id="cb17-31"><a href="#cb17-31" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> The order<span class="sc">-</span>restricted hypothesis <span class="st">&#39;H1&#39;</span> has <span class="fl">14.584</span> times more support than its complement.</span></code></pre></div>
+</div>
+<div id="a-lagged-correlation-matrix-as-input" class="section level3">
+<h3>1.3: A (lagged) correlation matrix as input</h3>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="do">## What if primary studies report a (lagged) correlation matrix rather than reporting the lagged effects ##</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Suppose all S=3 primary studies reported the following lagged correlation matrix:</span></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Also, recall there are q=2 variables of interest. </span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>q <span class="ot">&lt;-</span> <span class="dv">2</span></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>corr_YXYX <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="fl">1.00</span>, <span class="fl">0.40</span>, <span class="fl">0.63</span>, <span class="fl">0.34</span>,</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>                      <span class="fl">0.40</span>, <span class="fl">1.00</span>, <span class="fl">0.31</span>, <span class="fl">0.63</span>,</span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>                      <span class="fl">0.63</span>, <span class="fl">0.31</span>, <span class="fl">1.00</span>, <span class="fl">0.41</span>,</span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>                      <span class="fl">0.34</span>, <span class="fl">0.63</span>, <span class="fl">0.41</span>, <span class="fl">1.00</span>), <span class="at">byrow =</span> T, <span class="at">ncol =</span> <span class="dv">2</span><span class="sc">*</span>q)</span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a><span class="co"># In this example, the previous N and DeltaT(Star) values are used:</span></span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>N <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">643</span>, <span class="dv">651</span>, <span class="dv">473</span>))</span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>DeltaT <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">1</span>))</span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a>DeltaTStar <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a><span class="co"># First, use the function &#39;TransPhi_Corr&#39; to calculate the corresponding standardized lagged effects matrix for each primary study.</span></span>
+<span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-18"><a href="#cb18-18" aria-hidden="true" tabindex="-1"></a><span class="co"># first study </span></span>
+<span id="cb18-19"><a href="#cb18-19" aria-hidden="true" tabindex="-1"></a>out_1 <span class="ot">&lt;-</span> <span class="fu">TransPhi_Corr</span>(<span class="at">DeltaTStar =</span> DeltaT[<span class="dv">1</span>], <span class="at">DeltaT =</span> <span class="dv">1</span>, <span class="at">N =</span> N[<span class="dv">1</span>], corr_YXYX) </span>
+<span id="cb18-20"><a href="#cb18-20" aria-hidden="true" tabindex="-1"></a>Phi_1 <span class="ot">&lt;-</span> out_1<span class="sc">$</span>standPhi_DeltaTStar </span>
+<span id="cb18-21"><a href="#cb18-21" aria-hidden="true" tabindex="-1"></a>SigmaVAR_1 <span class="ot">&lt;-</span> out_1<span class="sc">$</span>standSigmaVAR_DeltaTStar</span>
+<span id="cb18-22"><a href="#cb18-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-23"><a href="#cb18-23" aria-hidden="true" tabindex="-1"></a><span class="co"># second study </span></span>
+<span id="cb18-24"><a href="#cb18-24" aria-hidden="true" tabindex="-1"></a>out_2 <span class="ot">&lt;-</span> <span class="fu">TransPhi_Corr</span>(<span class="at">DeltaTStar =</span> DeltaT[<span class="dv">2</span>], <span class="at">DeltaT =</span> <span class="dv">1</span>, <span class="at">N =</span> N[<span class="dv">2</span>], corr_YXYX) </span>
+<span id="cb18-25"><a href="#cb18-25" aria-hidden="true" tabindex="-1"></a>Phi_2 <span class="ot">&lt;-</span> out_2<span class="sc">$</span>standPhi_DeltaTStar </span>
+<span id="cb18-26"><a href="#cb18-26" aria-hidden="true" tabindex="-1"></a>SigmaVAR_2 <span class="ot">&lt;-</span> out_2<span class="sc">$</span>standSigmaVAR_DeltaTStar</span>
+<span id="cb18-27"><a href="#cb18-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-28"><a href="#cb18-28" aria-hidden="true" tabindex="-1"></a><span class="co"># third study</span></span>
+<span id="cb18-29"><a href="#cb18-29" aria-hidden="true" tabindex="-1"></a>out_3 <span class="ot">&lt;-</span> <span class="fu">TransPhi_Corr</span>(<span class="at">DeltaTStar =</span> DeltaT[<span class="dv">3</span>], <span class="at">DeltaT =</span> <span class="dv">1</span>, <span class="at">N =</span> N[<span class="dv">3</span>], corr_YXYX) </span>
+<span id="cb18-30"><a href="#cb18-30" aria-hidden="true" tabindex="-1"></a>Phi_3 <span class="ot">&lt;-</span> out_3<span class="sc">$</span>standPhi_DeltaTStar </span>
+<span id="cb18-31"><a href="#cb18-31" aria-hidden="true" tabindex="-1"></a>SigmaVAR_3 <span class="ot">&lt;-</span> out_3<span class="sc">$</span>standSigmaVAR_DeltaTStar</span>
+<span id="cb18-32"><a href="#cb18-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-33"><a href="#cb18-33" aria-hidden="true" tabindex="-1"></a><span class="co"># Note: one can already make the time-intervals equal via the arguments DeltaTStar and DeltaT in the TransPhi_Corr function, but CTmeta can do this as well.</span></span>
+<span id="cb18-34"><a href="#cb18-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-35"><a href="#cb18-35" aria-hidden="true" tabindex="-1"></a><span class="co"># In this example, the time-intervals are deliberately unequal such that, </span></span>
+<span id="cb18-36"><a href="#cb18-36" aria-hidden="true" tabindex="-1"></a><span class="co"># - the example is in line with the input (i.e., DeltaT &lt;- matrix(c(2, 3, 1)))</span></span>
+<span id="cb18-37"><a href="#cb18-37" aria-hidden="true" tabindex="-1"></a><span class="co"># - the resulting overall Phi should equal the Phi that underlies this lagged correlation matrix. </span></span>
+<span id="cb18-38"><a href="#cb18-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-39"><a href="#cb18-39" aria-hidden="true" tabindex="-1"></a><span class="co"># Next, make Phi</span></span>
+<span id="cb18-40"><a href="#cb18-40" aria-hidden="true" tabindex="-1"></a>Phi <span class="ot">&lt;-</span> <span class="fu">rbind</span>(Phi_1, Phi_2, Phi_3)                     <span class="co"># This returns a stacked matrix of size (S\*q) \* q</span></span>
+<span id="cb18-41"><a href="#cb18-41" aria-hidden="true" tabindex="-1"></a>SigmaVAR <span class="ot">&lt;-</span> <span class="fu">rbind</span>(SigmaVAR_1, SigmaVAR_2, SigmaVAR_3) </span>
+<span id="cb18-42"><a href="#cb18-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-43"><a href="#cb18-43" aria-hidden="true" tabindex="-1"></a><span class="co"># Run CTmeta:</span></span>
+<span id="cb18-44"><a href="#cb18-44" aria-hidden="true" tabindex="-1"></a><span class="fu">CTmeta</span>(N, DeltaT, DeltaTStar, Phi, SigmaVAR)</span>
+<span id="cb18-45"><a href="#cb18-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-46"><a href="#cb18-46" aria-hidden="true" tabindex="-1"></a><span class="co"># Finally, retrieve the overall q-times-q (here, 2*2) lagged effects matrix overall-Phi</span></span>
+<span id="cb18-47"><a href="#cb18-47" aria-hidden="true" tabindex="-1"></a>out_CTmeta <span class="ot">&lt;-</span> <span class="fu">CTmeta</span>(N, DeltaT, DeltaTStar, Phi, SigmaVAR)</span>
+<span id="cb18-48"><a href="#cb18-48" aria-hidden="true" tabindex="-1"></a>out_CTmeta<span class="sc">$</span>Overall_standPhi</span></code></pre></div>
+</div>
+</div>
+<div id="example-2-time-interval-dependency" class="section level2">
+<h2>Example 2: Time-interval dependency</h2>
+<div id="plots" class="section level3">
+<h3>2.1 Plots</h3>
+<p>This example focuses on the time-interval dependency of (cross-)lagged relationships for one study. However, in can also be used for the overall (cross-)lagged relationships resulting from CTmeta. Let us investigate the (cross-)lagged relationship between Stress and Anxiety (i.e., between q=2 variables), represented by a 2 x 2 discrete-time lagged effects matrix, Phi, and a 2 x 2 discrete-time residual covariance matrix, SigmaVAR (called Psi in Kuiper and Hamaker).</p>
+<p>Note: Both the lagged effects matrix (Phi) and the residual covariance matrix (SigmaVAR) vary with the time-interval (DeltaT). For example, if Stress and Anxiety were measured every hour, Phi would reflect the lagged relationship between current Stress and Anxiety levels and the Stress and Anxiety levels over one hour. Likewise, the residual covariance matrix (SigmaVAR) would reflect the scenario in which the measurements of Stress and Anxiety were taken every hour.</p>
+<p>Thus, it follows that for a long enough time-interval, the lagged relationship is damped out, that is, the cross-lagged effects are zero (and the autoregressive effects are one). Consequently, the residual covariance matrix equals the stationary covariance matrix (Gamma) which equals the (contemporaneous) covariance matrix of the contemporaneous variables.</p>
+<p>To visualize this, there are functions that plot the elements of these matrices for a range of time-intervals:</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="do">### Make Phi-plot </span><span class="al">###</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="do">## Example 1 ##</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Phi(DeltaT)</span></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>DeltaT <span class="ot">&lt;-</span> <span class="dv">1</span>            <span class="co"># Specify time observed time interval (DeltaT)</span></span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>Phi <span class="ot">&lt;-</span> myPhi[<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>,<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>]  <span class="co"># Select a portion of myPhi that corresponds to one primary study</span></span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Example 1.1: unstandardized Phi #</span></span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a><span class="fu">PhiPlot</span>(DeltaT, Phi)</span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Example 1.2: standardized Phi #</span></span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>SigmaVAR <span class="ot">&lt;-</span> <span class="fu">diag</span>(<span class="dv">2</span>) <span class="co"># for ease</span></span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a><span class="fu">PhiPlot</span>(DeltaT, Phi, <span class="at">Stand =</span> <span class="dv">1</span>, <span class="at">SigmaVAR =</span> SigmaVAR)</span></code></pre></div>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Example 2: input from fitted object of class &quot;varest&quot; ##</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>DeltaT <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> myData</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a><span class="co">#if (!require(&quot;vars&quot;)) install.packages(&quot;vars&quot;)</span></span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(vars)</span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>out_VAR <span class="ot">&lt;-</span> <span class="fu">VAR</span>(data, <span class="at">p =</span> <span class="dv">1</span>)</span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Example 2.1: unstandardized Phi #</span></span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a><span class="fu">PhiPlot</span>(DeltaT, out_VAR)</span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Example 2.2: standardized Phi #</span></span>
+<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a><span class="fu">PhiPlot</span>(DeltaT, out_VAR, <span class="at">Stand =</span> <span class="dv">1</span>)</span>
+<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-16"><a href="#cb20-16" aria-hidden="true" tabindex="-1"></a><span class="do">## Example 3: Change plot options ##</span></span>
+<span id="cb20-17"><a href="#cb20-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Note: use Phi from Example 1</span></span>
+<span id="cb20-18"><a href="#cb20-18" aria-hidden="true" tabindex="-1"></a>q <span class="ot">&lt;-</span> <span class="fu">dim</span>(Phi)[<span class="dv">1</span>]</span>
+<span id="cb20-19"><a href="#cb20-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-20"><a href="#cb20-20" aria-hidden="true" tabindex="-1"></a>WhichElements <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="dv">1</span>, <span class="at">ncol =</span> q, <span class="at">nrow =</span> q) <span class="co"># Now, all elements are 1</span></span>
+<span id="cb20-21"><a href="#cb20-21" aria-hidden="true" tabindex="-1"></a><span class="fu">diag</span>(WhichElements) <span class="ot">&lt;-</span> <span class="dv">0</span>                       <span class="co"># Now, the autoregressive parameters are excluded by setting the diagonals to 0.</span></span>
+<span id="cb20-22"><a href="#cb20-22" aria-hidden="true" tabindex="-1"></a>Lab <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;12&quot;</span>, <span class="st">&quot;21&quot;</span>)</span>
+<span id="cb20-23"><a href="#cb20-23" aria-hidden="true" tabindex="-1"></a>Labels <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
+<span id="cb20-24"><a href="#cb20-24" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(Lab)){</span>
+<span id="cb20-25"><a href="#cb20-25" aria-hidden="true" tabindex="-1"></a> e <span class="ot">&lt;-</span> <span class="fu">bquote</span>(<span class="fu">expression</span>(<span class="fu">Phi</span>(Delta[t])[.(Lab[i])]))</span>
+<span id="cb20-26"><a href="#cb20-26" aria-hidden="true" tabindex="-1"></a> Labels <span class="ot">&lt;-</span> <span class="fu">c</span>(Labels, <span class="fu">eval</span>(e))</span>
+<span id="cb20-27"><a href="#cb20-27" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb20-28"><a href="#cb20-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-29"><a href="#cb20-29" aria-hidden="true" tabindex="-1"></a>Col <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">2</span>)</span>
+<span id="cb20-30"><a href="#cb20-30" aria-hidden="true" tabindex="-1"></a>Lty <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">2</span>)</span>
+<span id="cb20-31"><a href="#cb20-31" aria-hidden="true" tabindex="-1"></a><span class="co"># Standardized Phi</span></span>
+<span id="cb20-32"><a href="#cb20-32" aria-hidden="true" tabindex="-1"></a><span class="fu">PhiPlot</span>(<span class="at">DeltaT =</span> <span class="dv">1</span>, Phi, <span class="at">Stand =</span> <span class="dv">1</span>, <span class="at">SigmaVAR =</span> SigmaVAR, <span class="at">Min =</span> <span class="dv">0</span>, <span class="at">Max =</span> <span class="dv">10</span>, <span class="at">Step =</span> <span class="fl">0.05</span>, <span class="at">WhichElements =</span> WhichElements, <span class="at">Labels =</span> Labels, <span class="at">Col =</span> Col, <span class="at">Lty =</span> Lty)</span>
+<span id="cb20-33"><a href="#cb20-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-34"><a href="#cb20-34" aria-hidden="true" tabindex="-1"></a><span class="co"># Note that you can also use &#39;ggPhiPlot&#39;.</span></span>
+<span id="cb20-35"><a href="#cb20-35" aria-hidden="true" tabindex="-1"></a><span class="co"># Then, you can customize this plot like you would do with a regular ggplot.</span></span></code></pre></div>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="do">### Make Psi-plot/SigmaVAR-plot </span><span class="al">###</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>DeltaT <span class="ot">&lt;-</span> <span class="dv">1</span>             <span class="co"># Specify the observed time interval (DeltaT)</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>Phi <span class="ot">&lt;-</span> myPhi[<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>,<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>]   <span class="co"># Select a portion of myPhi that corresponds to one primary study</span></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>SigmaVAR <span class="ot">&lt;-</span> <span class="fu">diag</span>(<span class="dv">2</span>)     <span class="co"># for ease</span></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Example 1.1: unstandardized Phi&amp;SigmaVAR #</span></span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a><span class="fu">SigmaVARPlot</span>(DeltaT, Phi, SigmaVAR)</span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Example 1.2: standardized Phi&amp;SigmaVAR #</span></span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a><span class="fu">SigmaVARPlot</span>(DeltaT, Phi, SigmaVAR, <span class="at">Stand =</span> <span class="dv">1</span>)</span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Notes:</span></span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Like in the Phi-plot, a &#39;varest&#39; object can be used.</span></span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Like in the Phi-plot, the plot can be customized (but there is no ggplot variant)</span></span></code></pre></div>
+<p>One can also use the following continuous-time matrices to generate Phi- and SigmaVAR-plots:<br />
+<br />
+- Drift: the underlying continuous time lagged effect matrix of the discrete-time lagged effects matrix<br />
+- Sigma: the residual covariance matrix of the first-order continuous-time (CT-VAR(1)) model (also called diffusion matrix).</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate the continuous-time equivalent of Phi, that is, the underlying drift matrix</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">require</span>(<span class="st">&quot;expm&quot;</span>)) <span class="fu">install.packages</span>(<span class="st">&quot;expm&quot;</span>) <span class="co"># Use expm package for function logm()</span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(expm)</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>Drift <span class="ot">&lt;-</span> <span class="fu">logm</span>(Phi)<span class="sc">/</span>DeltaT</span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Phi-plot: unstandardized Drift #</span></span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a><span class="fu">PhiPlot</span>(DeltaT, <span class="at">Drift =</span> Drift, <span class="at">Min =</span> <span class="dv">0</span>, <span class="at">Max =</span> <span class="dv">10</span>, <span class="at">Step =</span> <span class="fl">0.01</span>)</span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Phi-plot: standardized Drift/Phi #</span></span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>SigmaVAR <span class="ot">&lt;-</span> <span class="fu">diag</span>(<span class="dv">2</span>) <span class="co"># for ease</span></span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a><span class="fu">PhiPlot</span>(DeltaT, Phi, <span class="at">Stand =</span> <span class="dv">1</span>, <span class="at">SigmaVAR =</span> SigmaVAR)</span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a><span class="co"># ** shouldn&#39;t we use Drift=Drift here ^ ** </span></span>
+<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a><span class="co"># SigmaVAR-plot: unstandardized Drift &amp; Sigma / Phi &amp; SigmaVAR #</span></span>
+<span id="cb22-16"><a href="#cb22-16" aria-hidden="true" tabindex="-1"></a>Sigma <span class="ot">&lt;-</span> <span class="fu">diag</span>(<span class="dv">2</span>) <span class="co"># for ease. Note: this is the diffusion matrix and is not the CT-equivalent of SigmaVAR, . </span></span>
+<span id="cb22-17"><a href="#cb22-17" aria-hidden="true" tabindex="-1"></a><span class="fu">SigmaVARPlot</span>(DeltaT, <span class="at">Drift =</span> Drift, <span class="at">Sigma =</span> Sigma, <span class="at">Min =</span> <span class="dv">0</span>, <span class="at">Max =</span> <span class="dv">10</span>, <span class="at">Step =</span> <span class="fl">0.01</span>)</span></code></pre></div>
+<div id="area-under-curves-in-phi-plot" class="section level4">
+<h4>2.1.1 Area under curves in Phi-plot</h4>
+<p>The area under a curve is the magnitude of the displacement, which is equal to the distance traveled (only for constant acceleration). As a comparison, when the plot shows the variation of a drug concentration in blood plasma as a function of time, the area under the curve (from zero to infinity) represents the total drug exposure across time. Such a measure might be interesting when comparing lagged effects matrices using different formulations (e.g., in the drugs example, capsule vs tablet of same dose), but may also reflect which variable has overall more predictive strength – further research is needed to obtain more insight in the relevance of this measure.</p>
+<p>Code to calculate the area under the curve for each of the elements in Phi:</p>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">Area</span>(DeltaT, Phi)</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> <span class="er">$</span>Area</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span>           [,<span class="dv">1</span>]     [,<span class="dv">2</span>]</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">1</span>,] <span class="fl">0.7699825</span> <span class="fl">0.244806</span></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">2</span>,] <span class="fl">0.4896121</span> <span class="fl">1.039269</span></span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> </span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> <span class="er">$</span>Area_range</span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span>           [,<span class="dv">1</span>]     [,<span class="dv">2</span>]</span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">1</span>,] <span class="fl">0.7699825</span> <span class="fl">0.244806</span></span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">2</span>,] <span class="fl">0.4896121</span> <span class="fl">1.039269</span></span>
+<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a><span class="co"># If, for instance, the time-interval range from 1 to 2 should be inspected (and not 0 to infinity), then use:</span></span>
+<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a><span class="fu">Area</span>(DeltaT, Phi, <span class="at">t_min =</span> <span class="dv">1</span>, <span class="at">t_max =</span> <span class="dv">2</span>)</span>
+<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> <span class="er">$</span>Area</span>
+<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span>           [,<span class="dv">1</span>]     [,<span class="dv">2</span>]</span>
+<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">1</span>,] <span class="fl">0.7699825</span> <span class="fl">0.244806</span></span>
+<span id="cb23-17"><a href="#cb23-17" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">2</span>,] <span class="fl">0.4896121</span> <span class="fl">1.039269</span></span>
+<span id="cb23-18"><a href="#cb23-18" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> </span>
+<span id="cb23-19"><a href="#cb23-19" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> <span class="er">$</span>Area_range</span>
+<span id="cb23-20"><a href="#cb23-20" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span>           [,<span class="dv">1</span>]       [,<span class="dv">2</span>]</span>
+<span id="cb23-21"><a href="#cb23-21" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">1</span>,] <span class="fl">0.1480669</span> <span class="fl">0.08153651</span></span>
+<span id="cb23-22"><a href="#cb23-22" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">2</span>,] <span class="fl">0.1630730</span> <span class="fl">0.23775709</span></span>
+<span id="cb23-23"><a href="#cb23-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-24"><a href="#cb23-24" aria-hidden="true" tabindex="-1"></a><span class="co"># Notes: </span></span>
+<span id="cb23-25"><a href="#cb23-25" aria-hidden="true" tabindex="-1"></a><span class="co"># A fitted object of the classes &quot;varest&quot; and &quot;ctsemFit&quot; can also be used.</span></span>
+<span id="cb23-26"><a href="#cb23-26" aria-hidden="true" tabindex="-1"></a><span class="co"># The Drift matrix can also be used.</span></span></code></pre></div>
+</div>
+<div id="maximum-or-minimum-of-curves-in-phi-plot" class="section level4">
+<h4>2.1.2 Maximum or minimum of curves in Phi-plot</h4>
+<p>To calculate for each element in Phi what the optimum is, thus either its maximum or minumum, the following function can be used:</p>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">MaxDeltaT</span>(DeltaT, Phi)</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> <span class="er">$</span>DeltaT_MinOrMaxPhi</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span>            [,<span class="dv">1</span>]       [,<span class="dv">2</span>]</span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">1</span>,] <span class="fl">22.2610551</span>  <span class="fl">0.7992313</span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">2</span>,]  <span class="fl">0.7992313</span> <span class="fl">22.9205743</span></span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> </span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> <span class="er">$</span>MinOrMaxPhi</span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span>              [,<span class="dv">1</span>]         [,<span class="dv">2</span>]</span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">1</span>,] <span class="fl">8.459562e-09</span> <span class="fl">1.025501e-01</span></span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">2</span>,] <span class="fl">2.051002e-01</span> <span class="fl">1.078231e-08</span></span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Notes: </span></span>
+<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a><span class="co"># A fitted object of the classes &quot;varest&quot; and &quot;ctsemFit&quot; can also be used.</span></span>
+<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a><span class="co"># The Drift matrix can also be used.</span></span></code></pre></div>
+</div>
+</div>
+<div id="transformations" class="section level3">
+<h3>2.2 Transformations</h3>
+<div id="discrete-time---continuous-time" class="section level4">
+<h4>2.2.1 Discrete-time &lt;-&gt; continuous-time</h4>
+<p>There are two types of lagged effects models: the discrete-time (DT) and continuous-time (CT) models. Both are related (for more details see the references at the top). The following functions transform parameter matrices from one type to the other:</p>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="do">### From DT to CT </span><span class="al">###</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a><span class="do">## Example 1 ##</span></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>DeltaT <span class="ot">&lt;-</span> <span class="dv">1</span>             <span class="co"># specify the time observed time interval</span></span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>Phi <span class="ot">&lt;-</span> myPhi[<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>]  <span class="co"># select a portion of Phi that corresponds to one study</span></span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>SigmaVAR <span class="ot">&lt;-</span> <span class="fu">diag</span>(<span class="dv">2</span>)     <span class="co"># for ease</span></span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>           </span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a><span class="fu">CTMparam</span>(DeltaT, Phi, SigmaVAR)</span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> <span class="er">$</span>Drift</span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span>            [,<span class="dv">1</span>]       [,<span class="dv">2</span>]</span>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">1</span>,] <span class="sc">-</span><span class="fl">1.5275304</span>  <span class="fl">0.3598189</span></span>
+<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">2</span>,]  <span class="fl">0.7196378</span> <span class="sc">-</span><span class="fl">1.1317296</span></span>
+<span id="cb25-13"><a href="#cb25-13" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> </span>
+<span id="cb25-14"><a href="#cb25-14" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> <span class="er">$</span>Sigma</span>
+<span id="cb25-15"><a href="#cb25-15" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span>            [,<span class="dv">1</span>]       [,<span class="dv">2</span>]</span>
+<span id="cb25-16"><a href="#cb25-16" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">1</span>,]  <span class="fl">3.2370355</span> <span class="sc">-</span><span class="fl">0.9260082</span></span>
+<span id="cb25-17"><a href="#cb25-17" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">2</span>,] <span class="sc">-</span><span class="fl">0.9260082</span>  <span class="fl">2.5960426</span></span>
+<span id="cb25-18"><a href="#cb25-18" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> </span>
+<span id="cb25-19"><a href="#cb25-19" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> <span class="er">$</span>Gamma</span>
+<span id="cb25-20"><a href="#cb25-20" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span>           [,<span class="dv">1</span>]      [,<span class="dv">2</span>]</span>
+<span id="cb25-21"><a href="#cb25-21" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">1</span>,] <span class="fl">1.0855262</span> <span class="fl">0.1102123</span></span>
+<span id="cb25-22"><a href="#cb25-22" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">2</span>,] <span class="fl">0.1102123</span> <span class="fl">1.2170170</span></span>
+<span id="cb25-23"><a href="#cb25-23" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> </span>
+<span id="cb25-24"><a href="#cb25-24" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> <span class="er">$</span>standDrift</span>
+<span id="cb25-25"><a href="#cb25-25" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span>            [,<span class="dv">1</span>]       [,<span class="dv">2</span>]</span>
+<span id="cb25-26"><a href="#cb25-26" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">1</span>,] <span class="sc">-</span><span class="fl">1.5275304</span>  <span class="fl">0.3809887</span></span>
+<span id="cb25-27"><a href="#cb25-27" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">2</span>,]  <span class="fl">0.6796507</span> <span class="sc">-</span><span class="fl">1.1317296</span></span>
+<span id="cb25-28"><a href="#cb25-28" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> </span>
+<span id="cb25-29"><a href="#cb25-29" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> <span class="er">$</span>standSigma</span>
+<span id="cb25-30"><a href="#cb25-30" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span>            [,<span class="dv">1</span>]       [,<span class="dv">2</span>]</span>
+<span id="cb25-31"><a href="#cb25-31" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">1</span>,]  <span class="fl">2.9819968</span> <span class="sc">-</span><span class="fl">0.8056499</span></span>
+<span id="cb25-32"><a href="#cb25-32" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">2</span>,] <span class="sc">-</span><span class="fl">0.8056499</span>  <span class="fl">2.1331194</span></span>
+<span id="cb25-33"><a href="#cb25-33" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> </span>
+<span id="cb25-34"><a href="#cb25-34" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> <span class="er">$</span>standGamma</span>
+<span id="cb25-35"><a href="#cb25-35" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span>            [,<span class="dv">1</span>]       [,<span class="dv">2</span>]</span>
+<span id="cb25-36"><a href="#cb25-36" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">1</span>,] <span class="fl">1.00000000</span> <span class="fl">0.09588739</span></span>
+<span id="cb25-37"><a href="#cb25-37" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">2</span>,] <span class="fl">0.09588739</span> <span class="fl">1.00000000</span></span>
+<span id="cb25-38"><a href="#cb25-38" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> </span>
+<span id="cb25-39"><a href="#cb25-39" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> <span class="er">$</span>UniqueSolutionDrift</span>
+<span id="cb25-40"><a href="#cb25-40" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">1</span>] <span class="cn">TRUE</span></span>
+<span id="cb25-41"><a href="#cb25-41" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> </span>
+<span id="cb25-42"><a href="#cb25-42" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> <span class="er">$</span>UniqueSolutionDrift_message</span>
+<span id="cb25-43"><a href="#cb25-43" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">1</span>] <span class="st">&quot;The resulting drift matrix Drift is unique (since the eigenvalues of Drift (and thus also Phi) are, that is, have a zero imaginary part).&quot;</span></span>
+<span id="cb25-44"><a href="#cb25-44" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> </span>
+<span id="cb25-45"><a href="#cb25-45" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> <span class="er">$</span>StableProcess</span>
+<span id="cb25-46"><a href="#cb25-46" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">1</span>] <span class="cn">TRUE</span></span>
+<span id="cb25-47"><a href="#cb25-47" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> </span>
+<span id="cb25-48"><a href="#cb25-48" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> <span class="er">$</span>StableProcess_message</span>
+<span id="cb25-49"><a href="#cb25-49" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">1</span>] <span class="st">&quot;The process is stable, it is restore to its equilibrium (since all (real parts of) the eigenvalues of Drift are positive or, equivalenty, all absolute values of the eigenvalues of Phi are smaller than one).&quot;</span></span>
+<span id="cb25-50"><a href="#cb25-50" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> </span>
+<span id="cb25-51"><a href="#cb25-51" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> <span class="er">$</span>eigenvalueDrift</span>
+<span id="cb25-52"><a href="#cb25-52" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">1</span>] <span class="sc">-</span><span class="fl">1.8756189</span> <span class="sc">-</span><span class="fl">0.7836412</span></span>
+<span id="cb25-53"><a href="#cb25-53" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> </span>
+<span id="cb25-54"><a href="#cb25-54" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> <span class="er">$</span>eigenvaluePhi_DeltaT</span>
+<span id="cb25-55"><a href="#cb25-55" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">1</span>] <span class="fl">0.4567399</span> <span class="fl">0.1532601</span></span>
+<span id="cb25-56"><a href="#cb25-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-57"><a href="#cb25-57" aria-hidden="true" tabindex="-1"></a><span class="co"># Notes: </span></span>
+<span id="cb25-58"><a href="#cb25-58" aria-hidden="true" tabindex="-1"></a><span class="co"># A fitted object of the class &quot;varest&quot; can also be used.</span></span>
+<span id="cb25-59"><a href="#cb25-59" aria-hidden="true" tabindex="-1"></a><span class="co"># The Gamma matrix can be used instead of SigmaVAR.</span></span></code></pre></div>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="do">### From CT to DT </span><span class="al">###</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Create matrices from DT process - although normally, you have these matrices.</span></span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>CTM <span class="ot">&lt;-</span> <span class="fu">CTMparam</span>(DeltaT, Phi, SigmaVAR)</span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>Drift <span class="ot">&lt;-</span> CTM<span class="sc">$</span>Drift</span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>Sigma <span class="ot">&lt;-</span> CTM<span class="sc">$</span>Sigma</span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>DeltaT <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a><span class="fu">VARparam</span>(DeltaT, Drift, Sigma)</span>
+<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Notes: </span></span>
+<span id="cb26-12"><a href="#cb26-12" aria-hidden="true" tabindex="-1"></a><span class="co"># A fitted object of the class &quot;ctsemFit&quot; can also be used.</span></span>
+<span id="cb26-13"><a href="#cb26-13" aria-hidden="true" tabindex="-1"></a><span class="co"># The Gamma matrix can be used instead of SigmaVAR.</span></span></code></pre></div>
+</div>
+<div id="gamma" class="section level4">
+<h4>2.2.2 Gamma</h4>
+<p>For both the DT and CT model, it holds that there are three types of matrices: 1) the lagged effects matrix (Phi or Drift), 2) the residuals covariance matrix (SigmaVAR or Sigma), and 3) the stationary covariance matrix (Gamma - this is the same for both models, which makes sense since it is the covariance matrix of the contemporaneous variables). These three types of matrices are related: when you know two of them, the other one can be calculated. Next, the code for two functions that can calculate Gamma from the DT and CT models, respectively:</p>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Using DT matrices</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="fu">Gamma.fromVAR</span>(Phi, SigmaVAR)</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span>           [,<span class="dv">1</span>]      [,<span class="dv">2</span>]</span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">1</span>,] <span class="fl">1.0855262</span> <span class="fl">0.1102123</span></span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">2</span>,] <span class="fl">0.1102123</span> <span class="fl">1.2170170</span></span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Using CT matrices</span></span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a><span class="fu">Gamma.fromCTM</span>(Drift, Sigma)</span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span>           [,<span class="dv">1</span>]      [,<span class="dv">2</span>]</span>
+<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">1</span>,] <span class="fl">1.0855262</span> <span class="fl">0.1102123</span></span>
+<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">2</span>,] <span class="fl">0.1102123</span> <span class="fl">1.2170170</span></span></code></pre></div>
+</div>
+<div id="checks" class="section level4">
+<h4>2.2.3 Checks</h4>
+<p>When you have the CT matrices, you can also do checks on these matrices. For example, the covariance matrices should be positive definite. These checks can be done via:</p>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ChecksCTM</span>(Drift, Sigma)</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> <span class="er">$</span>ChecksAreFine</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">1</span>] <span class="cn">TRUE</span></span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> </span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> <span class="er">$</span>error</span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">1</span>] <span class="st">&quot;No error: All matrices (Drift, Sigma, and Gamma) are fine.&quot;</span></span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> </span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> <span class="er">$</span>Drift</span>
+<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span>            [,<span class="dv">1</span>]       [,<span class="dv">2</span>]</span>
+<span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">1</span>,] <span class="sc">-</span><span class="fl">1.5275304</span>  <span class="fl">0.3598189</span></span>
+<span id="cb28-11"><a href="#cb28-11" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">2</span>,]  <span class="fl">0.7196378</span> <span class="sc">-</span><span class="fl">1.1317296</span></span>
+<span id="cb28-12"><a href="#cb28-12" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> </span>
+<span id="cb28-13"><a href="#cb28-13" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> <span class="er">$</span>Sigma</span>
+<span id="cb28-14"><a href="#cb28-14" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span>            [,<span class="dv">1</span>]       [,<span class="dv">2</span>]</span>
+<span id="cb28-15"><a href="#cb28-15" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">1</span>,]  <span class="fl">3.2370355</span> <span class="sc">-</span><span class="fl">0.9260082</span></span>
+<span id="cb28-16"><a href="#cb28-16" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">2</span>,] <span class="sc">-</span><span class="fl">0.9260082</span>  <span class="fl">2.5960426</span></span>
+<span id="cb28-17"><a href="#cb28-17" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> </span>
+<span id="cb28-18"><a href="#cb28-18" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> <span class="er">$</span>Gamma</span>
+<span id="cb28-19"><a href="#cb28-19" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span>           [,<span class="dv">1</span>]      [,<span class="dv">2</span>]</span>
+<span id="cb28-20"><a href="#cb28-20" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">1</span>,] <span class="fl">1.0855262</span> <span class="fl">0.1102123</span></span>
+<span id="cb28-21"><a href="#cb28-21" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">2</span>,] <span class="fl">0.1102123</span> <span class="fl">1.2170170</span></span>
+<span id="cb28-22"><a href="#cb28-22" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> </span>
+<span id="cb28-23"><a href="#cb28-23" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> <span class="er">$</span>EigenVal_Drift</span>
+<span id="cb28-24"><a href="#cb28-24" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">1</span>] <span class="fl">1.8756189</span> <span class="fl">0.7836412</span></span>
+<span id="cb28-25"><a href="#cb28-25" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> </span>
+<span id="cb28-26"><a href="#cb28-26" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> <span class="er">$</span>EigenVal_Sigma</span>
+<span id="cb28-27"><a href="#cb28-27" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">1</span>] <span class="fl">3.896442</span> <span class="fl">1.936636</span></span>
+<span id="cb28-28"><a href="#cb28-28" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> </span>
+<span id="cb28-29"><a href="#cb28-29" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> <span class="er">$</span>EigenVal_Gamma</span>
+<span id="cb28-30"><a href="#cb28-30" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">1</span>] <span class="fl">1.279604</span> <span class="fl">1.022939</span></span>
+<span id="cb28-31"><a href="#cb28-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-32"><a href="#cb28-32" aria-hidden="true" tabindex="-1"></a><span class="co"># Note: a fitted object of class &quot;ctsemFit&quot; can also be used.</span></span></code></pre></div>
+</div>
+<div id="standardization" class="section level4">
+<h4>2.2.4 Standardization</h4>
+<p>Utilizing the StandPhi() function, standardized laggard effects estimates may be obtained from their unstandardized counterparts. Using this function, it is also possible to obtain the multivariate (elliptical) confidence intervals (CIs) for the lagged effects estimates. Please note, most software renders univariate confidence intervals, thus, not taking into account covariance between estimates.</p>
+<p>The following code demonstrates how to obtain standardized laggard effects estimates from unstandardized laggard effects estimates.</p>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Obtain only standardized lagged effects ##</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a><span class="fu">StandPhi</span>(<span class="at">N =</span> <span class="cn">NULL</span>, Phi, SigmaVAR)</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> <span class="er">$</span>Phi_DeltaT</span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span>      [,<span class="dv">1</span>] [,<span class="dv">2</span>]</span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">1</span>,] <span class="fl">0.25</span> <span class="fl">0.10</span></span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">2</span>,] <span class="fl">0.20</span> <span class="fl">0.36</span></span>
+<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> </span>
+<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> <span class="er">$</span>StandPhi_DeltaT</span>
+<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span>           [,<span class="dv">1</span>]      [,<span class="dv">2</span>]</span>
+<span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">1</span>,] <span class="fl">0.2500000</span> <span class="fl">0.1058835</span></span>
+<span id="cb29-11"><a href="#cb29-11" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">2</span>,] <span class="fl">0.1888869</span> <span class="fl">0.3600000</span></span>
+<span id="cb29-12"><a href="#cb29-12" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> </span>
+<span id="cb29-13"><a href="#cb29-13" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> <span class="er">$</span>SigmaVAR_DeltaT</span>
+<span id="cb29-14"><a href="#cb29-14" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span>      [,<span class="dv">1</span>] [,<span class="dv">2</span>]</span>
+<span id="cb29-15"><a href="#cb29-15" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">1</span>,]    <span class="dv">1</span>    <span class="dv">0</span></span>
+<span id="cb29-16"><a href="#cb29-16" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">2</span>,]    <span class="dv">0</span>    <span class="dv">1</span></span>
+<span id="cb29-17"><a href="#cb29-17" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> </span>
+<span id="cb29-18"><a href="#cb29-18" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> <span class="er">$</span>standSigmaVAR_DeltaT</span>
+<span id="cb29-19"><a href="#cb29-19" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span>           [,<span class="dv">1</span>]      [,<span class="dv">2</span>]</span>
+<span id="cb29-20"><a href="#cb29-20" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">1</span>,] <span class="fl">0.9212122</span> <span class="fl">0.0000000</span></span>
+<span id="cb29-21"><a href="#cb29-21" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">2</span>,] <span class="fl">0.0000000</span> <span class="fl">0.8216812</span></span>
+<span id="cb29-22"><a href="#cb29-22" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> </span>
+<span id="cb29-23"><a href="#cb29-23" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> <span class="er">$</span>Gamma</span>
+<span id="cb29-24"><a href="#cb29-24" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span>           [,<span class="dv">1</span>]      [,<span class="dv">2</span>]</span>
+<span id="cb29-25"><a href="#cb29-25" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">1</span>,] <span class="fl">1.0855262</span> <span class="fl">0.1102123</span></span>
+<span id="cb29-26"><a href="#cb29-26" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">2</span>,] <span class="fl">0.1102123</span> <span class="fl">1.2170170</span></span>
+<span id="cb29-27"><a href="#cb29-27" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> </span>
+<span id="cb29-28"><a href="#cb29-28" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> <span class="er">$</span>standGamma</span>
+<span id="cb29-29"><a href="#cb29-29" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span>            [,<span class="dv">1</span>]       [,<span class="dv">2</span>]</span>
+<span id="cb29-30"><a href="#cb29-30" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">1</span>,] <span class="fl">1.00000000</span> <span class="fl">0.09588739</span></span>
+<span id="cb29-31"><a href="#cb29-31" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">2</span>,] <span class="fl">0.09588739</span> <span class="fl">1.00000000</span></span>
+<span id="cb29-32"><a href="#cb29-32" aria-hidden="true" tabindex="-1"></a><span class="co"># or</span></span>
+<span id="cb29-33"><a href="#cb29-33" aria-hidden="true" tabindex="-1"></a><span class="co">#StandPhi(Phi = Phi, SigmaVAR = SigmaVAR)</span></span>
+<span id="cb29-34"><a href="#cb29-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-35"><a href="#cb29-35" aria-hidden="true" tabindex="-1"></a><span class="do">## Obtain standardized lagged effects and multivariate CIs ##</span></span>
+<span id="cb29-36"><a href="#cb29-36" aria-hidden="true" tabindex="-1"></a><span class="co"># In that case, input specifying the sample size (N) is needed as well.</span></span>
+<span id="cb29-37"><a href="#cb29-37" aria-hidden="true" tabindex="-1"></a>N <span class="ot">&lt;-</span> <span class="dv">643</span></span>
+<span id="cb29-38"><a href="#cb29-38" aria-hidden="true" tabindex="-1"></a><span class="fu">StandPhi</span>(N, Phi, SigmaVAR)</span>
+<span id="cb29-39"><a href="#cb29-39" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> <span class="er">$</span>Phi_DeltaT</span>
+<span id="cb29-40"><a href="#cb29-40" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span>      [,<span class="dv">1</span>] [,<span class="dv">2</span>]</span>
+<span id="cb29-41"><a href="#cb29-41" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">1</span>,] <span class="fl">0.25</span> <span class="fl">0.10</span></span>
+<span id="cb29-42"><a href="#cb29-42" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">2</span>,] <span class="fl">0.20</span> <span class="fl">0.36</span></span>
+<span id="cb29-43"><a href="#cb29-43" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> </span>
+<span id="cb29-44"><a href="#cb29-44" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> <span class="er">$</span>StandPhi_DeltaT</span>
+<span id="cb29-45"><a href="#cb29-45" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span>           [,<span class="dv">1</span>]      [,<span class="dv">2</span>]</span>
+<span id="cb29-46"><a href="#cb29-46" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">1</span>,] <span class="fl">0.2500000</span> <span class="fl">0.1058835</span></span>
+<span id="cb29-47"><a href="#cb29-47" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">2</span>,] <span class="fl">0.1888869</span> <span class="fl">0.3600000</span></span>
+<span id="cb29-48"><a href="#cb29-48" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> </span>
+<span id="cb29-49"><a href="#cb29-49" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> <span class="er">$</span>vecStandPhi_DeltaT</span>
+<span id="cb29-50"><a href="#cb29-50" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">1</span>] <span class="fl">0.2500000</span> <span class="fl">0.1058835</span> <span class="fl">0.1888869</span> <span class="fl">0.3600000</span></span>
+<span id="cb29-51"><a href="#cb29-51" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> </span>
+<span id="cb29-52"><a href="#cb29-52" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> <span class="er">$</span>CovMx_vecStandPhi_DeltaT</span>
+<span id="cb29-53"><a href="#cb29-53" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span>               [,<span class="dv">1</span>]          [,<span class="dv">2</span>]          [,<span class="dv">3</span>]          [,<span class="dv">4</span>]</span>
+<span id="cb29-54"><a href="#cb29-54" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">1</span>,]  <span class="fl">0.0014504849</span> <span class="sc">-</span><span class="fl">0.0001390832</span>  <span class="fl">0.0000000000</span>  <span class="fl">0.0000000000</span></span>
+<span id="cb29-55"><a href="#cb29-55" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">2</span>,] <span class="sc">-</span><span class="fl">0.0001390832</span>  <span class="fl">0.0014504849</span>  <span class="fl">0.0000000000</span>  <span class="fl">0.0000000000</span></span>
+<span id="cb29-56"><a href="#cb29-56" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">3</span>,]  <span class="fl">0.0000000000</span>  <span class="fl">0.0000000000</span>  <span class="fl">0.0012937694</span> <span class="sc">-</span><span class="fl">0.0001240562</span></span>
+<span id="cb29-57"><a href="#cb29-57" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">4</span>,]  <span class="fl">0.0000000000</span>  <span class="fl">0.0000000000</span> <span class="sc">-</span><span class="fl">0.0001240562</span>  <span class="fl">0.0012937694</span></span>
+<span id="cb29-58"><a href="#cb29-58" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> </span>
+<span id="cb29-59"><a href="#cb29-59" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> <span class="er">$</span>multiCI_vecStandPhi_DeltaT</span>
+<span id="cb29-60"><a href="#cb29-60" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span>        Phi11      Phi12     Phi21    Phi22</span>
+<span id="cb29-61"><a href="#cb29-61" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> LB <span class="fl">0.1631628</span> <span class="fl">0.01904629</span> <span class="fl">0.1068749</span> <span class="fl">0.277988</span></span>
+<span id="cb29-62"><a href="#cb29-62" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> UB <span class="fl">0.3368372</span> <span class="fl">0.19272065</span> <span class="fl">0.2708989</span> <span class="fl">0.442012</span></span>
+<span id="cb29-63"><a href="#cb29-63" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> </span>
+<span id="cb29-64"><a href="#cb29-64" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> <span class="er">$</span>SigmaVAR_DeltaT</span>
+<span id="cb29-65"><a href="#cb29-65" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span>      [,<span class="dv">1</span>] [,<span class="dv">2</span>]</span>
+<span id="cb29-66"><a href="#cb29-66" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">1</span>,]    <span class="dv">1</span>    <span class="dv">0</span></span>
+<span id="cb29-67"><a href="#cb29-67" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">2</span>,]    <span class="dv">0</span>    <span class="dv">1</span></span>
+<span id="cb29-68"><a href="#cb29-68" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> </span>
+<span id="cb29-69"><a href="#cb29-69" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> <span class="er">$</span>standSigmaVAR_DeltaT</span>
+<span id="cb29-70"><a href="#cb29-70" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span>           [,<span class="dv">1</span>]      [,<span class="dv">2</span>]</span>
+<span id="cb29-71"><a href="#cb29-71" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">1</span>,] <span class="fl">0.9212122</span> <span class="fl">0.0000000</span></span>
+<span id="cb29-72"><a href="#cb29-72" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">2</span>,] <span class="fl">0.0000000</span> <span class="fl">0.8216812</span></span>
+<span id="cb29-73"><a href="#cb29-73" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> </span>
+<span id="cb29-74"><a href="#cb29-74" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> <span class="er">$</span>Gamma</span>
+<span id="cb29-75"><a href="#cb29-75" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span>           [,<span class="dv">1</span>]      [,<span class="dv">2</span>]</span>
+<span id="cb29-76"><a href="#cb29-76" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">1</span>,] <span class="fl">1.0855262</span> <span class="fl">0.1102123</span></span>
+<span id="cb29-77"><a href="#cb29-77" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">2</span>,] <span class="fl">0.1102123</span> <span class="fl">1.2170170</span></span>
+<span id="cb29-78"><a href="#cb29-78" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> </span>
+<span id="cb29-79"><a href="#cb29-79" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> <span class="er">$</span>standGamma</span>
+<span id="cb29-80"><a href="#cb29-80" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span>            [,<span class="dv">1</span>]       [,<span class="dv">2</span>]</span>
+<span id="cb29-81"><a href="#cb29-81" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">1</span>,] <span class="fl">1.00000000</span> <span class="fl">0.09588739</span></span>
+<span id="cb29-82"><a href="#cb29-82" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">2</span>,] <span class="fl">0.09588739</span> <span class="fl">1.00000000</span></span>
+<span id="cb29-83"><a href="#cb29-83" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-84"><a href="#cb29-84" aria-hidden="true" tabindex="-1"></a><span class="co"># Notes: </span></span>
+<span id="cb29-85"><a href="#cb29-85" aria-hidden="true" tabindex="-1"></a><span class="co"># A fitted object of the classes &quot;varest&quot; and &quot;ctsemFit&quot; can also be used.</span></span>
+<span id="cb29-86"><a href="#cb29-86" aria-hidden="true" tabindex="-1"></a><span class="co"># The Gamma matrix can also be used instead of Sigma.</span></span></code></pre></div>
+</div>
+<div id="same-time-interval" class="section level4">
+<h4>2.2.5 Same time-interval</h4>
+<p>In order to compare results from multiple studies, it may be necessary to transform the time-interval dependent matrices (i.e., Phi and SigmaVAR) such that they all reflect the same time-interval.</p>
+<p>The function StandTransPhi() offers the possibility to transform time-interval dependent matrices to reflect scenarios in which another time interval was used. For example, a lagged effects matrix where measurements were taken at some initial time-interval (DeltaT) may be transformed to reflect the scenario in which another time-interval (DeltaTStar) was used.</p>
+<p>The following code demonstrates how the function StandTransPhi() may be used to transform time-interval dependent matrices.</p>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>DeltaTStar <span class="ot">&lt;-</span> <span class="dv">1</span>     <span class="co"># Specify desired  time-interval</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>DeltaT <span class="ot">&lt;-</span> <span class="dv">2</span>         <span class="co"># Specify observed time-interval</span></span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a><span class="do">## Obtain only (unstandardized) transformed lagged effects ##</span></span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a><span class="fu">StandTransPhi</span>(DeltaTStar, DeltaT, <span class="at">N =</span> <span class="cn">NULL</span>, Phi)</span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a><span class="co"># or</span></span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a><span class="co">#StandPhi(Phi = Phi, SigmaVAR = SigmaVAR)</span></span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a><span class="do">## obtain only (un)standardized transformed lagged effects ##</span></span>
+<span id="cb30-10"><a href="#cb30-10" aria-hidden="true" tabindex="-1"></a><span class="fu">StandTransPhi</span>(DeltaTStar, DeltaT, <span class="at">N =</span> <span class="cn">NULL</span>, Phi, SigmaVAR)</span>
+<span id="cb30-11"><a href="#cb30-11" aria-hidden="true" tabindex="-1"></a><span class="co"># or</span></span>
+<span id="cb30-12"><a href="#cb30-12" aria-hidden="true" tabindex="-1"></a><span class="co">#StandTransPhi(DeltaTStar, DeltaT, Phi = Phi, SigmaVAR = SigmaVAR)</span></span>
+<span id="cb30-13"><a href="#cb30-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-14"><a href="#cb30-14" aria-hidden="true" tabindex="-1"></a><span class="do">## Obtain (un)standardized transformed lagged effects and multivariate CIs ##</span></span>
+<span id="cb30-15"><a href="#cb30-15" aria-hidden="true" tabindex="-1"></a><span class="co"># In that case, input specifying the sample size (N) is needed as well.</span></span>
+<span id="cb30-16"><a href="#cb30-16" aria-hidden="true" tabindex="-1"></a>N <span class="ot">&lt;-</span> <span class="dv">643</span></span>
+<span id="cb30-17"><a href="#cb30-17" aria-hidden="true" tabindex="-1"></a><span class="fu">StandTransPhi</span>(DeltaTStar, DeltaT, N, Phi, SigmaVAR)</span>
+<span id="cb30-18"><a href="#cb30-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-19"><a href="#cb30-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Notes: </span></span>
+<span id="cb30-20"><a href="#cb30-20" aria-hidden="true" tabindex="-1"></a><span class="co"># A fitted object of the classes &quot;varest&quot; and &quot;ctsemFit&quot; can also be used.</span></span>
+<span id="cb30-21"><a href="#cb30-21" aria-hidden="true" tabindex="-1"></a><span class="co"># The Gamma matrix can be used instead of Sigma.</span></span></code></pre></div>
+</div>
+</div>
+</div>
+<div id="example-3-correlated-residuals" class="section level2">
+<h2>Example 3: Correlated residuals</h2>
+<p>Even though the focus in lagged effects models is the strength and sign of the lagged relationships, the residuals may be of interest as well (more details may be found in Kuiper and Hamaker (unpublished)). As demonstrated above, via the SigmaVAR-plot (Psi-plot), the residual covariance matrix of the discrete-time model varies with the chosen time-interval, like the lagged relationships (in Phi) do. Recall, the code to procude such a SigmaVAR-plot is given by:</p>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="do">### Make Psi-plot/SigmaVAR-plot </span><span class="al">###</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Phi(DeltaT)</span></span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>DeltaT <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>Phi <span class="ot">&lt;-</span> myPhi[<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>,<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>] </span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>SigmaVAR <span class="ot">&lt;-</span> <span class="fu">diag</span>(<span class="dv">2</span>) <span class="co"># for ease</span></span>
+<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-8"><a href="#cb31-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Example 1.1: unstandardized Phi&amp;SigmaVAR #</span></span>
+<span id="cb31-9"><a href="#cb31-9" aria-hidden="true" tabindex="-1"></a><span class="fu">SigmaVARPlot</span>(DeltaT, Phi, SigmaVAR)</span>
+<span id="cb31-10"><a href="#cb31-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-11"><a href="#cb31-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Example 1.2: standardized Phi&amp;SigmaVAR #</span></span>
+<span id="cb31-12"><a href="#cb31-12" aria-hidden="true" tabindex="-1"></a><span class="fu">SigmaVARPlot</span>(DeltaT, Phi, SigmaVAR, <span class="at">Stand =</span> <span class="dv">1</span>)</span>
+<span id="cb31-13"><a href="#cb31-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-14"><a href="#cb31-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Notes:</span></span>
+<span id="cb31-15"><a href="#cb31-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Like in the Phi-plot, a &#39;varest&#39; object can be used.</span></span>
+<span id="cb31-16"><a href="#cb31-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Like in the Phi-plot, the plot can be customized (but there is no ggplot variant)</span></span></code></pre></div>
+<p>Since SigmaVAR varies with the chosen time-interval DeltaT, there may exist a DeltaT for which SigmaVAR is diagonal. In that case, the discrete-time residuals are uncorrelated. Note that for DeltaT = 0, SigmaVAR is diagonal, but there may be more positive time-intervals for which SigmaVAR is diagonal. The code to calculate this DeltaT (if it exists) is:</p>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate DeltaT for which SigmaVAR is diagonal</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a><span class="fu">DiagDeltaT</span>(Phi, <span class="at">SigmaVAR =</span> SigmaVAR)</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> <span class="er">$</span>DeltaT_diag</span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">1</span>] <span class="dv">1</span></span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> </span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> <span class="er">$</span>message</span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">1</span>] <span class="st">&quot;No message / warning / error. Hence, there is positive DeltaT for which the diagonals/variances in SigmaVAR are positive (and off-diagonals 0).&quot;</span></span>
+<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> </span>
+<span id="cb32-9"><a href="#cb32-9" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> <span class="er">$</span>Phi_DeltaT_diag</span>
+<span id="cb32-10"><a href="#cb32-10" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span>      [,<span class="dv">1</span>] [,<span class="dv">2</span>]</span>
+<span id="cb32-11"><a href="#cb32-11" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">1</span>,] <span class="fl">0.25</span> <span class="fl">0.10</span></span>
+<span id="cb32-12"><a href="#cb32-12" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">2</span>,] <span class="fl">0.20</span> <span class="fl">0.36</span></span>
+<span id="cb32-13"><a href="#cb32-13" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> </span>
+<span id="cb32-14"><a href="#cb32-14" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> <span class="er">$</span>SigmaVAR_DeltaT_diag</span>
+<span id="cb32-15"><a href="#cb32-15" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span>      [,<span class="dv">1</span>] [,<span class="dv">2</span>]</span>
+<span id="cb32-16"><a href="#cb32-16" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">1</span>,]    <span class="dv">1</span>    <span class="dv">0</span></span>
+<span id="cb32-17"><a href="#cb32-17" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">2</span>,]    <span class="dv">0</span>    <span class="dv">1</span></span>
+<span id="cb32-18"><a href="#cb32-18" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> </span>
+<span id="cb32-19"><a href="#cb32-19" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> <span class="er">$</span>Gamma</span>
+<span id="cb32-20"><a href="#cb32-20" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span>           [,<span class="dv">1</span>]      [,<span class="dv">2</span>]</span>
+<span id="cb32-21"><a href="#cb32-21" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">1</span>,] <span class="fl">1.0855262</span> <span class="fl">0.1102123</span></span>
+<span id="cb32-22"><a href="#cb32-22" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">2</span>,] <span class="fl">0.1102123</span> <span class="fl">1.2170170</span></span>
+<span id="cb32-23"><a href="#cb32-23" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> </span>
+<span id="cb32-24"><a href="#cb32-24" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> <span class="er">$</span>StandPhi_DeltaT_diag</span>
+<span id="cb32-25"><a href="#cb32-25" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span>           [,<span class="dv">1</span>]      [,<span class="dv">2</span>]</span>
+<span id="cb32-26"><a href="#cb32-26" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">1</span>,] <span class="fl">0.2500000</span> <span class="fl">0.1058835</span></span>
+<span id="cb32-27"><a href="#cb32-27" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">2</span>,] <span class="fl">0.1888869</span> <span class="fl">0.3600000</span></span>
+<span id="cb32-28"><a href="#cb32-28" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> </span>
+<span id="cb32-29"><a href="#cb32-29" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> <span class="er">$</span>StandSigmaVAR_DeltaT_diag</span>
+<span id="cb32-30"><a href="#cb32-30" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span>           [,<span class="dv">1</span>]      [,<span class="dv">2</span>]</span>
+<span id="cb32-31"><a href="#cb32-31" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">1</span>,] <span class="fl">0.9212122</span> <span class="fl">0.0000000</span></span>
+<span id="cb32-32"><a href="#cb32-32" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">2</span>,] <span class="fl">0.0000000</span> <span class="fl">0.8216812</span></span>
+<span id="cb32-33"><a href="#cb32-33" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> </span>
+<span id="cb32-34"><a href="#cb32-34" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> <span class="er">$</span>Gamma_s</span>
+<span id="cb32-35"><a href="#cb32-35" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span>            [,<span class="dv">1</span>]       [,<span class="dv">2</span>]</span>
+<span id="cb32-36"><a href="#cb32-36" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">1</span>,] <span class="fl">1.00000000</span> <span class="fl">0.09588739</span></span>
+<span id="cb32-37"><a href="#cb32-37" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">2</span>,] <span class="fl">0.09588739</span> <span class="fl">1.00000000</span></span>
+<span id="cb32-38"><a href="#cb32-38" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> </span>
+<span id="cb32-39"><a href="#cb32-39" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> <span class="er">$</span>errorMatrices</span>
+<span id="cb32-40"><a href="#cb32-40" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">1</span>] <span class="st">&quot;No error: All matrices (Drift, Sigma, and Gamma) are fine.&quot;</span></span>
+<span id="cb32-41"><a href="#cb32-41" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> </span>
+<span id="cb32-42"><a href="#cb32-42" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> <span class="er">$</span>message_startvalues</span>
+<span id="cb32-43"><a href="#cb32-43" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">1</span>] <span class="st">&quot;In case the Psi-plot/SigmaVAR-plot does show a solution (or another solution) for DeltaT such that Psi is diagonal (i.e., the covariances are 0), </span><span class="sc">\n\n</span><span class="st">  alter the starting value for &#39;DeltaT_diag&#39;. Notably, by default, the value 1 is used.&quot;</span></span>
+<span id="cb32-44"><a href="#cb32-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-45"><a href="#cb32-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-46"><a href="#cb32-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-47"><a href="#cb32-47" aria-hidden="true" tabindex="-1"></a><span class="co"># Notes:</span></span>
+<span id="cb32-48"><a href="#cb32-48" aria-hidden="true" tabindex="-1"></a><span class="co"># - The function &#39;SigmaVARPlot&#39; can help to see whether there is a DeltaT for </span></span>
+<span id="cb32-49"><a href="#cb32-49" aria-hidden="true" tabindex="-1"></a><span class="co"># which SigmaVAr(DeltaT) is diagonal.</span></span>
+<span id="cb32-50"><a href="#cb32-50" aria-hidden="true" tabindex="-1"></a><span class="co"># The starting value of DeltaT (&#39;xstart_DeltaT&#39;) can be altered if needed.</span></span>
+<span id="cb32-51"><a href="#cb32-51" aria-hidden="true" tabindex="-1"></a><span class="co"># - A &#39;varest&#39; object can be used as well.</span></span></code></pre></div>
+<p>Please note, even though this function calculates the DeltaT for which SigmaVAR is diagonal, it may not be that useful. Kuiper and Hamaker show that correlated discrete-time residuals are supposed to be an indication for omitted common causes (or an effect at a shorter time-interval), but it actually is not. It also does not signal that lagged effects relationships are distorted, since omitted unique causes will not effect the residual correlations.</p>
+<p>It may be better to inspect continuous-time residuals, by looking at Sigma. Correlated continuous-time residuals signal one or more omitted relevant variables (so, common or unique omitted causes). The correlated continuous-time residuals then warn us that the found lagged effects do not reflect the causal relationships, but the predicting relationships. Unfortunately, it is not a measure for the extent of the distortion. As demonstrated in the examples above, code to obtain Sigma from the discrete-time parameter matrices is given by:</p>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="do">### From DT to CT </span><span class="al">###</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a><span class="do">## Example 1 ##</span></span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>Phi <span class="ot">&lt;-</span> myPhi[<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>]</span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>SigmaVAR <span class="ot">&lt;-</span> <span class="fu">diag</span>(<span class="dv">2</span>) <span class="co"># for ease</span></span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>DeltaT <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a><span class="co">#</span></span>
+<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a>CTM <span class="ot">&lt;-</span> <span class="fu">CTMparam</span>(DeltaT, Phi, SigmaVAR)</span>
+<span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a>CTM<span class="sc">$</span>Sigma </span>
+<span id="cb33-10"><a href="#cb33-10" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span>            [,<span class="dv">1</span>]       [,<span class="dv">2</span>]</span>
+<span id="cb33-11"><a href="#cb33-11" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">1</span>,]  <span class="fl">3.2370355</span> <span class="sc">-</span><span class="fl">0.9260082</span></span>
+<span id="cb33-12"><a href="#cb33-12" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">2</span>,] <span class="sc">-</span><span class="fl">0.9260082</span>  <span class="fl">2.5960426</span></span>
+<span id="cb33-13"><a href="#cb33-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-14"><a href="#cb33-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Notes: </span></span>
+<span id="cb33-15"><a href="#cb33-15" aria-hidden="true" tabindex="-1"></a><span class="co"># A fitted object of the class &quot;varest&quot; can also be used.</span></span>
+<span id="cb33-16"><a href="#cb33-16" aria-hidden="true" tabindex="-1"></a><span class="co"># The Gamma matrix can be used instead of SigmaVAR.</span></span></code></pre></div>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
