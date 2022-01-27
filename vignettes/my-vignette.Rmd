@@ -46,10 +46,10 @@ These functions also render the univariate (i.e., simultaneous) and multivariate
 - Transforming (un)standardized VAR(1) model lagged parameters and the residual covariance matrix to reflect scenarios in which another time-interval is used. See the function 'StandTransPhi'.
 This function also renders the univariate (i.e., simultaneous) and multivariate (i.e., elliptical) confidence intervals of the (un)standardized lagged effects.
 
-- Transforming VAR(1) model lagged parameters and the residual covariance matrix into their (un)standardized counterparts of the CT(1) model and vice versa. See the functions 'CTMparam' and 'VARparam', respectively.
+- Transforming VAR(1) model lagged parameters and the residual covariance matrix into their (un)standardized counterparts in the underlying CT(1) model and vice versa. See the functions 'CTMparam' and 'VARparam', respectively.
 
 
-Please find examples demonstrating the application of functions contained in CTmeta. 
+Please find examples demonstrating the application of these functions below. 
 
 
 ### More details
@@ -136,7 +136,7 @@ VARparam(DeltaT = 1, Drift, Sigma, ...)
 
 ## Example 1: CTmeta
 
-In this simple example, the functionality of CTmeta is demonstrated using three primary studies (S=3). Each study investigates the (cross-)lagged relationship between two variables (q=2): Stress and Anxiety. Each study renders a 2\*2 lagged effects matrix (Phi). All studies used different samples, different sample sizes, and collected the data using different time-intervals (DeltaT). CTmeta takes the following arguments as input: N, DeltaT, DeltaTStar, Phi and SigmaVar or Gamma.
+In this simple example, the functionality of CTmeta is demonstrated using three primary studies (S=3). These three studies investigate the (cross-)lagged relationship between two variables (q=2): Stress and Anxiety, each rendering a 2\*2 lagged effects matrix. All studies used different samples, different sample sizes, and collected the data using different time-intervals (DeltaT). CTmeta takes the following arguments as input: N, DeltaT, DeltaTStar, Phi and SigmaVar or Gamma.
 
 Setting up the input arguments for the CTmeta function:
 
@@ -158,19 +158,19 @@ DeltaT <- matrix(c(2, 3, 1))
 DeltaTStar <- 1
 ```
 
-- Phi: For each of the q variables, render a S\*q lagged effects matrix (in this example, two 3\*2 matrices are generated). Then stack the matrices and save in a (S\*q) \* q matrix.  This is the lagged effects matrix (Phi). An example of Phi (myPhi) is available in this package:
+- Phi: The stacked lagged effects matrix.  For each of the S=3 studies, a q\*q lagged effects matrix is rendered (in this example there are three 2\*2 matrices). These matrices must be stacked and stored in a (S\*q) \* q matrix (Phi). An example of Phi (myPhi) is available in this package:
 
 ```{r}
 Phi <- myPhi
 ```
 
-- SigmaVAR: For each of the q variables, generate the residual covariance matrix.  Stack the q matrices to form a residual covariance matrix (SigmaVAR) with (S\*q) \* q dimensions. This argument also has an example matrix stored in the package:
+- SigmaVAR: The stacked residual covariance matrix.  For each of the S=3 studies, retrieve the q\*q residual covariance matrix.  Stack the matrices to form a residual covariance matrix (SigmaVAR) with (S\*q) \* q dimensions. This argument also has an example matrix stored in the package:
 
 ```{r}
 SigmaVAR <- mySigmaVAR
 ```
 
-- Gamma: For each of the q variables, generate the stationary covariance matrix.  Stack the q matrices to form a the stationary covariance matrix (Gamma) with (S\*q) \* q dimensions. This argument has an example matrix stored in the package:
+- Gamma: Ths stacked stationary covariance matrix. For each of the S studies, generate the q\*q stationary covariance matrix.  Then, stack the matrices to form a the stationary covariance matrix (Gamma) with (S\*q) \* q dimensions. This argument has an example matrix stored in the package:
 
 ```{r}
 Gamma <- myGamma # Note: CTmeta does not need both SigmaVAR and Gamma
@@ -230,7 +230,7 @@ CTma$summaryMetaAnalysis
 
 This results, among other things, in a 2\*2 overall Phi matrix (if q=2). Although the varying time-intervals are corrected for, this overall Phi matrix is also dependent on the chosen time-interval (DeltaTStar). To obtain insight into this, a Phi-plot of the resulting overall Phi can be made. This is demonstrated in Section 1.1.
 
-A major point of interest with regards to lagged relationships is to determine 'causal dominant' variable, that is, the variable with the highest predictive power. In this example, we are interested in the asking the question: Is current Stress a stronger predictor for Anxiety on the next time-interval or is current Anxiety a stronger predictor for Stress on the next time-interval? To evaluate the dominance of (overall) lagged effects an AIC-type criterion called the GORICA can be used (Altinisik, Nederhof, Hoijtink, Oldehinkel, Kuiper, conditionally accepted). This method is included in the restriktor package and is demonstrated in Section 1.2.
+A major point of interest with regards to lagged relationships is to determine the 'causal dominant' variable, that is, the variable with the highest predictive power. In this example, we are interested in the asking the question: Is current Stress a stronger predictor for Anxiety on the next time-interval or is current Anxiety a stronger predictor for Stress on the next time-interval? To evaluate the dominance of (overall) lagged effects, an AIC-type criterion called the GORICA can be used (Altinisik, Nederhof, Hoijtink, Oldehinkel, Kuiper, conditionally accepted). This method is included in the restriktor package and is demonstrated in Section 1.2.
 
 Finally, in the example above, the lagged effects matrices (stacked in Phi) were obtained from each primary study. It is also possible that some or all studies report a (lagged) correlation matrix. Section 1.3 demonstrates how (lagged) correlation matrices can be used in CTmeta.
 
