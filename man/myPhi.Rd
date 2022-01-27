@@ -11,7 +11,7 @@ An object of class \code{matrix} (inherits from \code{array}) with 6 rows and 2 
 data(myPhi)
 }
 \description{
-An example of Phi: a stacked matrix of lagged effects matrices; for q = 2 variables and S = 3 primary studies. The dimensions of Phi are (S*q) x q.  Thus, in this case, the dimensions are (3*2) x 2 = 6 x 2. 
+An example of Phi: a stacked matrix of lagged effects matrices; for q = 2 variables and S = 3 primary studies. The dimensions of Phi are (S*q) x q.   
 }
 \examples{
 data(myPhi)

@@ -11,7 +11,7 @@ An object of class \code{matrix} (inherits from \code{array}) with 6 rows and 2 
 data(mySigmaVAR)
 }
 \description{
-An example of SigmaVAR: a stacked matrix of residual covariance matrices; for q = 2 variables and S = 3 primary studies. The dimensions of SigmaVAR are (S*q) x q.  Thus, in this case, the dimensions are (3*2) x 2 = 6 x 2. 
+An example of SigmaVAR: a stacked matrix of residual covariance matrices; for q = 2 variables and S = 3 primary studies. The dimensions of SigmaVAR are (S*q) x q.
 }
 \examples{
 data(mySigmaVAR)
