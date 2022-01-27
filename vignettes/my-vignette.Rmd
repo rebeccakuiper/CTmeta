@@ -438,7 +438,7 @@ SigmaVARPlot(DeltaT, Phi, SigmaVAR, Stand = 1)
 # Like in the Phi-plot, the plot can be customized (but there is no ggplot variant)
 ```
 
-One can also use the following continuous-time matrices to generate Phi- and SigmaVAR-plots: Drift, the underlying continuous-time lagged effects matrix, and Sigma, the residual covariance matrix of the first-order continuous-time model (also called the diffusion matrix). 
+One can also use the following continuous-time matrices to generate Phi- and SigmaVAR-plots: Drift, the underlying continuous-time lagged effects matrix, and Sigma, the continuous-time residual covariance matrix  (also called the diffusion matrix). 
 
 ```{r, echo=T, results='hide'}
 # Calculate the continuous-time equivalent of Phi, that is, the underlying drift matrix
@@ -611,7 +611,7 @@ StandTransPhi(DeltaTStar, DeltaT, N, Phi, SigmaVAR)
 
 ## Example 3: Correlated residuals
 
-Even though the focus in lagged effects models is the strength and sign of the lagged relationships, the residuals may be of interest as well (more details may be found in Kuiper and Hamaker (unpublished)). As demonstrated above, via the SigmaVAR-plot (Psi-plot), the residual covariance matrix of the discrete-time model varies with the chosen time-interval, like the lagged relationships (in Phi) do. Recall, the code to procude such a SigmaVAR-plot is given by: 
+Even though the focus in lagged effects models is the strength and sign of the lagged relationships, the residuals may be of interest as well (more details may be found in Kuiper and Hamaker (unpublished)). As demonstrated above, via the SigmaVAR-plot (Psi-plot), the residual covariance matrix of the discrete-time model varies with the chosen time-interval, like the lagged relationships (in Phi) do. Recall, the code to produce such a SigmaVAR-plot is given by: 
 
 ```{r}
 ### Make Psi-plot/SigmaVAR-plot ###
