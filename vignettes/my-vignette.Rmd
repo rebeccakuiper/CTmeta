@@ -556,7 +556,7 @@ ChecksCTM(Drift, Sigma)
 
 
 #### 2.2.4 Standardization
-Utilizing the StandPhi() function, standardized laggard effects estimates may be obtained from their unstandardized counterparts. Using this function, it is also possible to obtain the multivariate (elliptical) confidence intervals (CIs) for the lagged effects estimates. Please note, most software renders univariate confidence intervals, thus, not taking into account covariance between estimates.
+Utilizing the 'StandPhi' function, standardized laggard effects estimates may be obtained from their unstandardized counterparts. Using this function, it is also possible to obtain the multivariate (elliptical) confidence intervals (CIs) for the lagged effects estimates. Please note, most software renders univariate confidence intervals, thus, not taking into account covariance between estimates.
 
 The following code demonstrates how to obtain standardized laggard effects estimates from unstandardized laggard effects estimates.
 
@@ -580,9 +580,9 @@ StandPhi(N, Phi, SigmaVAR)
 #### 2.2.5 Same time-interval
 In order to compare results from multiple studies, it may be necessary to transform the time-interval dependent matrices (i.e., Phi and SigmaVAR) such that they all reflect the same time-interval.  
 
-The function StandTransPhi() offers the possibility to transform time-interval dependent matrices to reflect scenarios in which another time interval was used.   For example, a lagged effects matrix where measurements were taken at some initial time-interval (DeltaT) may be transformed to reflect the scenario in which another time-interval (DeltaTStar) was used. 
+The function 'StandTransPhi' offers the possibility to transform time-interval dependent matrices to reflect scenarios in which another time interval was used.   For example, a lagged effects matrix where measurements were taken at some initial time-interval (DeltaT) may be transformed to reflect the scenario in which another time-interval (DeltaTStar) was used. 
 
-The following code demonstrates how the function StandTransPhi() may be used to transform time-interval dependent matrices. 
+The following code demonstrates the application of this function. 
 
 ```{r, echo=T, results='hide'}
 DeltaTStar <- 1     # Specify desired  time-interval
