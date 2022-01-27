@@ -8,7 +8,7 @@ StandPhi(N = NULL, Phi, SigmaVAR = NULL, Gamma = NULL, alpha = 0.05)
 }
 
 \description{
-Standardizes discrete-time (unstandardized) lagged effects matrices, their corresponding covariance matrix, and renders the corresponding elliptical 95\% confidence intervals (CIs). An interactive web application offering the same functionality can be found on my website: Standardizing and/or transforming lagged regression estimates (\url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}).
+This function standardizes the input discrete-time lagged effects matrix, its corresponding residual covariance matrix, and renders the corresponding elliptical 95\% confidence intervals (CIs). An interactive web application offering the same functionality can be found on my website: Standardizing and/or transforming lagged regression estimates (\url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}).
 }
 
 \arguments{

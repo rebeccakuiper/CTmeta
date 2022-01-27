@@ -24,12 +24,12 @@ SigmaVARPlot(
 )
 }
 \description{
-This function generates a plot illustrating how the elements of a discrete-time residual covariance matrix (SigmaVAR) vary as a function of the time-interval (DeltaT).  Note, the discrete-time residual covariance matrix (SigmaVAR) is called 'Psi' in Kuiper and Hamaker (??DATE??).  An interactive web application offering the same functionality can be found on my website: Phi-and-Psi-Plots and Find DeltaT (\url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}).
+This function generates a plot illustrating how the elements of a discrete-time residual covariance matrix (SigmaVAR) vary as a function of the time-interval (DeltaT).  Note, the discrete-time residual covariance matrix (SigmaVAR) is called 'Psi' in Kuiper and Hamaker (unpublished).  An interactive web application offering the same functionality can be found on my website: Phi-and-Psi-Plots and Find DeltaT (\url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}).
 }
 \arguments{
 \item{DeltaT}{Optional. The observed time interval. By default, DeltaT = 1.}
 
-\item{Phi}{Matrix of size q times q of (un)standardized discrete-time lagged effects arising from one primary study.  Alternatively, the overall Phi matrix output by CTmeta can be used.  It also takes a fitted object from the classes "varest" (from the VAR() function in vars package) and "ctsemFit" (from the ctFit() function in the ctsem package); see example below. From such an object, the (standardized) Phi/Drift and SigmaVAR/Sigma matrices are calculated/extracted.}
+\item{Phi}{Matrix of size q x q of (un)standardized discrete-time lagged effects arising from one primary study.  Alternatively, the overall Phi matrix output by CTmeta can be used.  It also takes a fitted object from the classes "varest" (from the VAR() function in vars package) and "ctsemFit" (from the ctFit() function in the ctsem package); see example below. From such an object, the (standardized) Phi/Drift and SigmaVAR/Sigma matrices are calculated/extracted.}
 
 \item{SigmaVAR}{Residual covariance matrix of the first-order discrete-time vector autoregressive (DT-VAR(1)) model.}
 
