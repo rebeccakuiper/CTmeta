@@ -136,41 +136,43 @@ VARparam(DeltaT = 1, Drift, Sigma, ...)
 
 ## Example 1: CTmeta
 
-In this simple example, the functionality of CTmeta is demonstrated using three primary studies (S=3). These three studies investigate the (cross-)lagged relationship between two variables (q=2): Stress and Anxiety, each rendering a 2\*2 lagged effects matrix. All studies used different samples, different sample sizes, and collected the data using different time-intervals (DeltaT). CTmeta takes the following arguments as input: N, DeltaT, DeltaTStar, Phi and SigmaVar or Gamma.
+In this simple example, the functionality of CTmeta is demonstrated using S = 3 primary studies. These three studies investigate the (cross-)lagged relationship between q = 2 variables: Stress and Anxiety.  Thus, each study generates a 2 x 2 lagged effects matrix. All studies used different samples, different sample sizes, and collected the data using different time-intervals.
 
-Setting up the input arguments for the CTmeta function:
+The function CTmeta requires the following arguments as input: N, DeltaT, DeltaTStar, Phi, and one of SigmaVAR or Gamma, details are included below.  
 
-- N: Save the sample size of each study in a S\*1 matrix. 
+Setting up the arguments for CTmeta: 
+
+- N: Save the sample size of each study in a S x 1 matrix. 
 
 ```{r}
 N <- matrix(c(643, 651, 473))
 ```
 
-- DeltaT: Save the time-interval used in each study in a S\*1 matrix.
+- DeltaT: Save the time-interval used in each study in a S x 1 matrix.
 
 ```{r}
 DeltaT <- matrix(c(2, 3, 1))
 ```
 
-- DeltaTStar: a constant representing the time-interval of interest (preferably, falling within the range of the inspected time-intervals).
+- DeltaTStar: Save the constant representing the time-interval of interest (preferably, falling within the range of the inspected time-intervals).
 
 ```{r}
 DeltaTStar <- 1
 ```
 
-- Phi: The stacked lagged effects matrix.  For each of the S=3 studies, a q\*q lagged effects matrix is rendered (in this example there are three 2\*2 matrices). These matrices must be stacked and stored in a (S\*q) \* q matrix (Phi). An example of Phi (myPhi) is available in this package:
+- Phi: The lagged effects matrix.  For each of the S = 3 studies, retrieve the q x q lagged effects matrix; in this specific example, there are three 2 x 2 lagged effects matrices. Stack the three matrices to form the lagged effects matrix (Phi) with dimensions S*q x q. This argument has an example matrix stored in the package:
 
 ```{r}
 Phi <- myPhi
 ```
 
-- SigmaVAR: The stacked residual covariance matrix.  For each of the S=3 studies, retrieve the q\*q residual covariance matrix.  Stack the matrices to form a residual covariance matrix (SigmaVAR) with (S\*q) \* q dimensions. This argument also has an example matrix stored in the package:
+- SigmaVAR: The residual covariance matrix.  For each of the S = 3 studies, retrieve the q x q residual covariance matrix.  Stack the matrices to form a residual covariance matrix (SigmaVAR) with dimensions S*q x q. This argument has an example matrix stored in the package:
 
 ```{r}
 SigmaVAR <- mySigmaVAR
 ```
 
-- Gamma: Ths stacked stationary covariance matrix. For each of the S studies, generate the q\*q stationary covariance matrix.  Then, stack the matrices to form a the stationary covariance matrix (Gamma) with (S\*q) \* q dimensions. This argument has an example matrix stored in the package:
+- Gamma: The stacked stationary covariance matrix. For each of the S = 3 studies, generate the q x q stationary covariance matrix.  Then, stack the matrices to form the stationary covariance matrix (Gamma) with dimensions S*q x q. This argument has an example matrix stored in the package:
 
 ```{r}
 Gamma <- myGamma # Note: CTmeta does not need both SigmaVAR and Gamma
@@ -178,7 +180,7 @@ Gamma <- myGamma # Note: CTmeta does not need both SigmaVAR and Gamma
 
 The CTmeta function will standardize these matrices (Phi, SigmaVAR, Gamma) to make the comparisons and weighted averages of effects meaningful.
 
-An example of a stacked matrix of size (3\*2)\*2 is presented below.
+An example of a stacked matrix of size (3\*2) x 2 is presented below.
 
 ```{r}
 Phi
