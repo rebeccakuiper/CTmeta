@@ -59,19 +59,43 @@
 #' 
 #' Area(DeltaT = DeltaT, Phi = out_VAR)
 #'
+#' ## Example 3: input from fitted object of class "CTsemFit" ##
+#' #
+#' library(ctsem)
+#' library(ctsemOMX)
+#' #
+#' ############ adapted from https://rdrr.io/cran/ctsemOMX/man/ctFit.html ############
+#' data(ctExample1)
+#' model <- ctModel(n.manifest=2, n.latent=2, Tpoints=6, LAMBDA=diag(2),
+#'                  manifestNames=c('LeisureTime', 'Happiness'),
+#'                  latentNames=c('LeisureTime', 'Happiness'), TRAITVAR="auto")
+#' out_Phi <- ctFit(dat=ctExample1, ctmodelobj=model)
+#' ##################################################################################
+#' #
+#' Area(Phi = out_Phi)
+#' Area(Phi = out_Phi, t_min = 1, t_max = 2)
+#' PhiPlot(DeltaT = 1, out_Phi)
+#' #
+#' # Four plots are produced since the eigenvalues of the Drift matrix are complex, so there are multiple solutions for Phi.
+#' 
 
 Area <- function(DeltaT = 1, Phi = NULL, Drift = NULL, t_min = 0, t_max = Inf) {
 
   # Checks:
+  if(!is.null(Drift) & DeltaT != 1) {
+    warning("The input for DeltaT was ignored as Drift was part of the input.")
+    DeltaT <- 1 # this way the function can run even if DeltaT is not valid input
+  }
+  #
   if(length(DeltaT) != 1 | !is.numeric(DeltaT)){
     ErrorMessage <- (paste0("The argument DeltaT should be a scalar (i.e., one number or a vector with one numerical element)."))
     stop(ErrorMessage)
   }
-  if(DeltaT == 0) {
-    stop("DeltaT cannot be 0, as this would imply a lack of time interval.")
+  if(!(DeltaT > 0)) {
+    stop("DeltaT must be a positive number.")
   }
-  if(DeltaT == Inf | DeltaT < 0) {
-    stop("DeltaT must be a finite positive number.")
+  if(DeltaT == Inf) {
+    stop("DeltaT must be a finite number.")
   }
   #
   if(!is.null(Phi) & !is.null(Drift)) {
@@ -82,11 +106,18 @@ Area <- function(DeltaT = 1, Phi = NULL, Drift = NULL, t_min = 0, t_max = Inf) {
     stop("Drift contains non-numerical values.")
   }
   #
-  if(length(t_min) > 1 || (!is.numeric(t_min) | t_min %in% c(Inf, -Inf))) {
+  if(length(t_min) > 1 | !is.numeric(t_min)) {
     stop("t_min should be a scalar (i.e., a real number or a vector with one numerical element).")
   }
-  if(length(t_max) > 1 || (!is.numeric(t_max) | t_max == -Inf)) {
+  if(!(t_min >= 0)) {
+    stop("t_min must be >= 0.")
+  }
+  #
+  if(length(t_max) > 1 | !is.numeric(t_max)) {
     stop("t_max should be a number.")
+  }
+  if (!(t_max > 0)) {
+    stop("t_max must be strictly positive.")
   }
   if(t_min > t_max) {
     warning("t_min is larger than t_max. The values in Area_range will be negative.")
