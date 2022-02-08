@@ -2,12 +2,11 @@
 #'
 #' Various checks on the continuous-time lagged-effects model matrices (e.g. check whether matrices are positive-definite). The interactive web application 'Phi-and-Psi-Plots and Find DeltaT': \url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}.
 #'
-#' @param Drift Matrix of size q x q of (un)standardized continuous-time lagged effects, called the drift matrix. Note that Phi(DeltaT) = expm(Drift*DeltaT). By default, input for Phi is used; only when Phi = NULL, Drift will be used.
-#' It also takes a fitted object from the class "ctsemFit" (from the ctFit() function in the ctsem package); see example below. From such an object, the (standardized) Drift matrix is extracted.
-#' @param Sigma Optional (either Sigma or Gamma). Residual covariance matrix (of size q x q) of the first-order continuous-time (CT-VAR(1)) model, i.e. the diffusion matrix. By default, input for SigmaVAR is used; only when SigmaVAR = NULL, Sigma will be used.
-#' Note that if Drift and Sigma are known, Gamma can be calculated: hence, only one out of SigmaVAR, Sigma, and Gamma is needed as input.
-#' @param Gamma Optional (either Sigma or Gamma). Stationary covariance matrix (of size q x q), that is, the contemporaneous covariance matrix of the data. By default, input for SigmaVAR is used; only when SigmaVAR = NULL, Gamma will be used.
-#' Note that if Drift and Sigma are known, Gamma can be calculated: hence, only two out of SigmaVAR, Sigma, and Gamma are needed as input. If all three are provided, their compatibility is checked.
+#' @param Drift Matrix of size q x q of (un)standardized continuous-time lagged effects, called the drift matrix. Can also be a fitted object from the class "ctsemFit" (from the ctFit() function in the ctsem package); see example below. The (standardized) Drift matrix is extracted from such an object.
+#' @param Sigma Optional (either Sigma or Gamma). Residual covariance matrix (of size q x q) of the first-order continuous-time (CT-VAR(1)) model, i.e. the diffusion matrix.
+#' Note that if Drift and Sigma are known, Gamma can be calculated: hence, only one out of Sigma and Gamma is needed as input.
+#' @param Gamma Optional (either Sigma or Gamma). Stationary covariance matrix (of size q x q), that is, the contemporaneous covariance matrix of the data.
+#' Note that if Drift and Sigma are known, Gamma can be calculated: hence, only one out of Sigma and Gamma is needed as input. If all three are provided, their compatibility is checked.
 #'
 #' @return The output provides conclusions from the checks on the continuous-time lagged-effects model matrices: whether any problems were found, the exact errors that were found, the Drift, Sigma and Gamma matrices and their eigenvalues.
 #' @importFrom expm expm
@@ -36,11 +35,19 @@
 #'
 #' ## Example 2: input from fitted object of class "ctsemFit" ##
 #' #
-#' #data <- myData
-#' #if (!require("ctsem")) install.packages("ctsem")
-#' #library(ctsem)
-#' #out_CTM <- ctFit(...)
-#' #ChecksCTM(out_CTM)
+#' if (!require("ctsem")) install.packages("ctsem")
+#' library(ctsem)
+#' library(ctsemOMX)
+#' #
+#' ############ adapted from https://rdrr.io/cran/ctsemOMX/man/ctFit.html ############
+#' data(ctExample1)
+#' model <- ctModel(n.manifest=2, n.latent=2, Tpoints=6, LAMBDA=diag(2),
+#'                  manifestNames=c('LeisureTime', 'Happiness'),
+#'                  latentNames=c('LeisureTime', 'Happiness'), TRAITVAR="auto")
+#' out_Drift <- ctFit(dat=ctExample1, ctmodelobj=model)
+#' ##################################################################################
+#' #
+#' ChecksCTM(out_Drift, Sigma)
 #'
 
 
@@ -100,7 +107,7 @@ ChecksCTM <- function(Drift, Sigma = NULL, Gamma = NULL) {
     }
     #
     if(all(Re(eigen(B)$val) < 0)){
-      cat("All (the real parts of) the eigenvalues of the drift matrix Drift are positive. Therefore. I assume the input for Drift was B = -A instead of A. I will use Drift = -B = A.")
+      cat("All (the real parts of) the eigenvalues of the drift matrix Drift are positive. Therefore, I assume the input for Drift was B = -A instead of A. I will use Drift = -B = A.")
       cat("Note that Phi(DeltaT) = expm(-B*DeltaT) = expm(A*DeltaT) = expm(Drift*DeltaT).")
       B = -B
     }
@@ -156,6 +163,12 @@ ChecksCTM <- function(Drift, Sigma = NULL, Gamma = NULL) {
 ChecksAreFine <- TRUE
 error <- list()
 error <- append(error, "Checks on the matrices Drift, Sigma, and Gamma are inspected, the following problems exist:")
+
+if(all(Re(eigen(B)$val) < 0)){
+  error <- append(error, "All (the real parts of) the eigenvalues of the drift matrix Drift are positive. Therefore, B = -A was used for Drift instead of A. I will use Drift = -B = A.")
+  error <- append(error, "Note that Phi(DeltaT) = expm(-B*DeltaT) = expm(A*DeltaT) = expm(Drift*DeltaT).")
+  B = -B
+}
 
 # Check that the three matrices are compatible if all three are provided
 if(!is.null(Sigma) & !is.null(Gamma)) {
