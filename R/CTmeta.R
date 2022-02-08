@@ -829,11 +829,30 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
                                slab = Label_Phi,
                                struct = "UN", method = "ML")  # With struct="UN", the random effects are allowed to have different variances for each overallPhi and are allowed to be correlated.
             }else{
+            #  metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ overallPhi + overallPhi:Mod. - 1,
+            #                   random = ~ 1 | BetweenLevel / Study,
+            #                   slab = Label_Phi,
+            #                   method = "ML")
+            #}
+            # TO DO check
+              BL <- matrix(rep(BetweenLevel, each = (q*q)), byrow = T, ncol = (q*q))
               metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ overallPhi + overallPhi:Mod. - 1,
-                               random = ~ 1 | BetweenLevel / Study,
-                               slab = Label_Phi,
-                               method = "ML")
-            }
+                     random = list(~ overallPhi | BL, ~ overallPhi | Study),
+                     method = "ML",
+                     struct = "UN",
+                     control=list(optimizer="optim", optmethod="BFGS")
+              )
+              # TO DO RMK ALSO make the following available? (also below then).
+              # TO DO RMK Perhaps make the option BetweenLevel and Study or only BetweenLevel!
+              #BL <- matrix(rep(BetweenLevel, each = (q*q)), byrow = T, ncol = (q*q))
+              #metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ overallPhi + overallPhi:Mod. - 1,
+              #                 random = ~ overallPhi | BL,
+              #                 method = "ML",
+              #                 struct = "UN",
+              #                 control=list(optimizer="optim", optmethod="BFGS")
+              #)
+              # TO DO RMK Btw add comparison of models in the examples above. Using "performance::compare_performance()"
+              # TO DO RMK Btw also add in examples making plots like Geri does! For both see emails with Geri!
           }else{ # No Moderators
             if(is.null(BetweenLevel)){
               metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ overallPhi - 1,
@@ -841,10 +860,26 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
                                slab = Label_Phi,
                                struct = "UN", method = "ML")  # With struct="UN", the random effects are allowed to have different variances for each overallPhi and are allowed to be correlated.
             }else{
+              #metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ overallPhi - 1,
+              #                 random = ~ 1 | BetweenLevel / Study,
+              #                 slab = Label_Phi,
+              #                 method = "ML")
+              # TO DO check
+              BL <- matrix(rep(BetweenLevel, each = (q*q)), byrow = T, ncol = (q*q))
               metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ overallPhi - 1,
-                               random = ~ 1 | BetweenLevel / Study,
-                               slab = Label_Phi,
-                               method = "ML")
+                     random = list(~ overallPhi | BL, ~ overallPhi | Study),
+                     method = "ML",
+                     struct = "UN",
+                     control=list(optimizer="optim", optmethod="BFGS")
+              )
+              # TO DO RMK ALSO make the following available? (also below then).
+              #BL <- matrix(rep(BetweenLevel, each = (q*q)), byrow = T, ncol = (q*q))
+              #metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ overallPhi - 1,
+              #                 random = ~ overallPhi | BL,
+              #                 method = "ML",
+              #                 struct = "UN",
+              #                 control=list(optimizer="optim", optmethod="BFGS")
+              )
             }
           }
           tau2_metaan_MV <- metaan$tau2
@@ -917,10 +952,26 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
                                  slab = Label_Phi,
                                  struct = "UN", method = "ML")  # With struct="UN", the random effects are allowed to have different variances for each overallPhi and are allowed to be correlated.
               }else{
-                metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ -1 + overallPhi:D. + overallPhi:Mod.,
-                                 random = ~ 1 | BetweenLevel / Study,
-                                 slab = Label_Phi,
-                                 method = "ML")
+                #metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ -1 + overallPhi:D. + overallPhi:Mod.,
+                #                 random = ~ 1 | BetweenLevel / Study,
+                #                 slab = Label_Phi,
+                #                 method = "ML")
+                # TO DO check
+                BL <- matrix(rep(BetweenLevel, each = (q*q)), byrow = T, ncol = (q*q))
+                metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ overallPhi:D + overallPhi:Mod. - 1,
+                       random = list(~ overallPhi | BL, ~ overallPhi | Study),
+                       method = "ML",
+                       struct = "UN",
+                       control=list(optimizer="optim", optmethod="BFGS")
+                )
+                # TO DO RMK ALSO make the following available? (also below then).
+                #BL <- matrix(rep(BetweenLevel, each = (q*q)), byrow = T, ncol = (q*q))
+                #metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ overallPhi:D + overallPhi:Mod. - 1,
+                #                 random = ~ overallPhi | BL,
+                #                 method = "ML",
+                #                 struct = "UN",
+                #                 control=list(optimizer="optim", optmethod="BFGS")
+                #)
               }
             }else{ # No Moderators
               if(is.null(BetweenLevel)){
@@ -929,10 +980,26 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
                                  slab = Label_Phi,
                                  struct = "UN", method = "ML")  # With struct="UN", the random effects are allowed to have different variances for each overallPhi and are allowed to be correlated.
               }else{
-                metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ -1 + overallPhi:D.,
-                                 random = ~ 1 | BetweenLevel / Study,
-                                 slab = Label_Phi,
-                                 method = "ML")
+                #metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ -1 + overallPhi:D.,
+                #                 random = ~ 1 | BetweenLevel / Study,
+                #                 slab = Label_Phi,
+                #                 method = "ML")
+                # TO DO check
+                BL <- matrix(rep(BetweenLevel, each = (q*q)), byrow = T, ncol = (q*q))
+                metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ overallPhi:D - 1,
+                       random = list(~ overallPhi | BL, ~ overallPhi | Study),
+                       method = "ML",
+                       struct = "UN",
+                       control=list(optimizer="optim", optmethod="BFGS")
+                )
+                # TO DO RMK ALSO make the following available? (also below then).
+                #BL <- matrix(rep(BetweenLevel, each = (q*q)), byrow = T, ncol = (q*q))
+                #metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ overallPhi:D - 1,
+                #                 random = ~ overallPhi | BL,
+                #                 method = "ML",
+                #                 struct = "UN",
+                #                 control=list(optimizer="optim", optmethod="BFGS")
+                #)
               }
             }
             tau2_metaan_MV <- metaan$tau2
