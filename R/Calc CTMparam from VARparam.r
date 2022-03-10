@@ -62,8 +62,26 @@ CTMparam <- function(DeltaT = 1, Phi, SigmaVAR = NULL, Gamma = NULL) {
 
   # Checks:
   if(length(DeltaT) != 1){
-    ErrorMessage <- (paste0("The argument DeltaT should be a scalar (i.e., one number or a vector with one element."))
+    ErrorMessage <- (paste0("The argument DeltaT should be a scalar (i.e., one number or a vector with one element)."))
     stop(ErrorMessage)
+  }
+  if(is.na(DeltaT)) {
+    stop("Please specify DeltaT. This should be a scalar (i.e., one number or a vector with one element).")
+  }
+  if(DeltaT == 0){
+    stop("Please specify a non-zero value for DeltaT.")
+  }
+  if(anyNA(SigmaVAR)){
+    stop("There are NA values in SigmaVAR.")
+  }
+  if(!is.null(SigmaVAR) && !is.numeric(SigmaVAR)){
+    stop("There are non-numerical values in SigmaVAR.")
+  }
+  if(!is.null(Gamma) && !is.numeric(Gamma)){
+    stop("There are non-numerical values in Gamma.")
+  }
+  if(!is.numeric(Phi)){
+    stop("There are non-numerical values in Phi.")
   }
   #
   B <- NULL
@@ -109,6 +127,12 @@ CTMparam <- function(DeltaT = 1, Phi, SigmaVAR = NULL, Gamma = NULL) {
     Check_Phi(Phi)
     #
     # Check on SigmaVAR and Gamma
+    if(!is.null(SigmaVAR) & !is.null(Gamma)){
+      Gamma.from.VAR <- Gamma.fromVAR(Phi, SigmaVAR)
+      if(any(Gamma.from.VAR != Gamma)) {
+        warning("One of Phi, SigmaVAR, or Gamma, is likely mismatched from the other two.")
+      }
+    }
     if(is.null(SigmaVAR) & is.null(Gamma)){ # Both SigmaVAR and Gamma unknown
       #ErrorMessage <- (paste0("The arguments SigmaVAR and Gamma are not found: Both SigmaVAR and Gamma are unknown; either one (or both) should be part of the input. In case of first matrix, specify 'SigmaVAR = SigmaVAR'."))
       #return(ErrorMessage)

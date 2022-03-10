@@ -9,7 +9,7 @@ Check_SigmaVAR <- function(SigmaVAR, q){
   # Checks on SigmaVAR
   if(length(SigmaVAR) != 1){
     if(length(dim(SigmaVAR)) < 2){
-      print(paste0("The residual covariance matrix SigmaVAR should be a square matrix. It should be with dimensions q x q, with q = ", q))
+      print(paste0("The residual covariance matrix SigmaVAR should be a square matrix. It should have dimensions q x q, with q = ", q))
       stop()
     }else if(length(dim(SigmaVAR)) > 2){
       print(paste0("The residual covariance matrix SigmaVAR should, like Phi, be a q x q matrix, with q = ", q, "."))
