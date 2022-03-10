@@ -1,15 +1,15 @@
 #' Continuous-time estimates from discrete-time estimates
 #'
-#' The continuous-time lagged-effects model matrices corresponding to the discrete-time ones. The interactive web application 'Phi-and-Psi-Plots and Find DeltaT' also contains this functionality, you can find it on my website: \url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}.
+#' Produces the continuous-time lagged-effects model matrices corresponding to the discrete-time ones. The interactive web application 'Phi-and-Psi-Plots and Find DeltaT' also contains this functionality. It is available here: \url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}.
 #'
-#' @param DeltaT Optional. The time interval used. By default, DeltaT = 1.
-#' @param Phi (Un)standardized lagged effects matrix. If necessary, it is standardized and for the standardized and vectorized Phi the covariance matrix is determined.
-#' It also takes a fitted object from the class "varest" (from the VAR() function in vars package); see example below. From such an object, the Phi and SigmaVAR matrices are extracted.
-#' @param SigmaVAR Optional (needed to also calculate continuous-time equivalent and to calculate standardized paramater matrices). Residual covariance matrix of the first-order discrete-time vector autoregressive (DT-VAR(1)) model.
-#' @param Gamma Optional (either SigmaVAR or Gamma). Stationary covariance matrix, that is, the contemporaneous covariance matrix of the data.
-#' Note that if Phi and SigmaVAR are known, Gamma can be calculated; hence, either SigmaVAR or Gamma is needed as input.
+#' @param DeltaT Optional. The time interval used in the discrete-time matrices. By default, DeltaT = 1.
+#' @param Phi (Un)standardized lagged effects matrix. If necessary, it can be standardized. The covariance matrix is determined for the standardized and vectorized Phi.
+#' It also takes a fitted object from the class "varest" (from the VAR() function in vars package); see example below. The Phi and SigmaVAR matrices are extracted from this object.
+#' @param SigmaVAR Optional (either SigmaVAR or Gamma). Residual covariance matrix of the first-order discrete-time vector autoregressive (DT-VAR(1)) model.
+#' @param Gamma Optional (either SigmaVAR or Gamma). Stationary covariance matrix, i.e., the contemporaneous covariance matrix of the data.
+#' Note that if Phi and SigmaVAR are known, Gamma can be calculated. Therefore, only one of SigmaVAR or Gamma is needed as input.
 #'
-#' @return The output renders the continuous-time equivalent matrices of the discrete-times ones, together with some checks (namely, the stability of the process and uniqueness of the solution; see the function 'ChecksCTM' for checks on all matrices).
+#' @return The output renders the continuous-time matrices equivalent to the discrete-times ones. Some checks are also performed (namely, the stability of the process and uniqueness of the solution; see the function 'ChecksCTM' for checks on all matrices).
 #' @importFrom expm expm
 #' @importFrom expm logm
 #' @export
@@ -47,7 +47,7 @@
 #'
 
 
-CTMparam <- function(DeltaT, Phi, SigmaVAR = NULL, Gamma = NULL) {
+CTMparam <- function(DeltaT = 1, Phi, SigmaVAR = NULL, Gamma = NULL) {
 # DeltaT = time interval (although in VAR itself 1 is used!)
 # q = Number of dimensions, that is, number of dependent variables
 # Phi = matrix of size qxq with autoregressive and cross-lagged effects, matrix with lagged coefficients
