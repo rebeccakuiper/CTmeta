@@ -179,7 +179,7 @@ if(!is.null(Sigma) & !is.null(Gamma)) {
   }
   Gamma.from.Sigma <- Gamma.fromCTM(-B, Sigma)
   if(any(Gamma != Gamma.from.Sigma) | any(Sigma != Sigma.from.Gamma)) {
-    cat("The Gamma and/or Sigma obtained from the Drift and Sigma or Gamma do not match the provided Sigma and Gamma.\n One of the given matrices is likely wrong.\n")
+    cat("The Gamma and/or Sigma matrices obtained from the Drift and Sigma and/or Gamma matrices do not match the provided Sigma and Gamma.\n One of the given matrices is likely wrong.\n")
     ChecksAreFine <- FALSE
     error <- append(error, "The provided Sigma and/or Gamma do not match the computed Sigma and/or Gamma.")
   }
@@ -190,7 +190,7 @@ if(!is.null(Sigma) & !is.null(Gamma)) {
 if (any(Re(eigenvalDrift) <= 0)){
   cat("The (real parts of the) eigenvalues of the drift matrix 'Drift' are positive. \n Hence, the process is not stable. \n")
   ChecksAreFine <- FALSE
-  error <- append(error, "Not all (real parts of the) eigenvalues of the drift matrix 'Drift' are negative.\n Hence, the process is not stable.")
+  error <- append(error, "Not all (real parts of the) eigenvalues of the drift matrix 'Drift' are negative. Hence, the process is not stable.")
 }
 #
 # CHECK on complex
@@ -199,7 +199,7 @@ if (is.complex(eigenvalDrift) == TRUE){
     if(all(Im(eigenvalDrift) < base::pi/1)){
       cat("The drift matrix 'Drift' has complex eigenvalues and eigenvectors, but is a unique solution for Phi(1). \n (nl imaginary part of the complex eigenvalues of drift matrix lie in (-pi/1, pi/1)). \n")
       ChecksAreFine <- FALSE
-      error <- append(error, "Note: The drift matrix 'Drift' has complex eigenvalues and eigenvectors, but is a unique solution for Phi(1). \n (nl imaginary part of the complex eigenvalues of drift matrix lie in (-pi/1, pi/1)).")
+      error <- append(error, "Note: The drift matrix 'Drift' has complex eigenvalues and eigenvectors, but is a unique solution for Phi(1). (nl imaginary part of the complex eigenvalues of drift matrix lie in (-pi/1, pi/1)).")
     }
   } else{
     cat("The drift matrix 'Drift' has complex eigenvalues and -vectors and is not a unique solution for this Phi(1). \n (nl imaginary part of the complex eigenvalues of drift matrix do NOT lie in (-pi/1, pi/1)). \n")
