@@ -1,13 +1,13 @@
 #' Time-interval (DeltaT) for which the (discrete-time) residual covariance matrix is diagonal
 #'
-#' Time-interval (DeltaT) for which the (discrete-time) residual covariance matrix (i.e., SigmaVAR(DeltaT)) is diagonal (together with that diagonal SigmaVAR and corresponding lagged-effects matrix Phi). The interactive web application 'Phi-and-Psi-Plots and Find DeltaT' also contains this functionality, you can find it on my website: \url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}.
+#' Provides the time-interval (DeltaT) for which the (discrete-time) residual covariance matrix (i.e., SigmaVAR(DeltaT)) is diagonal (together with that diagonal SigmaVAR and corresponding lagged-effects matrix Phi). The interactive web application 'Phi-and-Psi-Plots and Find DeltaT' also contains this functionality. It is available at \url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}.
 #'
-#' @param Phi Matrix of size q times q of (un)standardized lagged effects of the first-order discrete-time vector autoregressive (DT-VAR(1)) model.
-#' It also takes a fitted object from the classes "varest" (from the VAR() function in vars package) and "ctsemFit" (from the ctFit() function in the ctsem package); see example below. From such an object, the (standardized) Drift matrix is calculated/extracted.
-#' @param SigmaVAR Residual covariance matrix of the first-order discrete-time vector autoregressive (DT-VAR(1)) model.
-#' @param Drift Optional (either Phi or Drift). Underling first-order continuous-time lagged effects matrix (i.e., Drift matrix) of the discrete-time lagged effects matrix Phi(DeltaT). By default, input for Phi is used; only when Phi = NULL, Drift will be used.
-#' @param Sigma Optional (either SigmaVAR, Sigma or Gamma). Residual covariance matrix of the first-order continuous-time (CT-VAR(1)) model, that is, the diffusion matrix. By default, input for SigmaVAR is used; only when SigmaVAR = NULL, Sigma will be used.
-#' @param Gamma Optional (either SigmaVAR, Sigma or Gamma). Stationary covariance matrix, that is, the contemporaneous covariance matrix of the data. By default, input for SigmaVAR is used; only when SigmaVAR = NULL, Gamma will be used.
+#' @param Phi Optional (either Phi or Drift). Matrix of size q x q of (un)standardized lagged effects of the first-order discrete-time vector autoregressive (DT-VAR(1)) model.
+#' It can also take a fitted object from the classes "varest" (from the VAR() function in vars package) and "ctsemFit" (from the ctFit() function in the ctsem package); see example below. If such an object is provided, the (standardized) Drift matrix is calculated/extracted.
+#' @param SigmaVAR Optional (either SigmaVAR, Sigma or Gamma). Residual covariance matrix of the first-order discrete-time vector autoregressive (DT-VAR(1)) model.
+#' @param Drift Optional (either Phi or Drift). Underlying first-order continuous-time lagged effects matrix (i.e., Drift matrix) of the discrete-time lagged effects matrix Phi(DeltaT). By default, the input for Phi is used: Drift will be used only when Phi = NULL.
+#' @param Sigma Optional (either SigmaVAR, Sigma or Gamma). Residual covariance matrix of the first-order continuous-time (CT-VAR(1)) model, that is, the diffusion matrix. By default, the input for SigmaVAR is used: Sigma will be used only when SigmaVAR = NULL.
+#' @param Gamma Optional (either SigmaVAR, Sigma or Gamma). Stationary covariance matrix, that is, the contemporaneous covariance matrix of the data. By default, the input for SigmaVAR is used: Gamma will be used only when SigmaVAR = NULL.
 #' Note that if Phi and SigmaVAR (or Drift and Sigma) are known, Gamma can be calculated; hence, only one out of SigmaVAR, Sigma, and Gamma is needed as input.
 #' @param xstart_DeltaT Optional. Starting value for DeltaT. If you see in the SigmaVAR-plot a DeltaT for which SigmaVAR is diagonal (i.e., the covariances are zero) and the function renders DeltaT_diag = 0 as a solution, then change this start value accordingly. By default, xstart_DeltaT = 1
 #'
