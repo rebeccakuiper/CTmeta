@@ -1,6 +1,7 @@
 #' Continuous-time estimates from discrete-time estimates
 #'
-#' Produces the continuous-time lagged-effects model matrices corresponding to the discrete-time ones. The interactive web application 'Phi-and-Psi-Plots and Find DeltaT' also contains this functionality. It is available here: \url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}.
+#'
+#' Transforms discrete-time parameters into their continuous-time (CT) equivalent ones and checks CT matrices (whether covariance matrices are positive definite, whether process is stable, etc.). The interactive web application 'Phi-and-Psi-Plots and Find DeltaT' can also do this. It is available here: \url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}.
 #'
 #' @param DeltaT Optional. The time interval used in the discrete-time matrices. By default, DeltaT = 1.
 #' @param Phi (Un)standardized lagged effects matrix. If necessary, it can be standardized. The covariance matrix is determined for the standardized and vectorized Phi.
@@ -86,7 +87,6 @@ CTMparam <- function(DeltaT = 1, Phi, SigmaVAR = NULL, Gamma = NULL) {
   #
   B <- NULL
   Sigma <- NULL
-  #
   # Check on Phi
   if(any(class(Phi) == "varest")){
     SigmaVAR <- cov(resid(Phi))
@@ -142,7 +142,14 @@ CTMparam <- function(DeltaT = 1, Phi, SigmaVAR = NULL, Gamma = NULL) {
     }else if(is.null(Gamma)){ # Gamma unknown, calculate Gamma from SigmaVAR and Phi
 
       # Check on SigmaVAR
-      Check_SigmaVAR(SigmaVAR, q)
+      if (!is.null(try(Check_SigmaVAR(SigmaVAR, q), silent = TRUE)) &&
+        grepl("The residual covariance matrix SigmaVAR should, like Phi, be a matrix with dimensions q x q, with q = ",
+               as.character(try(Check_SigmaVAR(SigmaVAR, q), silent = TRUE)),
+               fixed = TRUE)) {
+        stop("SigmaVAR and Phi have different dimensions, but should both be square matrices with dimensions q x q.")
+      } else {
+        Check_SigmaVAR(SigmaVAR, q)
+      }
 
       # Calculate Gamma
       Gamma <- Gamma.fromVAR(Phi, SigmaVAR)
@@ -150,7 +157,14 @@ CTMparam <- function(DeltaT = 1, Phi, SigmaVAR = NULL, Gamma = NULL) {
     }else if(is.null(SigmaVAR)){ # SigmaVAR unknown, calculate SigmaVAR from Gamma and Phi
 
       # Checks on Gamma
-      Check_Gamma(Gamma, q)
+      if (!is.null(try(Check_Gamma(Gamma, q), silent = TRUE)) &&
+          grepl("The stationary covariance matrix Gamma should, like Phi, be a matrix of size q x q, with q = ",
+                as.character(try(Check_Gamma(Gamma, q), silent = TRUE)),
+                fixed = TRUE)) {
+        stop("Gamma and Phi have different dimensions, but should both be square matrices with dimensions q x q.")
+      } else {
+        Check_Gamma(Gamma, q)
+      }
 
       # Calculate SigmaVAR
       if(q == 1){
