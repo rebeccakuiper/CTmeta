@@ -69,10 +69,25 @@ DiagDeltaT <- function(Phi = NULL, SigmaVAR = NULL, Drift = NULL, Sigma = NULL, 
 
   # Needed: check on CTM param, Phi, and Gamma
   
+  if(!is.null(SigmaVAR) && anyNA(SigmaVAR)) {
+    stop("There are missing values in SigmaVAR.")
+  }
+  if(!is.null(SigmaVAR) && !is.numeric(SigmaVAR)) {
+    stop("There are non-numerical values in SigmaVAR.")
+  }
+  
   # Make sure the specified default is used if redundant matrices are specified
   if(!is.null(Phi) & !is.null(Drift)) {
     warning("Both Phi and Drift are specified. Drift is ignored.")
     Drift <- NULL
+  }
+  if(!is.null(SigmaVAR) & !is.null(Sigma)) {
+    warning("Both SigmaVAR and Sigma are specified. Sigma is ignored.")
+    Sigma <- NULL
+  }
+  if(!is.null(SigmaVAR) & !is.null(Gamma)) {
+    warning("Both SigmaVAR and Gamma are specified. Gamma is ignored.")
+    Gamma <- NULL
   }
 
   # Check on Phi
