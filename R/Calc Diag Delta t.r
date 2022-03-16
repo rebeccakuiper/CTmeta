@@ -81,6 +81,14 @@ DiagDeltaT <- function(Phi = NULL, SigmaVAR = NULL, Drift = NULL, Sigma = NULL, 
     warning("Both Phi and Drift are specified. Drift is ignored.")
     Drift <- NULL
   }
+  
+  if(!is.null(Drift) && anyNA(Drift)) {
+    stop("There are missing values in Drift.")
+  }
+  if(!is.null(Drift) && !is.numeric(Drift)) {
+    stop("There are non-numerical values in Drift.")
+  }
+  
   if(!is.null(SigmaVAR) & !is.null(Sigma)) {
     warning("Both SigmaVAR and Sigma are specified. Sigma is ignored.")
     Sigma <- NULL
