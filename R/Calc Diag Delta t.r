@@ -68,6 +68,12 @@ DiagDeltaT <- function(Phi = NULL, SigmaVAR = NULL, Drift = NULL, Sigma = NULL, 
   # Btw Cannot use it as option, yet, then I have to change code such that DeltaT_diag is adjusted accordingly (by transfarming Phi).
 
   # Needed: check on CTM param, Phi, and Gamma
+  
+  # Make sure the specified default is used if redundant matrices are specified
+  if(!is.null(Phi) & !is.null(Drift)) {
+    warning("Both Phi and Drift are specified. Drift is ignored.")
+    Drift <- NULL
+  }
 
   # Check on Phi
   if(any(class(Phi) == "varest")){
@@ -166,7 +172,14 @@ DiagDeltaT <- function(Phi = NULL, SigmaVAR = NULL, Drift = NULL, Sigma = NULL, 
       if(!is.null(SigmaVAR)){ # SigmaVAR known, use SigmaVAR and Phi or Drift
 
         # Check on SigmaVAR
-        Check_SigmaVAR(SigmaVAR, q)
+        if (!is.null(try(Check_SigmaVAR(SigmaVAR, q), silent = TRUE)) &&
+            grepl("The residual covariance matrix SigmaVAR should, like Phi, be a matrix with dimensions q x q, with q = ",
+                  as.character(try(Check_SigmaVAR(SigmaVAR, q), silent = TRUE)),
+                  fixed = TRUE)) {
+          stop("SigmaVAR and Phi (or Drift) have different dimensions, but should both be square matrices with dimensions q x q.")
+        } else {
+          Check_SigmaVAR(SigmaVAR, q)
+        }
 
         # Calculate Gamma
         Gamma <- Gamma.fromVAR(Phi, SigmaVAR)
@@ -174,7 +187,14 @@ DiagDeltaT <- function(Phi = NULL, SigmaVAR = NULL, Drift = NULL, Sigma = NULL, 
       }else if(!is.null(Sigma)){ # Sigma known
 
         # Check on Sigma
-        Check_Sigma(Sigma, q)
+        if (!is.null(try(Check_Sigma(Sigma, q), silent = TRUE)) &&
+            grepl("The residual covariance matrix Sigma should, like Drift (or Phi), be a matrix of size q x q, with q = ",
+                  as.character(try(Check_Sigma(Sigma, q), silent = TRUE)),
+                  fixed = TRUE)) {
+          stop("Sigma and Phi (or Drift) have different dimensions, but should both be square matrices with dimensions q x q.")
+        } else {
+          Check_Sigma(Sigma, q)
+        }
 
         # Calculate Gamma
         Gamma <- Gamma.fromCTM(Drift, Sigma)
@@ -184,7 +204,14 @@ DiagDeltaT <- function(Phi = NULL, SigmaVAR = NULL, Drift = NULL, Sigma = NULL, 
     }else if(!is.null(Gamma)){ # Gamma known
 
       # Checks on Gamma
-      Check_Gamma(Gamma, q)
+      if (!is.null(try(Check_Gamma(Gamma, q), silent = TRUE)) &&
+          grepl("The stationary covariance matrix Gamma should, like Phi, be a matrix of size q x q, with q = ",
+                as.character(try(Check_Gamma(Gamma, q), silent = TRUE)),
+                fixed = TRUE)) {
+        stop("Gamma and Phi (or Drift) have different dimensions, but should both be square matrices with dimensions q x q.")
+      } else {
+        Check_Gamma(Gamma, q)
+      }
 
     }
 
