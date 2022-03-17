@@ -76,6 +76,10 @@ DiagDeltaT <- function(Phi = NULL, SigmaVAR = NULL, Drift = NULL, Gamma = NULL, 
     stop("There are non-numerical values in SigmaVAR.")
   }
   
+  if(!is.numeric(xstart_DeltaT) && !is.null(xstart_DeltaT)){
+    stop("xstart_DeltaT should be a numerical value.")
+  }
+  
   # Make sure the specified default is used if redundant matrices are specified
   if(!is.null(Phi) & !is.null(Drift)) {
     warning("Both Phi and Drift are specified. Drift is ignored.")
@@ -276,8 +280,9 @@ DiagDeltaT <- function(Phi = NULL, SigmaVAR = NULL, Drift = NULL, Gamma = NULL, 
     xstart_DeltaT <- 1
   }else{
     if(length(xstart_DeltaT) != 1){
-      message_startvalues <- "The starting value for 'DeltaT_diag' should be 1 number. \n Since it is not the case, the value 1 is used."
+      message_startvalues <- "The starting value for 'DeltaT_diag' should be a single number. This is not the case in the given input, so the value 1 is used."
       #cat(message_startvalues)
+      warning(message_startvalues)
       xstart_DeltaT <- 1
     }
   }
