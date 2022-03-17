@@ -159,7 +159,7 @@ DiagDeltaT <- function(Phi = NULL, SigmaVAR = NULL, Drift = NULL, Gamma = NULL, 
         if(length(B) > 1){
           Check_B_or_Phi(B)
           if(all(Re(eigen(B)$val) < 0)){
-            cat("All (the real parts of) the eigenvalues of the drift matrix Drift are positive. Therefore. I assume the input for Drift was B = -A instead of A (or -Phi instead of Phi). I will use Drift = -B = A.")
+            cat("All (the real parts of) the eigenvalues of the drift matrix Drift are positive. Therefore, the input for Drift is assumed to be B = -A instead of A (or -Phi instead of Phi). Drift = -B = A is used instead of Drift = B.")
             cat("Note that Phi(DeltaT) = expm(-B*DeltaT) = expm(A*DeltaT) = expm(Drift*DeltaT).")
             Drift <- -B
             #
@@ -172,7 +172,7 @@ DiagDeltaT <- function(Phi = NULL, SigmaVAR = NULL, Drift = NULL, Gamma = NULL, 
           if(any(Re(eigen(B)$val) < 0)){
             #ErrorMessage <- ("The function stopped, since some of (the real parts of) the eigenvalues of the drift matrix Drift are positive.")
             #stop(ErrorMessage)
-            cat("If the function stopped, this is because some of (the real parts of) the eigenvalues of the drift matrix Drift are positive.")
+            cat("Some of (the real parts of) the eigenvalues of the drift matrix Drift are positive.")
           }
         }
       }else{ # is.null(Drift)
@@ -269,11 +269,10 @@ DiagDeltaT <- function(Phi = NULL, SigmaVAR = NULL, Drift = NULL, Gamma = NULL, 
   errorMatrices <- outcome.GammaAndChecks$error
 
 
-  message_start <- "No message / warning / error. Hence, there is positive DeltaT for which the diagonals/variances in SigmaVAR are positive (and off-diagonals 0)."
+  message_start <- "No message / warning / error. There is a positive DeltaT such that the diagonals/variances in SigmaVAR are positive (and off-diagonals 0)."
   message <- message_start
 
-  message_startvalues <- "In case the Psi-plot/SigmaVAR-plot does show a solution (or another solution) for DeltaT such that Psi is diagonal (i.e., the covariances are 0), \n
-  alter the starting value for 'DeltaT_diag'. Notably, by default, the value 1 is used."
+  message_startvalues <- "If the Psi-plot/SigmaVAR-plot does show a solution (or another solution) for DeltaT such that Psi is diagonal (i.e., the covariances are 0), alter the starting value for 'DeltaT_diag'. Note that by default, the value 1 is used."
   # Note that in theory the starting values for the q variances can be a problem as well:
   # I may want to adjust that first 9depending on the solution and message obtained).
   if(is.null(xstart_DeltaT)){
@@ -488,11 +487,11 @@ DiagDeltaT <- function(Phi = NULL, SigmaVAR = NULL, Drift = NULL, Gamma = NULL, 
         }
       }
       if(any(DiagAndDelta[1:q] < 0)){ # All variances should be positive
-        message <- "There is no positive DeltaT such that SigmaVAR is a 'positive diagonal' matrix. \n That is, the solution contains one or more negative variances."
+        message <- "There is no positive DeltaT such that SigmaVAR is a 'positive diagonal' matrix. That is, the solution contains one or more negative variances."
         #cat(message)
       }
     }else{ # Then, both < 0.0001 and probably (at least one) near 0.
-      message <- "There is no non-negative DeltaT such that SigmaVAR is a diagonal matrix. \n Only for DeltaT approximately 0, it is (approximately) a 0-matrix."
+      message <- "There is no non-negative DeltaT such that SigmaVAR is a diagonal matrix. Only for DeltaT approximately 0, it is (approximately) a 0-matrix."
       #cat(message)
       #
       message_DiagAndDelta <- "There are two solutions and both are negative. At least one of them is probaly near zero."
@@ -510,19 +509,19 @@ DiagDeltaT <- function(Phi = NULL, SigmaVAR = NULL, Drift = NULL, Gamma = NULL, 
 
     # Check positive DeltaT and positive variances/diagonals:
     if(DiagAndDelta[q+1] < 0.0001 & any(DiagAndDelta[1:q] < 0)){
-      message <- "There is no non-negative DeltaT such that SigmaVAR is a 'positive diagonal' matrix. \n Only for DeltaT approximately 0, it is (approximately) a 0-matrix."
+      message <- "There is no non-negative DeltaT such that SigmaVAR is a 'positive diagonal' matrix. It is only (approximately) a 0-matrix for DeltaT approximately 0."
       #cat(message)
       #
       # If q > 4, inspect the (q+1)*(q-4)/2 not seen equations. See how many sets of q+1 needed.
       # Notably, using other subsets or other starting values can help as well.
     }else if(DiagAndDelta[q+1] < 0.0001){
-      message <- "There is no non-negative DeltaT such that SigmaVAR is a diagonal matrix. \n Only for DeltaT approximately 0, it is (approximately) a 0-matrix."
+      message <- "There is no non-negative DeltaT such that SigmaVAR is a diagonal matrix. It is only (approximately) a 0-matrix for DeltaT approximately 0."
       #cat(message)
       #
       # If q > 4, inspect the (q+1)*(q-4)/2 not seen equations. See how many sets of q+1 needed.
       # Notably, using other subsets or other starting values can help as well.
     }else if(any(DiagAndDelta[1:q] < 0)){ # All variants should be positive
-      message <- "There is no positive DeltaT such that SigmaVAR is a 'positive diagonal' matrix. \n That is, the solution contains one or more negative variances."
+      message <- "There is no positive DeltaT such that SigmaVAR is a 'positive diagonal' matrix. That is, the solution contains one or more negative variances."
       #cat(message)
     }
 
@@ -560,10 +559,7 @@ DiagDeltaT <- function(Phi = NULL, SigmaVAR = NULL, Drift = NULL, Gamma = NULL, 
 
     if(q > 4){
       final <- list(final,
-                    Warning <- "Since q > 4, some equations in calculating DeltaT_diag were not used. \n
-                    When from the Psi-plot/SigmaVAR-plot it is clear that there exist a positive (non-zero) 'DeltaT_diag' solution and \n
-                    adjusting the starting value accordingly does not help, please contact me (r.m.kuiper@uu.nl). \n
-                    Then, I will add a part to the code where the currently un-used equations are inspected."
+                    Warning <- "Since q > 4, some equations in calculating DeltaT_diag were not used. When it is clear from the Psi-plot/SigmaVAR-plot that there exist a positive (non-zero) 'DeltaT_diag' solution and adjusting the starting value accordingly does not help, please contact me (r.m.kuiper@uu.nl). Then, I will add a part to the code where the currently unused equations are inspected."
                     # Note that in theory the starting values for the q variances can be a problem as well:
                     # I may want to adjust that first 9depending on the solution and message obtained).
       )
