@@ -97,6 +97,14 @@ DiagDeltaT <- function(Phi = NULL, SigmaVAR = NULL, Drift = NULL, Gamma = NULL, 
     warning("Both SigmaVAR and Gamma are specified. Gamma is ignored.")
     Gamma <- NULL
   }
+  
+  if(!is.null(Gamma) && anyNA(Gamma)) {
+    stop("There are missing values in Gamma.")
+  }
+  if(!is.null(Gamma) && !is.numeric(Gamma)) {
+    stop("There are non-numerical values in Gamma.")
+  }
+  
   if(!is.null(Sigma) & !is.null(Gamma)) {
     warning("Both Sigma and Gamma are specified. Sigma is ignored.")
     Sigma <- NULL
