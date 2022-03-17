@@ -6,9 +6,9 @@
 #' It can also take a fitted object from the classes "varest" (from the VAR() function in vars package) and "ctsemFit" (from the ctFit() function in the ctsem package); see example below. If such an object is provided, the (standardized) Drift matrix is calculated/extracted.
 #' @param SigmaVAR Optional (either SigmaVAR, Sigma or Gamma). Residual covariance matrix of the first-order discrete-time vector autoregressive (DT-VAR(1)) model.
 #' @param Drift Optional (either Phi or Drift). Underlying first-order continuous-time lagged effects matrix (i.e., Drift matrix) of the discrete-time lagged effects matrix Phi(DeltaT). By default, the input for Phi is used: Drift will be used only when Phi = NULL.
-#' @param Sigma Optional (either SigmaVAR, Sigma or Gamma). Residual covariance matrix of the first-order continuous-time (CT-VAR(1)) model, that is, the diffusion matrix. By default, the input for SigmaVAR is used: Sigma will be used only when SigmaVAR = NULL.
 #' @param Gamma Optional (either SigmaVAR, Sigma or Gamma). Stationary covariance matrix, that is, the contemporaneous covariance matrix of the data. By default, the input for SigmaVAR is used: Gamma will be used only when SigmaVAR = NULL.
 #' Note that if Phi and SigmaVAR (or Drift and Sigma) are known, Gamma can be calculated; hence, only one out of SigmaVAR, Sigma, and Gamma is needed as input.
+#' @param Sigma Optional (either SigmaVAR, Sigma or Gamma). Residual covariance matrix of the first-order continuous-time (CT-VAR(1)) model, that is, the diffusion matrix. By default, the input for SigmaVAR or Gamma is used: Sigma will be used only when SigmaVAR = NULL and Gamma = NULL.
 #' @param xstart_DeltaT Optional. Starting value for DeltaT. If you see in the SigmaVAR-plot a DeltaT for which SigmaVAR is diagonal (i.e., the covariances are zero) and the function renders DeltaT_diag = 0 as a solution, then change this start value accordingly. By default, xstart_DeltaT = 1
 #'
 #' @return The output renders the time-interval for which the (discrete-time) residual covariance matrix (SigmaVAR) is diagonal (DeltaT_diag), together with that diagonal SigmaVAR and corresponding lagged-effects matrix Phi (i.e., SigmaVAR(DeltaT_diag) and Phi(DeltaT_diag)).
@@ -61,7 +61,7 @@
 #'
 
 
-DiagDeltaT <- function(Phi = NULL, SigmaVAR = NULL, Drift = NULL, Sigma = NULL, Gamma = NULL, xstart_DeltaT = 1) {
+DiagDeltaT <- function(Phi = NULL, SigmaVAR = NULL, Drift = NULL, Gamma = NULL, Sigma = NULL, xstart_DeltaT = 1) {
   #xstart_DeltaT <- 1
 
   DeltaT <- 1 # Needed for determining B/Drift.
@@ -96,6 +96,10 @@ DiagDeltaT <- function(Phi = NULL, SigmaVAR = NULL, Drift = NULL, Sigma = NULL, 
   if(!is.null(SigmaVAR) & !is.null(Gamma)) {
     warning("Both SigmaVAR and Gamma are specified. Gamma is ignored.")
     Gamma <- NULL
+  }
+  if(!is.null(Sigma) & !is.null(Gamma)) {
+    warning("Both Sigma and Gamma are specified. Sigma is ignored.")
+    Sigma <- NULL
   }
 
   # Check on Phi
