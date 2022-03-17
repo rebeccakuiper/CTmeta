@@ -159,8 +159,8 @@ DiagDeltaT <- function(Phi = NULL, SigmaVAR = NULL, Drift = NULL, Gamma = NULL, 
         if(length(B) > 1){
           Check_B_or_Phi(B)
           if(all(Re(eigen(B)$val) < 0)){
-            cat("All (the real parts of) the eigenvalues of the drift matrix Drift are positive. Therefore, the input for Drift is assumed to be B = -A instead of A (or -Phi instead of Phi). Drift = -B = A is used instead of Drift = B.")
-            cat("Note that Phi(DeltaT) = expm(-B*DeltaT) = expm(A*DeltaT) = expm(Drift*DeltaT).")
+            cat("All (the real parts of) the eigenvalues of the drift matrix Drift are positive. Therefore, the input for Drift is assumed to be B = -A instead of A (or -Phi instead of Phi). Drift = -B = A is used instead of Drift = B.\n")
+            cat("Note that Phi(DeltaT) = expm(-B*DeltaT) = expm(A*DeltaT) = expm(Drift*DeltaT).\n")
             Drift <- -B
             #
             if(length(Drift) == 1){
@@ -172,7 +172,7 @@ DiagDeltaT <- function(Phi = NULL, SigmaVAR = NULL, Drift = NULL, Gamma = NULL, 
           if(any(Re(eigen(B)$val) < 0)){
             #ErrorMessage <- ("The function stopped, since some of (the real parts of) the eigenvalues of the drift matrix Drift are positive.")
             #stop(ErrorMessage)
-            cat("Some of (the real parts of) the eigenvalues of the drift matrix Drift are positive.")
+            cat("Some of (the real parts of) the eigenvalues of the drift matrix Drift are positive.\n")
           }
         }
       }else{ # is.null(Drift)
@@ -491,10 +491,10 @@ DiagDeltaT <- function(Phi = NULL, SigmaVAR = NULL, Drift = NULL, Gamma = NULL, 
         #cat(message)
       }
     }else{ # Then, both < 0.0001 and probably (at least one) near 0.
-      message <- "There is no non-negative DeltaT such that SigmaVAR is a diagonal matrix. Only for DeltaT approximately 0, it is (approximately) a 0-matrix."
+      message <- "There is no non-negative DeltaT such that SigmaVAR is a diagonal matrix. It is only (approximately) a 0-matrix for DeltaT approximately 0."
       #cat(message)
       #
-      message_DiagAndDelta <- "There are two solutions and both are negative. At least one of them is probaly near zero."
+      message_DiagAndDelta <- "There are two solutions and both are negative. At least one of them is probably near zero."
       #cat(message_DiagAndDelta)
       #
       # If q > 4, inspect the (q+1)*(q-4)/2 not seen equations. See how many sets of q+1 needed.
