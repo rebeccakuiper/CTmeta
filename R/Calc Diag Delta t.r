@@ -502,12 +502,17 @@ DiagDeltaT <- function(Phi = NULL, SigmaVAR = NULL, Drift = NULL, Gamma = NULL, 
       # Notably, using other subsets or other starting values can help as well.
     }
 
+  }else if(sol_All_first == 0 & sol_All_last == 0){ # Then, none have a solution
+    # TO DO I just created this, this is the situation you ended up in, which I though was not possible. Since it is possible, we have to inlcude it.
+    message <- "The function did not find a (non-negative) solution for DeltaT such that SigmaVAR is a 'positive diagonal' matrix. Please check the SigmaVAR-plot to see whether the starting value 'DeltaT_start' should be changed."
+    #stop("The given DeltaT_start does not lead to any appropriate solution. Please specify a different DeltaT_start.")
   }else{
 
     #Only one of them has a solution, obtain that one:
     if(sol_All_first == 1){DiagAndDelta <- DiagAndDelta_first}
     if(sol_All_last == 1){DiagAndDelta <- DiagAndDelta_last}
-    stop("The given DeltaT_start does not lead to any appropriate solution. Please specify a different DeltaT_start.")
+    # TO DO did you create the next stop? If so, I believe it can be deleted here. If not, then I need to re-think why I wanted that here... 
+    #stop("The given DeltaT_start does not lead to any appropriate solution. Please specify a different DeltaT_start.")
 
     # Check positive DeltaT and positive variances/diagonals:
     if(DiagAndDelta[q+1] < 0.0001 & any(DiagAndDelta[1:q] < 0)){
