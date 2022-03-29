@@ -4,7 +4,7 @@
 #' Calculates the stationary covariance matrix (Gamma) from the continuous-time (un)standardized lagged effects matrix (Drift) and residual covariance matrix (Sigma). There is also an interactive web application on my website: Standardizing and/or transforming lagged regression estimates (\url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}).
 #'
 #' @param Drift (Un)standardized lagged effects matrix of the first-order continuous-time (CT-VAR(1)) model.
-#' It also takes a fitted object from the class "ctsemFit" (from the ctFit() function in the ctsem package); see example below. From such an object, the Drift and Sigma matrices are extracted.
+#' Can also take a fitted object from the class "ctsemFit" (from the ctFit() function in the ctsem package); see example below. If such an object is used, the Drift and Sigma matrices are extracted from its.
 #' @param Sigma Residual covariance matrix of the first-order continuous-time (CT-VAR(1)) model, that is, the diffusion matrix.
 #'
 #' @return This function returns the stationary covariance matrix, that is, the contemporaneous covariance matrix of the data.
@@ -65,14 +65,14 @@ Gamma.fromCTM <- function(Drift, Sigma) {
     if(length(B) > 1){
       Check_B(B)
       if(all(Re(eigen(B)$val) < 0)){
-        cat("All (the real parts of) the eigenvalues of the drift matrix Drift are positive. Therefore. I assume the input was B=-A instead of A. I will use -B=A in the calculation.")
+        cat("All (the real parts of) the eigenvalues of the drift matrix Drift are positive. Therefore, I assume the input was B=-A instead of A. I will use -B=A in the calculation.")
         B = -B
       }
       if(any(Re(eigen(B)$val) < 0)){
         #ErrorMessage <- ("The function stopped, since some of (the real parts of) the eigenvalues of the drift matrix Drift are positive.")
         #return(ErrorMessage)
         #stop(ErrorMessage)
-        cat("If the function stopped, this is because some of (the real parts of) the eigenvalues of the drift matrix Drift are positive.")
+        cat("Some of (the real parts of) the eigenvalues of the drift matrix Drift are positive.")
       }
     }
 
@@ -91,7 +91,7 @@ Gamma.fromCTM <- function(Drift, Sigma) {
     if(length(Drift) > 1){
       Check_B(B)
       if(all(Re(eigen(Drift)$val) > 0)){
-        cat("All (the real parts of) the eigenvalues of the drift matrix Drift are positive. Therefore. I assume the input for Drift was B = -A instead of A. I will use Drift = -B = A.")
+        cat("All (the real parts of) the eigenvalues of the drift matrix Drift are positive. Therefore, I assume the input for Drift was B = -A instead of A. I will use Drift = -B = A.")
         cat("Note that Phi(DeltaT) = expm(-B*DeltaT) = expm(A*DeltaT) = expm(Drift*DeltaT).")
         Drift = -Drift
       }
@@ -99,7 +99,7 @@ Gamma.fromCTM <- function(Drift, Sigma) {
         #ErrorMessage <- ("The function stopped, since some of (the real parts of) the eigenvalues of the drift matrix Drift are positive.")
         #return(ErrorMessage)
         #stop(ErrorMessage)
-        cat("If the function stopped, this is because some of (the real parts of) the eigenvalues of the drift matrix Drift are positive.")
+        cat("Some of (the real parts of) the eigenvalues of the drift matrix Drift are positive.")
       }
     }
 
