@@ -35,6 +35,9 @@
 Gamma.fromCTM <- function(Drift, Sigma) {
 
   # Checks:
+  if(anyNA(Drift)){
+    stop("There are NA values in the Drift matrix.")
+  }
   if(any(class(Drift) == "ctsemFit")){
     B <- -1 * summary(Drift)$DRIFT
     Sigma <- summary(Drift)$DIFFUSION
@@ -59,6 +62,16 @@ Gamma.fromCTM <- function(Drift, Sigma) {
       }else{
         q <- dim(B)[1]
       }
+    }
+    
+    # Check on compatible dimensions
+    if (!is.null(try(Check_Sigma(Sigma, q), silent = TRUE)) &&
+        grepl("The residual covariance matrix Sigma should, like Drift (or Phi), be a matrix of size q x q, with q = ",
+              as.character(try(Check_Sigma(Sigma, q), silent = TRUE)),
+              fixed = TRUE)) {
+      stop("Sigma and Drift have different dimensions, but should both be square matrices with dimensions q x q.")
+    } else {
+      Check_Sigma(Sigma, q)
     }
 
     # Check on B

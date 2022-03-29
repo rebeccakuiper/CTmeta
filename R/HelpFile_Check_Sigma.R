@@ -19,5 +19,8 @@ Check_Sigma <- function(Sigma, q){
   }else if(q != 1){
     stop(paste0("The residual covariance matrix Sigma is a scalar, but it should be of size q x q, with q = ", q))
   }
+  if(!is.numeric(Sigma)){
+    stop("Sigma should be a numerical matrix.")
+  }
 
 }
