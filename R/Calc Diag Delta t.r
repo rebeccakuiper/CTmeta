@@ -272,7 +272,7 @@ DiagDeltaT <- function(Phi = NULL, SigmaVAR = NULL, Drift = NULL, Gamma = NULL, 
   message_start <- "No message / warning / error. There is a positive DeltaT such that the diagonals/variances in SigmaVAR are positive (and off-diagonals 0)."
   message <- message_start
 
-  message_startvalues <- "If the Psi-plot/SigmaVAR-plot does show a solution (or another solution) for DeltaT such that Psi is diagonal (i.e., the covariances are 0), alter the starting value for 'DeltaT_diag'. Note that by default, the value 1 is used."
+  message_startvalues <- "If the Psi-plot/SigmaVAR-plot does show a solution (or another solution) for DeltaT such that SigmaVAR is diagonal (i.e., the covariances are 0), alter the starting value for 'DeltaT_diag' (i.e. input a different 'DeltaT_start'). Note that by default, the value 1 is used."
   # Note that in theory the starting values for the q variances can be a problem as well:
   # I may want to adjust that first (depending on the solution and message obtained).
   if(is.null(DeltaT_start)){
