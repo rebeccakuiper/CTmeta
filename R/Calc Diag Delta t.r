@@ -9,7 +9,7 @@
 #' @param Gamma Optional (either SigmaVAR, Sigma or Gamma). Stationary covariance matrix, that is, the contemporaneous covariance matrix of the data. By default, the input for SigmaVAR is used: Gamma will be used only when SigmaVAR = NULL.
 #' Note that if Phi and SigmaVAR (or Drift and Sigma) are known, Gamma can be calculated; hence, only one out of SigmaVAR, Sigma, and Gamma is needed as input.
 #' @param Sigma Optional (either SigmaVAR, Sigma or Gamma). Residual covariance matrix of the first-order continuous-time (CT-VAR(1)) model, that is, the diffusion matrix. By default, the input for SigmaVAR or Gamma is used: Sigma will be used only when SigmaVAR = NULL and Gamma = NULL.
-#' @param xstart_DeltaT Optional. Starting value for DeltaT. If you see in the SigmaVAR-plot a DeltaT for which SigmaVAR is diagonal (i.e., the covariances are zero) and the function renders DeltaT_diag = 0 as a solution, then change this start value accordingly. By default, xstart_DeltaT = 1
+#' @param DeltaT_start Optional. Starting value for DeltaT. If you see in the SigmaVAR-plot a DeltaT for which SigmaVAR is diagonal (i.e., the covariances are zero) and the function renders DeltaT_diag = 0 as a solution, then change this start value accordingly. By default, DeltaT_start = 1
 #'
 #' @return The output renders the time-interval for which the (discrete-time) residual covariance matrix (SigmaVAR) is diagonal (DeltaT_diag), together with that diagonal SigmaVAR and corresponding lagged-effects matrix Phi (i.e., SigmaVAR(DeltaT_diag) and Phi(DeltaT_diag)).
 #' @importFrom expm expm
@@ -61,8 +61,8 @@
 #'
 
 
-DiagDeltaT <- function(Phi = NULL, SigmaVAR = NULL, Drift = NULL, Gamma = NULL, Sigma = NULL, xstart_DeltaT = 1) {
-  #xstart_DeltaT <- 1
+DiagDeltaT <- function(Phi = NULL, SigmaVAR = NULL, Drift = NULL, Gamma = NULL, Sigma = NULL, DeltaT_start = 1) {
+  #DeltaT_start <- 1
 
   DeltaT <- 1 # Needed for determining B/Drift.
   # Btw Cannot use it as option, yet, then I have to change code such that DeltaT_diag is adjusted accordingly (by transfarming Phi).
@@ -76,8 +76,8 @@ DiagDeltaT <- function(Phi = NULL, SigmaVAR = NULL, Drift = NULL, Gamma = NULL, 
     stop("There are non-numerical values in SigmaVAR.")
   }
   
-  if(!is.numeric(xstart_DeltaT) && !is.null(xstart_DeltaT)){
-    stop("xstart_DeltaT should be a numerical value.")
+  if(!is.numeric(DeltaT_start) && !is.null(DeltaT_start)){
+    stop("DeltaT_start should be a numerical value.")
   }
   
   # Make sure the specified default is used if redundant matrices are specified
@@ -274,19 +274,20 @@ DiagDeltaT <- function(Phi = NULL, SigmaVAR = NULL, Drift = NULL, Gamma = NULL, 
 
   message_startvalues <- "If the Psi-plot/SigmaVAR-plot does show a solution (or another solution) for DeltaT such that Psi is diagonal (i.e., the covariances are 0), alter the starting value for 'DeltaT_diag'. Note that by default, the value 1 is used."
   # Note that in theory the starting values for the q variances can be a problem as well:
-  # I may want to adjust that first 9depending on the solution and message obtained).
-  if(is.null(xstart_DeltaT)){
-    xstart_DeltaT <- 1
+  # I may want to adjust that first (depending on the solution and message obtained).
+  if(is.null(DeltaT_start)){
+    message("Input for DeltaT_start was NULL. 1 was used by default.")
+    DeltaT_start <- 1
   }else{
-    if(length(xstart_DeltaT) != 1){
+    if(length(DeltaT_start) != 1){
       message_startvalues <- "The starting value for 'DeltaT_diag' should be a single number. This is not the case in the given input, so the value 1 is used."
       #cat(message_startvalues)
       warning(message_startvalues)
-      xstart_DeltaT <- 1
+      DeltaT_start <- 1
     }
   }
   #
-  xstart <- c(rep(1,q), xstart_DeltaT)
+  xstart <- c(rep(1,q), DeltaT_start)
 
 
   EigenPhi <- eigen(Phi)
@@ -503,9 +504,10 @@ DiagDeltaT <- function(Phi = NULL, SigmaVAR = NULL, Drift = NULL, Gamma = NULL, 
 
   }else{
 
-    #Only one of them has a solultion, obtain that one:
+    #Only one of them has a solution, obtain that one:
     if(sol_All_first == 1){DiagAndDelta <- DiagAndDelta_first}
     if(sol_All_last == 1){DiagAndDelta <- DiagAndDelta_last}
+    stop("The given DeltaT_start does not lead to any appropriate solution. Please specify a different DeltaT_start.")
 
     # Check positive DeltaT and positive variances/diagonals:
     if(DiagAndDelta[q+1] < 0.0001 & any(DiagAndDelta[1:q] < 0)){
