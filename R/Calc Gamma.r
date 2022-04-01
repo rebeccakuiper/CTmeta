@@ -25,11 +25,19 @@
 #'
 #' ## Example 2: input from fitted object of class "ctsemFit" ##
 #' #
-#' #data <- myData
-#' #if (!require("ctsemFit")) install.packages("ctsemFit")
-#' #library(ctsemFit)
-#' #out_CTM <- ctFit(...)
-#' #Gamma.fromCTM(out_CTM)
+#' if (!require("ctsem")) install.packages("ctsem")
+#' library(ctsem)
+#' library(ctsemOMX)
+#' #
+#' ############ adapted from https://rdrr.io/cran/ctsemOMX/man/ctFit.html ############
+#' data(ctExample1)
+#' model <- ctModel(n.manifest=2, n.latent=2, Tpoints=6, LAMBDA=diag(2),
+#'                  manifestNames=c('LeisureTime', 'Happiness'),
+#'                                   latentNames=c('LeisureTime', 'Happiness'), TRAITVAR="auto")
+#'                                   out_Drift <- ctFit(dat=ctExample1, ctmodelobj=model)
+#' ##################################################################################
+#' #
+#' Gamma.fromCTM(out_CTM)
 #'
 
 Gamma.fromCTM <- function(Drift, Sigma) {
@@ -103,12 +111,12 @@ Gamma.fromCTM <- function(Drift, Sigma) {
     # Check on B
     if(length(Drift) > 1){
       Check_B(B)
-      if(all(Re(eigen(Drift)$val) > 0)){
+      if(all(Re(eigen(B)$val) > 0)){
         cat("All (the real parts of) the eigenvalues of the drift matrix Drift are positive. Therefore, I assume the input for Drift was B = -A instead of A. I will use Drift = -B = A.")
         cat("Note that Phi(DeltaT) = expm(-B*DeltaT) = expm(A*DeltaT) = expm(Drift*DeltaT).")
-        Drift = -Drift
+        Drift = -B
       }
-      if(any(Re(eigen(Drift)$val) > 0)){
+      if(any(Re(eigen(B)$val) > 0)){
         #ErrorMessage <- ("The function stopped, since some of (the real parts of) the eigenvalues of the drift matrix Drift are positive.")
         #return(ErrorMessage)
         #stop(ErrorMessage)
