@@ -34,7 +34,7 @@
 #' model <- ctModel(n.manifest=2, n.latent=2, Tpoints=6, LAMBDA=diag(2),
 #'                  manifestNames=c('LeisureTime', 'Happiness'),
 #'                                   latentNames=c('LeisureTime', 'Happiness'), TRAITVAR="auto")
-#'                                   out_Drift <- ctFit(dat=ctExample1, ctmodelobj=model)
+#' out_CTM <- ctFit(dat=ctExample1, ctmodelobj=model)
 #' ##################################################################################
 #' #
 #' Gamma.fromCTM(out_CTM)
