@@ -69,6 +69,15 @@ MaxDeltaT <- function(DeltaT = 1, Phi = NULL, Drift = NULL) {
     stop("DeltaT should be a strictly positive number.")
   }
   #
+  if(!is.null(Drift) & !is.null(Phi)) {
+    warning("Both Phi and Drift are specified. Phi is ignored.")
+  }
+  if(!is.null(Drift) && anyNA(Drift)) {
+    stop("There are NA values in Drift.")
+  }
+  if(!is.null(Drift) && !is.numeric(Drift)) {
+    stop("There are non-numerical values in Drift.")
+  }
   # Check on Phi
   if(any(class(Phi) == "varest")){
     Phi <- Acoef(Phi)[[1]]
@@ -114,7 +123,7 @@ MaxDeltaT <- function(DeltaT = 1, Phi = NULL, Drift = NULL) {
         #ErrorMessage <- ("The function stopped, since some of (the real parts of) the eigenvalues of the drift matrix Drift are positive.")
         #return(ErrorMessage)
         #stop(ErrorMessage)
-        cat("If the function stopped because some of (the real parts of) the eigenvalues of the drift matrix Drift are positive.")
+        cat("Some of (the real parts of) the eigenvalues of the drift matrix Drift are positive.")
       }
     }
   }
