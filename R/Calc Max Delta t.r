@@ -5,7 +5,7 @@
 #' @param DeltaT Optional. The time interval used. By default, DeltaT = 1.
 #' @param Phi Matrix of size q x q of (un)standardized lagged effects.
 #' It can also take a fitted object from the classes "varest" (from the VAR() function in vars package) and "ctsemFit" (from the ctFit() function in the ctsem package); see example below. The (standardized) Drift matrix is extracted from such an object.
-#' @param Drift Optional (either Phi or Drift). Matrix of size q x q of (un)standardized continuous-time lagged effects, called the drift matrix. Note that Phi(DeltaT) = expm(Drift*DeltaT). By default, input for Phi is used. Drift will be used only when Phi = NULL.
+#' @param Drift Optional (either Phi or Drift). Matrix of size q x q of (un)standardized continuous-time lagged effects, called the drift matrix. Note that Phi(DeltaT) = expm(Drift*DeltaT). If both Phi and Drift are specified, only Drift is used.
 #'
 #' @return The output renders the time-interval for which Phi_ij reaches its minimum/maximum together with this minimum/maximum Phi_ij for each element (i,j). Note that even though a matrix is presented, the elements in it refer to different time-intervals when DeltaT differs per element (see in examples below).
 #' @importFrom expm expm
