@@ -5,11 +5,11 @@
 #' @param DeltaT Optional. The time interval used. By default, DeltaT = 1.
 #' @param Phi Matrix of size q x q of (un)standardized lagged effects. Note that the Phi (or Drift) matrix should be standardized to make a fair comparison between cross-lagged effects.
 #' It can also take a fitted object from the classes "varest" (from the VAR() function in vars package) and "ctsemFit" (from the ctFit() function in the ctsem package); see example below. If such an object is used, the (standardized) Phi/Drift matrix is calculated/extracted.
-#' @param Drift Optional (either Phi or Drift). Underling continuous-time lagged effects matrix (i.e., Drift matrix) of the discrete-time lagged effects matrix Phi(DeltaT). By default, input for Phi is used: Drift will be used only if Phi = NULL.
+#' @param Drift Optional (either Phi or Drift). Matrix of size q x q. Underling continuous-time lagged effects matrix (i.e., Drift matrix) of the discrete-time lagged effects matrix Phi(DeltaT). By default, input for Phi is used: Drift will be used only if Phi = NULL.
 #' @param Stand Optional. Indicator for whether Phi (or Drift) should be standardized (1) or not (0). If Stand = 1, one of the following matrices should be input as well: SigmaVAR, Sigma, or Gamma (or if a varest or ctsemFit object is input, it will be extracted from that). By default, Stand = 0.
-#' @param SigmaVAR Optional (if Stand = 1, then either SigmaVAR, Sigma, or Gamma needed). Residual covariance matrix of the first-order discrete-time vector autoregressive (DT-VAR(1)) model.
-#' @param Sigma Optional (if Stand = 1, then either SigmaVAR, Sigma, or Gamma needed). Residual covariance matrix of the first-order continuous-time (CT-VAR(1)) model, that is, the diffusion matrix.
-#' @param Gamma Optional (either SigmaVAR, Sigma or Gamma). Stationary covariance matrix, that is, the contemporaneous covariance matrix of the data.
+#' @param SigmaVAR Optional (if Stand = 1, then either SigmaVAR, Sigma, or Gamma needed). Matrix of size q x q. Residual covariance matrix of the first-order discrete-time vector autoregressive (DT-VAR(1)) model.
+#' @param Sigma Optional (if Stand = 1, then either SigmaVAR, Sigma, or Gamma needed). Matrix of size q x q. Residual covariance matrix of the first-order continuous-time (CT-VAR(1)) model, that is, the diffusion matrix.
+#' @param Gamma Optional (either SigmaVAR, Sigma or Gamma). Matrix of size q x q. Stationary covariance matrix, that is, the contemporaneous covariance matrix of the data.
 #' @param Min Optional. Minimum time interval used in the Phi-plot. By default, Min = 0.
 #' @param Max Optional. Maximum time interval used in the Phi-plot. By default, Max = 10.
 #' @param Step Optional. The step-size taken in the time intervals. By default, Step = 0.05. Hence, using the defaults, the Phi-plots is based on the values of Phi(DeltaT) for DeltaT = 0, 0.05, 0.10, ..., 10. Note: Especially if eigenvalues are complex, this step size should be very small (then, the oscillating behavior can be seen best).
@@ -110,8 +110,14 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
 
   # Checks:
   if(length(DeltaT) != 1){
-    ErrorMessage <- (paste0("The argument DeltaT should be a scalar (i.e., one number or a vector with one element). In the given input, DeltaT = ", DeltaT))
+    ErrorMessage <- (paste0("The argument DeltaT should be a scalar (i.e., one number or a vector with one element)."))
     stop(ErrorMessage)
+  }
+  if(DeltaT == 0) {
+    stop("DeltaT should be strictly positive.")
+  }
+  if(!is.numeric(DeltaT)) {
+    stop("DeltaT should be a scalar.")
   }
   if(Stand != 0 & Stand != 1){
     ErrorMessage <- (paste0("The argument Stand should be a 0 or a 1, not ", Stand))
