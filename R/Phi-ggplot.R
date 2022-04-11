@@ -3,13 +3,13 @@
 #' This function makes a Phi-plot of Phi(DeltaT) for a range of time intervals based on its underlying drift matrix. There is also an interactive web application on my website to create a Phi-plot: Phi-and-Psi-Plots and Find DeltaT (\url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}).
 #'
 #' @param DeltaT Optional. The time interval used. By default, DeltaT = 1.
-#' @param Phi Matrix of size q x q of (un)standardized lagged effects. Note that the Phi (or Drift) matrix should be standardized to make a fair comparison between cross-lagged effects.
+#' @param Phi Optional (either Phi or Drift). Matrix of size q x q of (un)standardized lagged effects. Note that the Phi (or Drift) matrix should be standardized to make a fair comparison between cross-lagged effects.
 #' It can also take a fitted object from the classes "varest" (from the VAR() function in vars package) and "ctsemFit" (from the ctFit() function in the ctsem package); see example below. If such an object is used, the (standardized) Phi/Drift matrix is calculated/extracted.
-#' @param Drift Optional (either Phi or Drift). Matrix of size q x q. Underling continuous-time lagged effects matrix (i.e., Drift matrix) of the discrete-time lagged effects matrix Phi(DeltaT). By default, input for Phi is used: Drift will be used only if Phi = NULL.
+#' @param Drift Optional (either Phi or Drift). Matrix of size q x q. Underling continuous-time lagged effects matrix (i.e., Drift matrix) of the discrete-time lagged effects matrix Phi(DeltaT). If Phi and Drift are both specified, Phi will be ignored.
 #' @param Stand Optional. Indicator for whether Phi (or Drift) should be standardized (1) or not (0). If Stand = 1, one of the following matrices should be input as well: SigmaVAR, Sigma, or Gamma (or if a varest or ctsemFit object is input, it will be extracted from that). By default, Stand = 0.
-#' @param SigmaVAR Optional (if Stand = 1, then either SigmaVAR, Sigma, or Gamma needed). Matrix of size q x q. Residual covariance matrix of the first-order discrete-time vector autoregressive (DT-VAR(1)) model.
-#' @param Sigma Optional (if Stand = 1, then either SigmaVAR, Sigma, or Gamma needed). Matrix of size q x q. Residual covariance matrix of the first-order continuous-time (CT-VAR(1)) model, that is, the diffusion matrix.
-#' @param Gamma Optional (either SigmaVAR, Sigma or Gamma). Matrix of size q x q. Stationary covariance matrix, that is, the contemporaneous covariance matrix of the data.
+#' @param SigmaVAR Optional (if Stand = 1, then either SigmaVAR, Sigma, or Gamma needed; otherwise, they are ignored. If all three are specified, only Gamma will be used. If SigmaVAR and Sigma are both specified, SigmaVAR will be used.). Matrix of size q x q. Residual covariance matrix of the first-order discrete-time vector autoregressive (DT-VAR(1)) model.
+#' @param Sigma Optional (if Stand = 1, then either SigmaVAR, Sigma, or Gamma needed; otherwise, they are ignored. If all three are specified, only Gamma will be used. If SigmaVAR and Sigma are both specified, SigmaVAR will be used.). Matrix of size q x q. Residual covariance matrix of the first-order continuous-time (CT-VAR(1)) model, that is, the diffusion matrix.
+#' @param Gamma Optional (if Stand = 1, then either SigmaVAR, Sigma, or Gamma needed; otherwise, they are ignored. If all three are specified, only Gamma will be used. If SigmaVAR and Sigma are both specified, SigmaVAR will be used.). Matrix of size q x q. Stationary covariance matrix, that is, the contemporaneous covariance matrix of the data.
 #' @param Min Optional. Minimum time interval used in the Phi-plot. By default, Min = 0.
 #' @param Max Optional. Maximum time interval used in the Phi-plot. By default, Max = 10.
 #' @param Step Optional. The step-size taken in the time intervals. By default, Step = 0.05. Hence, using the defaults, the Phi-plots is based on the values of Phi(DeltaT) for DeltaT = 0, 0.05, 0.10, ..., 10. Note: Especially if eigenvalues are complex, this step size should be very small (then, the oscillating behavior can be seen best).
@@ -123,13 +123,16 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
     ErrorMessage <- (paste0("The argument Stand should be a 0 or a 1, not ", Stand))
     stop(ErrorMessage)
   }
-  if(length(Min) != 1){
-    ErrorMessage <- (paste0("The argument Min should be a scalar (i.e., one number or a vector with one element). In the given input, Min = ", Min))
+  if(length(Min) != 1 | !is.numeric(Min)){
+    ErrorMessage <- (paste0("The argument Min should be a scalar (i.e., one number or a vector with one element)."))
     stop(ErrorMessage)
   }
-  if(length(Max) != 1){
-    ErrorMessage <- (paste0("The argument Max should be a scalar (i.e., one number or a vector with one element). In the given input, Max = ", Max))
+  if(length(Max) != 1 | !is.numeric(Max)){
+    ErrorMessage <- (paste0("The argument Max should be a scalar (i.e., one number or a vector with one element)."))
     stop(ErrorMessage)
+  }
+  if(Min > Max) {
+    stop("Min is larger than Max. Try switching the arguments.")
   }
   if(length(Step) != 1){
     ErrorMessage <- (paste0("The argument Step should be a scalar (i.e., one number or a vector with one element). In the given input, Step = ", Step))
@@ -140,6 +143,9 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
     stop(ErrorMessage)
   }
   #
+  if(!is.null(Phi) & !is.null(Drift)) {
+    warning("Both Phi and Drift are specified. Phi is ignored.")
+  }
   # Check on Phi
   if(any(class(Phi) == "varest")){
     Phi_VARest <- Acoef(Phi)[[1]]
@@ -156,6 +162,9 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
 
     if(is.null(Drift)){
       if(!is.null(Phi)){
+        if(!is.numeric(Phi)) {
+          stop("There are non-numerical values in Phi.")
+        }
         CTMp <- CTMparam(DeltaT, Phi)
         if(is.null(CTMp$ErrorMessage)){
           Drift <- CTMp$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
@@ -171,6 +180,9 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
     }
     #
     # Check on B
+    if(!is.numeric(Drift)) {
+      stop("There are non-numerical values in Drift.")
+      }
     if(length(Drift) > 1){
       Check_B_or_Phi(B=-Drift)
       if(all(Re(eigen(Drift)$val) > 0)){
@@ -204,14 +216,27 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
       Sigma <- summary(Phi)$DIFFUSION
       Gamma <- Gamma.fromCTM(Drift, Sigma)
     }else if(is.null(SigmaVAR) & is.null(Gamma) & is.null(Sigma)){ # All three unknown
-      ErrorMessage <- (paste0("One of the arguments SigmaVAR, Sigma, or Gamma is not found: it should be part of the input (when Stand = 1). In case of the first matrix, specify 'SigmaVAR = SigmaVAR'."))
+      ErrorMessage <- (paste0("At least one of SigmaVAR, Sigma, or Gamma needs to be specified when Stand = 1."))
       stop(ErrorMessage)
     }else if(is.null(Gamma)){ # Gamma unknown, calculate Gamma from Phi & SigmaVAR or Drift & Sigma
 
       if(!is.null(SigmaVAR)){ # SigmaVAR known, calculate Gamma from Phi & SigmaVAR
+        if(!is.numeric(SigmaVAR)) {
+          stop("There are non-numerical values in SigmaVAR.")
+        }
+        if(anyNA(SigmaVAR)) {
+          stop("There are missing values in SigmaVAR.")
+        }
 
         # Check on SigmaVAR
-        Check_SigmaVAR(SigmaVAR, q)
+        if (!is.null(try(Check_SigmaVAR(SigmaVAR, q), silent = TRUE)) &&
+            grepl("The residual covariance matrix SigmaVAR should, like Phi, be a matrix with dimensions q x q, with q = ",
+                  as.character(try(Check_SigmaVAR(SigmaVAR, q), silent = TRUE)),
+                  fixed = TRUE)) {
+          stop("SigmaVAR and Phi have different dimensions, but should both be square matrices with dimensions q x q.")
+        } else {
+          Check_SigmaVAR(SigmaVAR, q)
+        }
 
         # Calculate Gamma
         if(is.null(Phi)){
@@ -225,9 +250,22 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
 
 
       }else if(!is.null(Sigma)){ # Sigma known, calculate Gamma from Drift & Sigma
+        if(!is.numeric(Sigma)) {
+          stop("There are non-numerical values in Sigma.")
+        }
+        if(anyNA(Sigma)) {
+          stop("There are missing values in Sigma.")
+        }
 
         # Check on Sigma
-        Check_Sigma(Sigma, q)
+        if (!is.null(try(Check_Sigma(Sigma, q), silent = TRUE)) &&
+            grepl("The residual covariance matrix Sigma should, like Drift (or Phi), be a matrix with dimensions q x q, with q = ",
+                  as.character(try(Check_Sigma(Sigma, q), silent = TRUE)),
+                  fixed = TRUE)) {
+          stop("Sigma and Phi (or Drift) have different dimensions, but should both be square matrices with dimensions q x q.")
+        } else {
+          Check_Sigma(Sigma, q)
+        }
 
         # Calculate Gamma
         if(is.null(Drift)){
@@ -244,6 +282,12 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
       }
 
     }else if(!is.null(Gamma)){ # Gamma known, only check on Gamma needed
+      if(!is.numeric(Gamma)) {
+        stop("There are non-numerical values in Gamma.")
+      }
+      if(anyNA(Gamma)) {
+        stop("There are missing values in Gamma.")
+      }
 
       # Checks on Gamma
       Check_Gamma(Gamma, q)
