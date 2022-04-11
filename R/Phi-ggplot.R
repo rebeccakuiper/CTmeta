@@ -113,7 +113,7 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
     ErrorMessage <- (paste0("The argument DeltaT should be a scalar (i.e., one number or a vector with one element)."))
     stop(ErrorMessage)
   }
-  if(DeltaT == 0) {
+  if(DeltaT <= 0) {
     stop("DeltaT should be strictly positive.")
   }
   if(!is.numeric(DeltaT)) {
