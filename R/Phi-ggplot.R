@@ -326,6 +326,9 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
       ErrorMessage <- (paste0("The argument Col should contain ", nrLines, " elements, that is, q*q or the number of 1s in WhichElements (or WhichElements is incorrectly specified); not ", length(Col)))
       stop(ErrorMessage)
     }
+    if(!is.numeric(Col)) {
+      stop("Col should be a vector of integers.")
+    }
     if(any(Col %% 1 != 0)){
       ErrorMessage <- (paste0("The argument Col should consist solely of integers."))
       stop(ErrorMessage)
@@ -335,6 +338,9 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
     if(length(Lty) != nrLines){
       ErrorMessage <- (paste0("The argument Lty should contain ", nrLines, " elements, that is, q*q or the number of 1s in WhichElements (or WhichElements is incorrectly specified); not ", length(Lty)))
       stop(ErrorMessage)
+    }
+    if(!is.numeric(Lty)) {
+      stop("Lty should be a vector of integers.")
     }
     if(any(Lty %% 1 != 0)){
       ErrorMessage <- (paste0("The argument Lty should consist solely of integers."))
