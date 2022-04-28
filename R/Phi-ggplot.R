@@ -134,8 +134,8 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
   if(Min > Max) {
     stop("Min is larger than Max. Try switching the arguments.")
   }
-  if(length(Step) != 1){
-    ErrorMessage <- (paste0("The argument Step should be a scalar (i.e., one number or a vector with one element). In the given input, Step = ", Step))
+  if(length(Step) != 1 | !is.numeric(Step)){
+    ErrorMessage <- (paste0("The argument Step should be a scalar (i.e., one number or a vector with one element)."))
     stop(ErrorMessage)
   }
   if(!is.logical(MaxMinPhi) & MaxMinPhi != FALSE & MaxMinPhi != TRUE){
@@ -337,7 +337,7 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
       stop(ErrorMessage)
     }
     if(any(Lty %% 1 != 0)){
-      ErrorMessage <- (paste0("The argument Lty should consist of solely integers."))
+      ErrorMessage <- (paste0("The argument Lty should consist solely of integers."))
       stop(ErrorMessage)
     }
   }
@@ -428,9 +428,9 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
     bind_cols(WhichElements = rep(as.vector(WhichElements), length(DeltaTs))) %>%
     filter(WhichElements == 1) %>%
     bind_cols(DeltaTs = rep(DeltaTs, each = sum(WhichElements)),
-              Color = rep(as.character(Col), length(DeltaTs)),
-              LineType = rep(as.character(Lty), length(DeltaTs)),
-              Labels = rep(as.character(legendT), length(DeltaTs)))
+              Color = rep(as.character(Col)[as.logical(as.vector(t(WhichElements)))], length(DeltaTs)),
+              LineType = rep(as.character(Lty)[as.logical(as.vector(t(WhichElements)))], length(DeltaTs)),
+              Labels = rep(as.character(legendT)[as.logical(as.vector(t(WhichElements)))], length(DeltaTs)))
 
   Xlab <- expression(Time-interval (Delta[t]))
   Ylab <- expression(Phi(Delta[t])~values)
@@ -438,8 +438,10 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
   phi_plot <- ggplot(PhiDeltaTsDF, aes(DeltaTs, Values, color = Labels, linetype = Labels)) +
     geom_line(lwd = 0.75) +
     geom_abline(intercept = 0, slope = 0, alpha = .5) +
-    scale_linetype_manual(name = " ", values = Lty, labels = legendT) +
-    scale_color_manual(name = " ", values = Col, labels = legendT) +
+    scale_linetype_manual(name = " ", values = Lty[as.logical(as.vector(t(WhichElements)))],
+                          labels = legendT[as.logical(as.vector(t(WhichElements)))]) +
+    scale_color_manual(name = " ", values = Col[as.logical(as.vector(t(WhichElements)))],
+                       labels = legendT[as.logical(as.vector(t(WhichElements)))]) +
     ylab(Ylab) +
     xlab(Xlab) +
     #labs(title = as.expression(Title_1),
