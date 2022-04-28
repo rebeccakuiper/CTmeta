@@ -138,6 +138,9 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
     ErrorMessage <- (paste0("The argument Step should be a scalar (i.e., one number or a vector with one element)."))
     stop(ErrorMessage)
   }
+  if(length(MaxMinPhi) > 1) {
+    stop("MaxMinPhi should be a single element; either TRUE or FALSE.")
+  }
   if(!is.logical(MaxMinPhi) & MaxMinPhi != FALSE & MaxMinPhi != TRUE){
     ErrorMessage <- (paste0("The argument 'MaxMinPhi' should be T(RUE) or F(ALSE) (or 1 or 0), not ", MaxMinPhi))
     stop(ErrorMessage)
