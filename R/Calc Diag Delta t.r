@@ -1,15 +1,15 @@
 #' Time-interval (DeltaT) for which the (discrete-time) residual covariance matrix is diagonal
 #'
-#' Time-interval (DeltaT) for which the (discrete-time) residual covariance matrix (i.e., SigmaVAR(DeltaT)) is diagonal (together with that diagonal SigmaVAR and corresponding lagged-effects matrix Phi). The interactive web application 'Phi-and-Psi-Plots and Find DeltaT' also contains this functionality, you can find it on my website: \url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}.
+#' Provides the time-interval (DeltaT) for which the (discrete-time) residual covariance matrix (i.e., SigmaVAR(DeltaT)) is diagonal (together with that diagonal SigmaVAR and corresponding lagged-effects matrix Phi). The interactive web application 'Phi-and-Psi-Plots and Find DeltaT' also contains this functionality. It is available at \url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}.
 #'
-#' @param Phi Matrix of size q times q of (un)standardized lagged effects of the first-order discrete-time vector autoregressive (DT-VAR(1)) model.
-#' It also takes a fitted object from the classes "varest" (from the VAR() function in vars package) and "ctsemFit" (from the ctFit() function in the ctsem package); see example below. From such an object, the (standardized) Drift matrix is calculated/extracted.
-#' @param SigmaVAR Residual covariance matrix of the first-order discrete-time vector autoregressive (DT-VAR(1)) model.
-#' @param Drift Optional (either Phi or Drift). Underling first-order continuous-time lagged effects matrix (i.e., Drift matrix) of the discrete-time lagged effects matrix Phi(DeltaT). By default, input for Phi is used; only when Phi = NULL, Drift will be used.
-#' @param Sigma Optional (either SigmaVAR, Sigma or Gamma). Residual covariance matrix of the first-order continuous-time (CT-VAR(1)) model, that is, the diffusion matrix. By default, input for SigmaVAR is used; only when SigmaVAR = NULL, Sigma will be used.
-#' @param Gamma Optional (either SigmaVAR, Sigma or Gamma). Stationary covariance matrix, that is, the contemporaneous covariance matrix of the data. By default, input for SigmaVAR is used; only when SigmaVAR = NULL, Gamma will be used.
+#' @param Phi Optional (either Phi or Drift). Matrix of size q x q of (un)standardized lagged effects of the first-order discrete-time vector autoregressive (DT-VAR(1)) model.
+#' It can also take a fitted object from the classes "varest" (from the VAR() function in vars package) and "ctsemFit" (from the ctFit() function in the ctsem package); see example below. If such an object is provided, the (standardized) Drift matrix is calculated/extracted.
+#' @param SigmaVAR Optional (either SigmaVAR, Sigma or Gamma). Residual covariance matrix of the first-order discrete-time vector autoregressive (DT-VAR(1)) model.
+#' @param Drift Optional (either Phi or Drift). Underlying first-order continuous-time lagged effects matrix (i.e., Drift matrix) of the discrete-time lagged effects matrix Phi(DeltaT). By default, the input for Phi is used: Drift will be used only when Phi = NULL.
+#' @param Gamma Optional (either SigmaVAR, Sigma or Gamma). Stationary covariance matrix, that is, the contemporaneous covariance matrix of the data. By default, the input for SigmaVAR is used: Gamma will be used only when SigmaVAR = NULL.
 #' Note that if Phi and SigmaVAR (or Drift and Sigma) are known, Gamma can be calculated; hence, only one out of SigmaVAR, Sigma, and Gamma is needed as input.
-#' @param xstart_DeltaT Optional. Starting value for DeltaT. If you see in the SigmaVAR-plot a DeltaT for which SigmaVAR is diagonal (i.e., the covariances are zero) and the function renders DeltaT_diag = 0 as a solution, then change this start value accordingly. By default, xstart_DeltaT = 1
+#' @param Sigma Optional (either SigmaVAR, Sigma or Gamma). Residual covariance matrix of the first-order continuous-time (CT-VAR(1)) model, that is, the diffusion matrix. By default, the input for SigmaVAR or Gamma is used: Sigma will be used only when SigmaVAR = NULL and Gamma = NULL.
+#' @param DeltaT_start Optional. Starting value for DeltaT. If you see in the SigmaVAR-plot a DeltaT for which SigmaVAR is diagonal (i.e., the covariances are zero) and the function renders DeltaT_diag = 0 as a solution, then change this start value accordingly. By default, DeltaT_start = 1
 #'
 #' @return The output renders the time-interval for which the (discrete-time) residual covariance matrix (SigmaVAR) is diagonal (DeltaT_diag), together with that diagonal SigmaVAR and corresponding lagged-effects matrix Phi (i.e., SigmaVAR(DeltaT_diag) and Phi(DeltaT_diag)).
 #' @importFrom expm expm
@@ -61,13 +61,58 @@
 #'
 
 
-DiagDeltaT <- function(Phi = NULL, SigmaVAR = NULL, Drift = NULL, Sigma = NULL, Gamma = NULL, xstart_DeltaT = 1) {
-  #xstart_DeltaT <- 1
+DiagDeltaT <- function(Phi = NULL, SigmaVAR = NULL, Drift = NULL, Gamma = NULL, Sigma = NULL, DeltaT_start = 1) {
+  #DeltaT_start <- 1
 
   DeltaT <- 1 # Needed for determining B/Drift.
   # Btw Cannot use it as option, yet, then I have to change code such that DeltaT_diag is adjusted accordingly (by transfarming Phi).
 
   # Needed: check on CTM param, Phi, and Gamma
+  
+  if(!is.null(SigmaVAR) && anyNA(SigmaVAR)) {
+    stop("There are missing values in SigmaVAR.")
+  }
+  if(!is.null(SigmaVAR) && !is.numeric(SigmaVAR)) {
+    stop("There are non-numerical values in SigmaVAR.")
+  }
+  
+  if(!is.numeric(DeltaT_start) && !is.null(DeltaT_start)){
+    stop("DeltaT_start should be a numerical value.")
+  }
+  
+  # Make sure the specified default is used if redundant matrices are specified
+  if(!is.null(Phi) & !is.null(Drift)) {
+    warning("Both Phi and Drift are specified. Drift is ignored.")
+    Drift <- NULL
+  }
+  
+  if(!is.null(Drift) && anyNA(Drift)) {
+    stop("There are missing values in Drift.")
+  }
+  if(!is.null(Drift) && !is.numeric(Drift)) {
+    stop("There are non-numerical values in Drift.")
+  }
+  
+  if(!is.null(SigmaVAR) & !is.null(Sigma)) {
+    warning("Both SigmaVAR and Sigma are specified. Sigma is ignored.")
+    Sigma <- NULL
+  }
+  if(!is.null(SigmaVAR) & !is.null(Gamma)) {
+    warning("Both SigmaVAR and Gamma are specified. Gamma is ignored.")
+    Gamma <- NULL
+  }
+  
+  if(!is.null(Gamma) && anyNA(Gamma)) {
+    stop("There are missing values in Gamma.")
+  }
+  if(!is.null(Gamma) && !is.numeric(Gamma)) {
+    stop("There are non-numerical values in Gamma.")
+  }
+  
+  if(!is.null(Sigma) & !is.null(Gamma)) {
+    warning("Both Sigma and Gamma are specified. Sigma is ignored.")
+    Sigma <- NULL
+  }
 
   # Check on Phi
   if(any(class(Phi) == "varest")){
@@ -84,7 +129,6 @@ DiagDeltaT <- function(Phi = NULL, SigmaVAR = NULL, Drift = NULL, Sigma = NULL, 
       Drift <- CTMp$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
     }else{
       ErrorMessage <- CTMp$ErrorMessage
-      return(ErrorMessage)
       stop(ErrorMessage)
     }
   } else if(any(class(Phi) == "ctsemFit")){
@@ -115,8 +159,8 @@ DiagDeltaT <- function(Phi = NULL, SigmaVAR = NULL, Drift = NULL, Sigma = NULL, 
         if(length(B) > 1){
           Check_B_or_Phi(B)
           if(all(Re(eigen(B)$val) < 0)){
-            cat("All (the real parts of) the eigenvalues of the drift matrix Drift are positive. Therefore. I assume the input for Drift was B = -A instead of A (or -Phi instead of Phi). I will use Drift = -B = A.")
-            cat("Note that Phi(DeltaT) = expm(-B*DeltaT) = expm(A*DeltaT) = expm(Drift*DeltaT).")
+            cat("All (the real parts of) the eigenvalues of the drift matrix Drift are positive. Therefore, the input for Drift is assumed to be B = -A instead of A (or -Phi instead of Phi). Drift = -B = A is used instead of Drift = B.\n")
+            cat("Note that Phi(DeltaT) = expm(-B*DeltaT) = expm(A*DeltaT) = expm(Drift*DeltaT).\n")
             Drift <- -B
             #
             if(length(Drift) == 1){
@@ -128,13 +172,12 @@ DiagDeltaT <- function(Phi = NULL, SigmaVAR = NULL, Drift = NULL, Sigma = NULL, 
           if(any(Re(eigen(B)$val) < 0)){
             #ErrorMessage <- ("The function stopped, since some of (the real parts of) the eigenvalues of the drift matrix Drift are positive.")
             #stop(ErrorMessage)
-            cat("If the function stopped, this is because some of (the real parts of) the eigenvalues of the drift matrix Drift are positive.")
+            cat("Some of (the real parts of) the eigenvalues of the drift matrix Drift are positive.\n")
           }
         }
       }else{ # is.null(Drift)
-        ErrorMessage <- ("Either the drift matrix Drift or the autoregressive matrix Phi should be input to the function.")
+        ErrorMessage <- ("Either the drift matrix Drift or the autoregressive matrix Phi should be part of the input.")
         #("Note that Phi(DeltaT) = expm(-B*DeltaT).")
-        return(ErrorMessage)
         stop(ErrorMessage)
       }
     }else{ # Phi not NULL
@@ -155,22 +198,27 @@ DiagDeltaT <- function(Phi = NULL, SigmaVAR = NULL, Drift = NULL, Sigma = NULL, 
         Drift <- CTMp$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
       }else{
         ErrorMessage <- CTMp$ErrorMessage
-        return(ErrorMessage)
         stop(ErrorMessage)
       }
     }
 
     # Check on SigmaVAR, Sigma, and Gamma
     if(is.null(SigmaVAR) & is.null(Gamma) & is.null(Sigma)){ # All three unknown
-      ErrorMessage <- (paste0("The arguments SigmaVAR, Sigma, or Gamma are not found: one should be part of the input. Notably, in case of the first matrix, specify 'SigmaVAR = SigmaVAR'."))
-      return(ErrorMessage)
+      ErrorMessage <- (paste0("The arguments SigmaVAR, Sigma, and Gamma are not specified. One of them must be specified. If specifying SigmaVAR, do not forget the name the argument (i.e., specify 'SigmaVAR = yourSigmaVAR'."))
       stop(ErrorMessage)
     }else if(is.null(Gamma)){ # Gamma unknown
 
       if(!is.null(SigmaVAR)){ # SigmaVAR known, use SigmaVAR and Phi or Drift
 
         # Check on SigmaVAR
-        Check_SigmaVAR(SigmaVAR, q)
+        if (!is.null(try(Check_SigmaVAR(SigmaVAR, q), silent = TRUE)) &&
+            grepl("The residual covariance matrix SigmaVAR should, like Phi, be a matrix with dimensions q x q, with q = ",
+                  as.character(try(Check_SigmaVAR(SigmaVAR, q), silent = TRUE)),
+                  fixed = TRUE)) {
+          stop("SigmaVAR and Phi (or Drift) have different dimensions, but should both be square matrices with dimensions q x q.")
+        } else {
+          Check_SigmaVAR(SigmaVAR, q)
+        }
 
         # Calculate Gamma
         Gamma <- Gamma.fromVAR(Phi, SigmaVAR)
@@ -178,7 +226,14 @@ DiagDeltaT <- function(Phi = NULL, SigmaVAR = NULL, Drift = NULL, Sigma = NULL, 
       }else if(!is.null(Sigma)){ # Sigma known
 
         # Check on Sigma
-        Check_Sigma(Sigma, q)
+        if (!is.null(try(Check_Sigma(Sigma, q), silent = TRUE)) &&
+            grepl("The residual covariance matrix Sigma should, like Drift (or Phi), be a matrix of size q x q, with q = ",
+                  as.character(try(Check_Sigma(Sigma, q), silent = TRUE)),
+                  fixed = TRUE)) {
+          stop("Sigma and Phi (or Drift) have different dimensions, but should both be square matrices with dimensions q x q.")
+        } else {
+          Check_Sigma(Sigma, q)
+        }
 
         # Calculate Gamma
         Gamma <- Gamma.fromCTM(Drift, Sigma)
@@ -188,7 +243,14 @@ DiagDeltaT <- function(Phi = NULL, SigmaVAR = NULL, Drift = NULL, Sigma = NULL, 
     }else if(!is.null(Gamma)){ # Gamma known
 
       # Checks on Gamma
-      Check_Gamma(Gamma, q)
+      if (!is.null(try(Check_Gamma(Gamma, q), silent = TRUE)) &&
+          grepl("The stationary covariance matrix Gamma should, like Phi, be a matrix of size q x q, with q = ",
+                as.character(try(Check_Gamma(Gamma, q), silent = TRUE)),
+                fixed = TRUE)) {
+        stop("Gamma and Phi (or Drift) have different dimensions, but should both be square matrices with dimensions q x q.")
+      } else {
+        Check_Gamma(Gamma, q)
+      }
 
     }
 
@@ -207,24 +269,25 @@ DiagDeltaT <- function(Phi = NULL, SigmaVAR = NULL, Drift = NULL, Sigma = NULL, 
   errorMatrices <- outcome.GammaAndChecks$error
 
 
-  message_start <- "No message / warning / error. Hence, there is positive DeltaT for which the diagonals/variances in SigmaVAR are positive (and off-diagonals 0)."
+  message_start <- "No message / warning / error. There is a positive DeltaT such that the diagonals/variances in SigmaVAR are positive (and off-diagonals 0)."
   message <- message_start
 
-  message_startvalues <- "In case the Psi-plot/SigmaVAR-plot does show a solution (or another solution) for DeltaT such that Psi is diagonal (i.e., the covariances are 0), \n
-  alter the starting value for 'DeltaT_diag'. Notably, by default, the value 1 is used."
+  message_startvalues <- "If the Psi-plot/SigmaVAR-plot does show a solution (or another solution) for DeltaT such that SigmaVAR is diagonal (i.e., the covariances are 0), alter the starting value for 'DeltaT_diag' (i.e. input a different 'DeltaT_start'). Note that by default, the value 1 is used."
   # Note that in theory the starting values for the q variances can be a problem as well:
-  # I may want to adjust that first 9depending on the solution and message obtained).
-  if(is.null(xstart_DeltaT)){
-    xstart_DeltaT <- 1
+  # I may want to adjust that first (depending on the solution and message obtained).
+  if(is.null(DeltaT_start)){
+    message("Input for DeltaT_start was NULL. 1 was used by default.")
+    DeltaT_start <- 1
   }else{
-    if(length(xstart_DeltaT) != 1){
-      message_startvalues <- "The starting value for 'DeltaT_diag' should be 1 number. \n Since it is not the case, the value 1 is used."
+    if(length(DeltaT_start) != 1){
+      message_startvalues <- "The starting value for 'DeltaT_diag' should be a single number. This is not the case in the given input, so the value 1 is used."
       #cat(message_startvalues)
-      xstart_DeltaT <- 1
+      warning(message_startvalues)
+      DeltaT_start <- 1
     }
   }
   #
-  xstart <- c(rep(1,q), xstart_DeltaT)
+  xstart <- c(rep(1,q), DeltaT_start)
 
 
   EigenPhi <- eigen(Phi)
@@ -425,41 +488,43 @@ DiagDeltaT <- function(Phi = NULL, SigmaVAR = NULL, Drift = NULL, Sigma = NULL, 
         }
       }
       if(any(DiagAndDelta[1:q] < 0)){ # All variances should be positive
-        message <- "There is no positive DeltaT such that SigmaVAR is a 'positive diagonal' matrix. \n That is, the solution contains one or more negative variances."
+        message <- "There is no positive DeltaT such that SigmaVAR is a 'positive diagonal' matrix. That is, the solution contains one or more negative variances."
         #cat(message)
       }
     }else{ # Then, both < 0.0001 and probably (at least one) near 0.
-      message <- "There is no non-negative DeltaT such that SigmaVAR is a diagonal matrix. \n Only for DeltaT approximately 0, it is (approximately) a 0-matrix."
+      message <- "There is no non-negative DeltaT such that SigmaVAR is a diagonal matrix. It is only (approximately) a 0-matrix for DeltaT approximately 0."
       #cat(message)
       #
-      message_DiagAndDelta <- "There are two solutions and both are negative. At least one of them is probaly near zero."
+      message_DiagAndDelta <- "There are two solutions and both are negative. At least one of them is probably near zero."
       #cat(message_DiagAndDelta)
       #
       # If q > 4, inspect the (q+1)*(q-4)/2 not seen equations. See how many sets of q+1 needed.
       # Notably, using other subsets or other starting values can help as well.
     }
 
+  }else if(sol_All_first == 0 & sol_All_last == 0){ # Then, none have a solution
+    message <- "The function did not find a (non-negative) solution for DeltaT such that SigmaVAR is a 'positive diagonal' matrix. Please check the SigmaVAR-plot to see whether the starting value 'DeltaT_start' should be changed."
   }else{
 
-    #Only one of them has a solultion, obtain that one:
+    #Only one of them has a solution, obtain that one:
     if(sol_All_first == 1){DiagAndDelta <- DiagAndDelta_first}
     if(sol_All_last == 1){DiagAndDelta <- DiagAndDelta_last}
-
+    
     # Check positive DeltaT and positive variances/diagonals:
     if(DiagAndDelta[q+1] < 0.0001 & any(DiagAndDelta[1:q] < 0)){
-      message <- "There is no non-negative DeltaT such that SigmaVAR is a 'positive diagonal' matrix. \n Only for DeltaT approximately 0, it is (approximately) a 0-matrix."
+      message <- "There is no non-negative DeltaT such that SigmaVAR is a 'positive diagonal' matrix. It is only (approximately) a 0-matrix for DeltaT approximately 0."
       #cat(message)
       #
       # If q > 4, inspect the (q+1)*(q-4)/2 not seen equations. See how many sets of q+1 needed.
       # Notably, using other subsets or other starting values can help as well.
     }else if(DiagAndDelta[q+1] < 0.0001){
-      message <- "There is no non-negative DeltaT such that SigmaVAR is a diagonal matrix. \n Only for DeltaT approximately 0, it is (approximately) a 0-matrix."
+      message <- "There is no non-negative DeltaT such that SigmaVAR is a diagonal matrix. It is only (approximately) a 0-matrix for DeltaT approximately 0."
       #cat(message)
       #
       # If q > 4, inspect the (q+1)*(q-4)/2 not seen equations. See how many sets of q+1 needed.
       # Notably, using other subsets or other starting values can help as well.
     }else if(any(DiagAndDelta[1:q] < 0)){ # All variants should be positive
-      message <- "There is no positive DeltaT such that SigmaVAR is a 'positive diagonal' matrix. \n That is, the solution contains one or more negative variances."
+      message <- "There is no positive DeltaT such that SigmaVAR is a 'positive diagonal' matrix. That is, the solution contains one or more negative variances."
       #cat(message)
     }
 
@@ -497,10 +562,7 @@ DiagDeltaT <- function(Phi = NULL, SigmaVAR = NULL, Drift = NULL, Sigma = NULL, 
 
     if(q > 4){
       final <- list(final,
-                    Warning <- "Since q > 4, some equations in calculating DeltaT_diag were not used. \n
-                    When from the Psi-plot/SigmaVAR-plot it is clear that there exist a positive (non-zero) 'DeltaT_diag' solution and \n
-                    adjusting the starting value accordingly does not help, please contact me (r.m.kuiper@uu.nl). \n
-                    Then, I will add a part to the code where the currently un-used equations are inspected."
+                    Warning <- "Since q > 4, some equations in calculating DeltaT_diag were not used. When it is clear from the Psi-plot/SigmaVAR-plot that there exist a positive (non-zero) 'DeltaT_diag' solution and adjusting the starting value accordingly does not help, please contact me (r.m.kuiper@uu.nl). Then, I will add a part to the code where the currently unused equations are inspected."
                     # Note that in theory the starting values for the q variances can be a problem as well:
                     # I may want to adjust that first 9depending on the solution and message obtained).
       )

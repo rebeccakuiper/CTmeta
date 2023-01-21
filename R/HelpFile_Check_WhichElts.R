@@ -2,33 +2,26 @@
 Check_WhichElts <- function(WhichElements, q){
 
   if(q == 0){
-    print(paste0("The argument q = 0, it should be larger than 0. Notably, WhichElements is a q times q matrix."))
-    stop()
+    stop("The argument q = 0. q should be larger than 0 as, WhichElements is a q x q matrix.")
   }
 
   # Checks on WhichElements
   if(length(WhichElements) != 1){
     if(length(dim(WhichElements)) < 2){
-      print(paste0("The argument WhichElements should be a square matrix. It should be of size q times q, with q = ", q))
-      stop()
+      stop(paste0("The argument WhichElements should be a square matrix. It should be of size q x q, with q = ", q))
     }else if(length(dim(WhichElements)) > 2){
-      print(paste0("The argument WhichElements should be an q times q matrix, with q = ", q, ". Currently, it is of size ", dim(WhichElements)))
-      stop()
+      stop(paste0("The argument WhichElements should be an q x q matrix, with q = ", q, "."))
     }else if(dim(WhichElements)[1] != dim(WhichElements)[2]){
-      print(paste0("The argument WhichElements should be a square matrix of size q times q, with q = ", q, ". Currently, it is of size ", dim(WhichElements)[1], " times ", dim(WhichElements)[2]))
-      stop()
+      stop(paste0("The argument WhichElements should be a square matrix of size q x q, with q = ", q, ". Currently, it is of size ", dim(WhichElements)[1], " x ", dim(WhichElements)[2]))
     }else if(dim(WhichElements)[1] != q){
-      print(paste0("The argument WhichElements should be a matrix of size q times q, with q = ", q, ". Currently, it is of size ", dim(WhichElements)))
-      stop()
+      stop(paste0("The argument WhichElements should be a matrix of size q x q, with q = ", q, ". Currently, it is of size ", dim(WhichElements)[1], " x ", dim(WhichElements)[2]))
     }
   }else if(q != 1){
-    print(paste0("The argument WhichElements is a scalar, but it should be of size q times q, with q = ", q))
-    stop()
+    stop(paste0("The argument WhichElements is a scalar, but it should be of size q x q, with q = ", q))
   }
   #
   if(any(WhichElements != 0 & WhichElements != 1)){
-    print(paste0("The argument WhichElements should consist of solely 1s and 0s."))
-    stop()
+    stop("The argument WhichElements should consist of solely 1s and 0s.")
   }
 
 }

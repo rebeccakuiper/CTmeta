@@ -1,14 +1,14 @@
 #' Checks on CT estimates
 #'
-#' Checks on the continuous-time lagged-effects model matrices (like check whether matrices are positive-definite). The interactive web application 'Phi-and-Psi-Plots and Find DeltaT' also contains this functionality, you can find it on my website: \url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}.
+#' Various checks on the continuous-time lagged-effects model matrices (e.g. check whether matrices are positive-definite). The interactive web application 'Phi-and-Psi-Plots and Find DeltaT': \url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}.
 #'
-#' @param Drift Matrix of size q times q of (un)standardized continuous-time lagged effects, called drift matrix. Note that Phi(DeltaT) = expm(Drift*DeltaT). By default, input for Phi is used; only when Phi = NULL, Drift will be used.
-#' It also takes a fitted object from the class "ctsemFit" (from the ctFit() function in the ctsem package); see example below. From such an object, the (standardized) Drift matrix is extracted.
-#' @param Sigma Residual covariance matrix of the first-order continuous-time (CT-VAR(1)) model, that is, the diffusion matrix. By default, input for SigmaVAR is used; only when SigmaVAR = NULL, Sigma will be used.
-#' @param Gamma Optional (either Sigma or Gamma). Stationary covariance matrix, that is, the contemporaneous covariance matrix of the data. By default, input for SigmaVAR is used; only when SigmaVAR = NULL, Gamma will be used.
-#' Note that if Drift and Sigma are known, Gamma can be calculated; hence, only one out of SigmaVAR, Sigma, and Gamma is needed as input.
+#' @param Drift Matrix of size q x q of (un)standardized continuous-time lagged effects, called the drift matrix. Can also be a fitted object from the class "ctsemFit" (from the ctFit() function in the ctsem package); see example below. The (standardized) Drift matrix is extracted from such an object.
+#' @param Sigma Optional (either Sigma or Gamma). Residual covariance matrix (of size q x q) of the first-order continuous-time (CT-VAR(1)) model, i.e. the diffusion matrix.
+#' Note that if Drift and Sigma are known, Gamma can be calculated: hence, only one out of Sigma and Gamma is needed as input.
+#' @param Gamma Optional (either Sigma or Gamma). Stationary covariance matrix (of size q x q), that is, the contemporaneous covariance matrix of the data.
+#' Note that if Drift and Sigma are known, Gamma can be calculated: hence, only one out of Sigma and Gamma is needed as input. If all three are provided, their compatibility is checked.
 #'
-#' @return The output renders the conclusions from the checks on the continuous-time lagged-effects model matrices.
+#' @return The output provides conclusions from the checks on the continuous-time lagged-effects model matrices: whether any problems were found, the exact errors that were found, the Drift, Sigma and Gamma matrices and their eigenvalues.
 #' @importFrom expm expm
 #' @export
 #' @examples
@@ -19,7 +19,7 @@
 #'
 #' ##################################################################################################
 #' # Input needed in examples below with q=2 variables.
-#' # I will use the example matrix stored in the package:
+#' # We use the example matrix stored in the package:
 #' Drift <- myDrift
 #' #
 #' q <- dim(Drift)[1]
@@ -35,11 +35,19 @@
 #'
 #' ## Example 2: input from fitted object of class "ctsemFit" ##
 #' #
-#' #data <- myData
-#' #if (!require("ctsemFit")) install.packages("ctsemFit")
-#' #library(ctsemFit)
-#' #out_CTM <- ctFit(...)
-#' #ChecksCTM(out_CTM)
+#' if (!require("ctsem")) install.packages("ctsem")
+#' library(ctsem)
+#' library(ctsemOMX)
+#' #
+#' ############ adapted from https://rdrr.io/cran/ctsemOMX/man/ctFit.html ############
+#' data(ctExample1)
+#' model <- ctModel(n.manifest=2, n.latent=2, Tpoints=6, LAMBDA=diag(2),
+#'                  manifestNames=c('LeisureTime', 'Happiness'),
+#'                  latentNames=c('LeisureTime', 'Happiness'), TRAITVAR="auto")
+#' out_Drift <- ctFit(dat=ctExample1, ctmodelobj=model)
+#' ##################################################################################
+#' #
+#' ChecksCTM(out_Drift, Sigma)
 #'
 
 
@@ -71,11 +79,16 @@ ChecksCTM <- function(Drift, Sigma = NULL, Gamma = NULL) {
     # Drift = A = -B
     # B is drift matrix that is pos def, so Phi(DeltaT) = expm(-B*DeltaT)
     if(is.null(Drift)){
-      ErrorMessage <- ("The drift matrix Drift should be input to the function.")
+      ErrorMessage <- ("The drift matrix Drift should be part of the input.")
       #("Note that Phi(DeltaT) = expm(-B*DeltaT).")
-      return(ErrorMessage)
       stop(ErrorMessage)
     }else{ # !is.null(Drift)
+      if(anyNA(Drift)) {
+        stop("There are missing values in Drift.")
+      }
+      if(!is.numeric(Drift)) {
+        stop("There are non-numerical values in Drift.")
+      }
       B <- -Drift
       #
       if(length(B) == 1){
@@ -94,7 +107,7 @@ ChecksCTM <- function(Drift, Sigma = NULL, Gamma = NULL) {
     }
     #
     if(all(Re(eigen(B)$val) < 0)){
-      cat("All (the real parts of) the eigenvalues of the drift matrix Drift are positive. Therefore. I assume the input for Drift was B = -A instead of A. I will use Drift = -B = A.")
+      cat("All (the real parts of) the eigenvalues of the drift matrix Drift are positive. Therefore, I assume the input for Drift was B = -A instead of A. I will use Drift = -B = A.")
       cat("Note that Phi(DeltaT) = expm(-B*DeltaT) = expm(A*DeltaT) = expm(Drift*DeltaT).")
       B = -B
     }
@@ -107,14 +120,26 @@ ChecksCTM <- function(Drift, Sigma = NULL, Gamma = NULL) {
 
     # Check on Sigma and Gamma - need Sigma
     if(is.null(Sigma) & is.null(Gamma)){ # Both Sigma and Gamma unknown
-      ErrorMessage <- (paste0("Both Sigma and Gamma are NULL; one should be part of the input."))
-      return(ErrorMessage)
+      ErrorMessage <- (paste0("Both Sigma and Gamma are NULL. One of them must be part of the input."))
       stop(ErrorMessage)
     }
     if(!is.null(Sigma)){ # Sigma known
+      if(anyNA(Sigma)) {
+        stop("There are NA values in Sigma.")
+      }
+      if(!is.numeric(Sigma)) {
+        stop("There are non-numerical values in Sigma.")
+      }
       # Check on Sigma
       Check_Sigma(Sigma, q)
     }else{ # Sigma unknown and Gamma known, calculate Sigma
+      Check_Gamma(Gamma, q)
+      if(anyNA(Gamma)) {
+        stop("There are missing values in Gamma.")
+      }
+      if(!is.numeric(Gamma)) {
+        stop("There are non-numerical values in Gamma.")
+      }
       # Calculate Sigma
       if(q != 1){
         Sigma <- B %*% Gamma + t(B %*% Gamma)
@@ -137,28 +162,49 @@ ChecksCTM <- function(Drift, Sigma = NULL, Gamma = NULL) {
 
 ChecksAreFine <- TRUE
 error <- list()
-append(error, "Checks on the matrices Drift, Sigma, and Gamma are inspected, the following problems exist:")
+error <- append(error, "Checks on the matrices Drift, Sigma, and Gamma are inspected, the following problems exist:")
+
+if(all(Re(eigen(B)$val) < 0)){
+  error <- append(error, "All (the real parts of) the eigenvalues of the drift matrix Drift are positive. Therefore, B = -A was used for Drift instead of A. I will use Drift = -B = A.")
+  error <- append(error, "Note that Phi(DeltaT) = expm(-B*DeltaT) = expm(A*DeltaT) = expm(Drift*DeltaT).")
+  B = -B
+}
+
+# Check that the three matrices are compatible if all three are provided
+if(!is.null(Sigma) & !is.null(Gamma)) {
+  if(q != 1){
+    Sigma.from.Gamma <- B %*% Gamma + t(B %*% Gamma)
+  }else{
+    Sigma.from.Gamma <- B * Gamma + (B * Gamma)
+  }
+  Gamma.from.Sigma <- Gamma.fromCTM(-B, Sigma)
+  if(any(Gamma != Gamma.from.Sigma) | any(Sigma != Sigma.from.Gamma)) {
+    cat("The Gamma and/or Sigma matrices obtained from the Drift and Sigma and/or Gamma matrices do not match the provided Sigma and Gamma.\n One of the given matrices is likely wrong.\n")
+    ChecksAreFine <- FALSE
+    error <- append(error, "The provided Sigma and/or Gamma do not match the computed Sigma and/or Gamma.")
+  }
+}
 
 
 # Eigenvalues positive (or at least real part)
 if (any(Re(eigenvalDrift) <= 0)){
   cat("The (real parts of the) eigenvalues of the drift matrix 'Drift' are positive. \n Hence, the process is not stable. \n")
   ChecksAreFine <- FALSE
-  error <- append(error, "Not all (real parts of the) eigenvalues of the drift matrix 'Drift' are negative. \n Hence, the process is not stable.")
+  error <- append(error, "Not all (real parts of the) eigenvalues of the drift matrix 'Drift' are negative. Hence, the process is not stable.")
 }
 #
 # CHECK on complex
 if (is.complex(eigenvalDrift) == TRUE){
   if(all(Im(eigenvalDrift) > -base::pi/1)){
     if(all(Im(eigenvalDrift) < base::pi/1)){
-      cat("The drift matrix 'Drift' has complex eigenvalues and -vectors, but is a unique solution for Phi(1). \n (nl imaginary part of the complex eigenvalues of drift matrix lie in (-pi/1, pi/1)). \n")
+      cat("The drift matrix 'Drift' has complex eigenvalues and eigenvectors, but is a unique solution for Phi(1). \n (namely imaginary part of the complex eigenvalues of drift matrix lie in (-pi/1, pi/1)). \n")
       ChecksAreFine <- FALSE
-      error <- append(error, "Note: The drift matrix 'Drift' has complex eigenvalues and -vectors, but is a unique solution for Phi(1). \n (nl imaginary part of the complex eigenvalues of drift matrix lie in (-pi/1, pi/1)).")
+      error <- append(error, "Note: The drift matrix 'Drift' has complex eigenvalues and eigenvectors, but is a unique solution for Phi(1). (namely imaginary part of the complex eigenvalues of drift matrix lie in (-pi/1, pi/1)).")
     }
   } else{
-    cat("The drift matrix 'Drift' has complex eigenvalues and -vectors and is not a unique solution for this Phi(1). \n (nl imaginary part of the complex eigenvalues of drift matrix do NOT lie in (-pi/1, pi/1)). \n")
+    cat("The drift matrix 'Drift' has complex eigenvalues and -vectors and is not a unique solution for this Phi(1). \n (namely imaginary part of the complex eigenvalues of drift matrix do NOT lie in (-pi/1, pi/1)). \n")
     ChecksAreFine <- FALSE
-    error <- append(error, "Note: The drift matrix 'Drift'  has complex eigenvalues and -vectors and is not a unique solution for this Phi(1). \n (nl imaginary part of the complex eigenvalues of drift matrix do NOT lie in (-pi/1, pi/1)).")
+    error <- append(error, "Note: The drift matrix 'Drift'  has complex eigenvalues and -vectors and is not a unique solution for this Phi(1). \n (namely imaginary part of the complex eigenvalues of drift matrix do NOT lie in (-pi/1, pi/1)).")
   }
 }
 

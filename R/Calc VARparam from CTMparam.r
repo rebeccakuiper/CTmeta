@@ -66,8 +66,7 @@ VARparam <- function(DeltaT = 1, Drift, Sigma = NULL, Gamma = NULL) {
 
   # Checks:
   if(length(DeltaT) != 1){
-    ErrorMessage <- (paste0("The argument DeltaT should be a scalar, that is, one number, that is, a vector with one element. Currently, DeltaT = ", DeltaT))
-    return(ErrorMessage)
+    ErrorMessage <- (paste0("The argument DeltaT should be a scalar (i.e., one number or a vector with one element)."))
     stop(ErrorMessage)
   }
   #
@@ -105,8 +104,7 @@ VARparam <- function(DeltaT = 1, Drift, Sigma = NULL, Gamma = NULL) {
   #
   # Check on Sigma, and Gamma
   if(is.null(Gamma) & is.null(Sigma)){ # Both unknown
-    ErrorMessage <- (paste0("The arguments Sigma or Gamma are NULL: one should be part of the input. Notably, in case of the last matrix, specify 'Gamma = Gamma'."))
-    return(ErrorMessage)
+    ErrorMessage <- (paste0("The arguments Sigma and Gamma are NULL. One of them must be part of the input. If specifying Gamma, do not forget the name the argument (i.e., specify 'Gamma = yourGamma'."))
     stop(ErrorMessage)
   }else if(is.null(Gamma)){ # Gamma unknown, calculate Gamma from Drift & Sigma
 

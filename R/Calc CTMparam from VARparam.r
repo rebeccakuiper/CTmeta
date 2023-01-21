@@ -1,15 +1,16 @@
 #' Continuous-time estimates from discrete-time estimates
 #'
-#' The continuous-time lagged-effects model matrices corresponding to the discrete-time ones. The interactive web application 'Phi-and-Psi-Plots and Find DeltaT' also contains this functionality, you can find it on my website: \url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}.
 #'
-#' @param DeltaT Optional. The time interval used. By default, DeltaT = 1.
-#' @param Phi (Un)standardized lagged effects matrix. If necessary, it is standardized and for the standardized and vectorized Phi the covariance matrix is determined.
-#' It also takes a fitted object from the class "varest" (from the VAR() function in vars package); see example below. From such an object, the Phi and SigmaVAR matrices are extracted.
-#' @param SigmaVAR Optional (needed to also calculate continuous-time equivalent and to calculate standardized paramater matrices). Residual covariance matrix of the first-order discrete-time vector autoregressive (DT-VAR(1)) model.
-#' @param Gamma Optional (either SigmaVAR or Gamma). Stationary covariance matrix, that is, the contemporaneous covariance matrix of the data.
-#' Note that if Phi and SigmaVAR are known, Gamma can be calculated; hence, either SigmaVAR or Gamma is needed as input.
+#' Transforms discrete-time parameters into their continuous-time (CT) equivalent ones and checks CT matrices (whether covariance matrices are positive definite, whether process is stable, etc.). The interactive web application 'Phi-and-Psi-Plots and Find DeltaT' can also do this. It is available here: \url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}.
 #'
-#' @return The output renders the continuous-time equivalent matrices of the discrete-times ones, together with some checks (namely, the stability of the process and uniqueness of the solution; see the function 'ChecksCTM' for checks on all matrices).
+#' @param DeltaT Optional. The time interval used in the discrete-time matrices. By default, DeltaT = 1.
+#' @param Phi (Un)standardized lagged effects matrix. If necessary, it can be standardized. The covariance matrix is determined for the standardized and vectorized Phi.
+#' It also takes a fitted object from the class "varest" (from the VAR() function in vars package); see example below. The Phi and SigmaVAR matrices are extracted from this object.
+#' @param SigmaVAR Optional (either SigmaVAR or Gamma). Residual covariance matrix of the first-order discrete-time vector autoregressive (DT-VAR(1)) model.
+#' @param Gamma Optional (either SigmaVAR or Gamma). Stationary covariance matrix, i.e., the contemporaneous covariance matrix of the data.
+#' Note that if Phi and SigmaVAR are known, Gamma can be calculated. Therefore, only one of SigmaVAR or Gamma is needed as input.
+#'
+#' @return The output renders the continuous-time matrices equivalent to the discrete-times ones. Some checks are also performed (namely, the stability of the process and uniqueness of the solution; see the function 'ChecksCTM' for checks on all matrices).
 #' @importFrom expm expm
 #' @importFrom expm logm
 #' @export
@@ -47,7 +48,7 @@
 #'
 
 
-CTMparam <- function(DeltaT, Phi, SigmaVAR = NULL, Gamma = NULL) {
+CTMparam <- function(DeltaT = 1, Phi, SigmaVAR = NULL, Gamma = NULL) {
 # DeltaT = time interval (although in VAR itself 1 is used!)
 # q = Number of dimensions, that is, number of dependent variables
 # Phi = matrix of size qxq with autoregressive and cross-lagged effects, matrix with lagged coefficients
@@ -62,14 +63,30 @@ CTMparam <- function(DeltaT, Phi, SigmaVAR = NULL, Gamma = NULL) {
 
   # Checks:
   if(length(DeltaT) != 1){
-    ErrorMessage <- (paste0("The argument DeltaT should be a scalar, that is, one number, that is, a vector with one element."))
-    return(ErrorMessage)
+    ErrorMessage <- (paste0("The argument DeltaT should be a scalar (i.e., one number or a vector with one element)."))
     stop(ErrorMessage)
+  }
+  if(is.na(DeltaT)) {
+    stop("Please specify DeltaT. This should be a scalar (i.e., one number or a vector with one element).")
+  }
+  if(DeltaT == 0){
+    stop("Please specify a non-zero value for DeltaT.")
+  }
+  if(anyNA(SigmaVAR)){
+    stop("There are NA values in SigmaVAR.")
+  }
+  if(!is.null(SigmaVAR) && !is.numeric(SigmaVAR)){
+    stop("There are non-numerical values in SigmaVAR.")
+  }
+  if(!is.null(Gamma) && !is.numeric(Gamma)){
+    stop("There are non-numerical values in Gamma.")
+  }
+  if(!is.numeric(Phi)){
+    stop("There are non-numerical values in Phi.")
   }
   #
   B <- NULL
   Sigma <- NULL
-  #
   # Check on Phi
   if(any(class(Phi) == "varest")){
     SigmaVAR <- cov(resid(Phi))
@@ -110,6 +127,12 @@ CTMparam <- function(DeltaT, Phi, SigmaVAR = NULL, Gamma = NULL) {
     Check_Phi(Phi)
     #
     # Check on SigmaVAR and Gamma
+    if(!is.null(SigmaVAR) & !is.null(Gamma)){
+      Gamma.from.VAR <- Gamma.fromVAR(Phi, SigmaVAR)
+      if(any(Gamma.from.VAR != Gamma)) {
+        warning("One of Phi, SigmaVAR, or Gamma, is likely mismatched from the other two.")
+      }
+    }
     if(is.null(SigmaVAR) & is.null(Gamma)){ # Both SigmaVAR and Gamma unknown
       #ErrorMessage <- (paste0("The arguments SigmaVAR and Gamma are not found: Both SigmaVAR and Gamma are unknown; either one (or both) should be part of the input. In case of first matrix, specify 'SigmaVAR = SigmaVAR'."))
       #return(ErrorMessage)
@@ -119,7 +142,14 @@ CTMparam <- function(DeltaT, Phi, SigmaVAR = NULL, Gamma = NULL) {
     }else if(is.null(Gamma)){ # Gamma unknown, calculate Gamma from SigmaVAR and Phi
 
       # Check on SigmaVAR
-      Check_SigmaVAR(SigmaVAR, q)
+      if (!is.null(try(Check_SigmaVAR(SigmaVAR, q), silent = TRUE)) &&
+        grepl("The residual covariance matrix SigmaVAR should, like Phi, be a matrix with dimensions q x q, with q = ",
+               as.character(try(Check_SigmaVAR(SigmaVAR, q), silent = TRUE)),
+               fixed = TRUE)) {
+        stop("SigmaVAR and Phi have different dimensions, but should both be square matrices with dimensions q x q.")
+      } else {
+        Check_SigmaVAR(SigmaVAR, q)
+      }
 
       # Calculate Gamma
       Gamma <- Gamma.fromVAR(Phi, SigmaVAR)
@@ -127,7 +157,14 @@ CTMparam <- function(DeltaT, Phi, SigmaVAR = NULL, Gamma = NULL) {
     }else if(is.null(SigmaVAR)){ # SigmaVAR unknown, calculate SigmaVAR from Gamma and Phi
 
       # Checks on Gamma
-      Check_Gamma(Gamma, q)
+      if (!is.null(try(Check_Gamma(Gamma, q), silent = TRUE)) &&
+          grepl("The stationary covariance matrix Gamma should, like Phi, be a matrix of size q x q, with q = ",
+                as.character(try(Check_Gamma(Gamma, q), silent = TRUE)),
+                fixed = TRUE)) {
+        stop("Gamma and Phi have different dimensions, but should both be square matrices with dimensions q x q.")
+      } else {
+        Check_Gamma(Gamma, q)
+      }
 
       # Calculate SigmaVAR
       if(q == 1){
@@ -155,8 +192,6 @@ if(is.null(B)){
   #if (any(is.na(logm(Phi)) == TRUE)){ # In that case, there does not exist a solution A=-B for Phi # Note: logm(Phi) can (sometimes) exist when an EV < 0... so, I use the next check:
   if (any(is.na(log(Eigen_ParamVAR)))){ # In that case, there does not exist a solution A=-B for Phi
     ErrorMessage <- "'Phi' does not have a CTM-equivalent drift matrix. That is, there is no positive autocorrelation (as in the first-order continuous-time models), since one or more eigenvalues (have real parts which) are negative."
-    final <- list(ErrorMessage = ErrorMessage)
-    return(final)
     stop(ErrorMessage)
   }
   # I at first wanted to filter out those where the real part of the eigenvalue of Phi is negative, but I don't think that is correct in all complex cases, so I decided to do the check above.
@@ -206,22 +241,22 @@ if(is.null(SigmaVAR) & is.null(Gamma)){
 Eigen_ParamCTM <- eigen(B)$val # = -log(Eigen_ParamVAR) / DeltaT
 
 StableProcess <- FALSE
-StableProcess_message <- "The process is NOT stable, it is exploding (since not all (real parts of) the eigenvalues of Drift are positive or, equivalenty, not all absolute values of the eigenvalues of Phi are smaller than one)."
+StableProcess_message <- "The process is NOT stable: it is exploding (since not all (real parts of) the eigenvalues of Drift are positive or, equivalently, not all absolute values of the eigenvalues of Phi are smaller than one)."
 if(all(Re(Eigen_ParamCTM) > 0)){
   if(all(abs(Eigen_ParamVAR) < 1)){
     StableProcess <- TRUE
-    StableProcess_message <- "The process is stable, it is restore to its equilibrium (since all (real parts of) the eigenvalues of Drift are positive or, equivalenty, all absolute values of the eigenvalues of Phi are smaller than one)."
+    StableProcess_message <- "The process is stable, it is returning to its equilibrium (since all (real parts of) the eigenvalues of Drift are positive or, equivalently, all absolute values of the eigenvalues of Phi are smaller than one)."
   }
 }
 
 UniqueSolution <- FALSE
-UniqueSolution_message <- "The resulting drift matrix Drift is NOT unique, there exist multiple solutions (since the eigenvalues of Drift (and thus also Phi) are complex, that is, have a non-zero imaginary part)."
+UniqueSolution_message <- "The resulting drift matrix Drift is NOT unique, multiple solutions exist (since the eigenvalues of Drift (and thus also Phi) are complex, that is, have a non-zero imaginary part)."
 if(all(Im(Eigen_ParamCTM) == 0)){
   UniqueSolution <- TRUE
-  UniqueSolution_message <- "The resulting drift matrix Drift is unique (since the eigenvalues of Drift (and thus also Phi) are, that is, have a zero imaginary part)."
+  UniqueSolution_message <- "The resulting drift matrix Drift is unique (since the eigenvalues of Drift (and thus also Phi) are real, that is, have a zero imaginary part)."
 }else if(all(abs(Im(Eigen_ParamCTM)) < base::pi/DeltaT)){
   UniqueSolution <- TRUE
-  UniqueSolution_message <- "The resulting drift matrix Drift is unique for your sampling frequency, that is, for your used DeltaT (since the imaginary part of the complex eigenvalues of Drift lie in (-pi/DeltaT, pi/DeltaT)); i.e., you measured frequently enough to know that it is this drift matrix and not another solution (which do exist, as can be seen from the plots)."
+  UniqueSolution_message <- "The resulting drift matrix Drift is unique for your sampling frequency, that is, for the DeltaT you used (since the imaginary part of the complex eigenvalues of Drift lie in (-pi/DeltaT, pi/DeltaT)); i.e., you measured frequently enough to know that this drift matrix is the solution, and not another (which do exist, as can be seen from the plots)."
 }
 #
 ##Multiple solutions - only if q=2!

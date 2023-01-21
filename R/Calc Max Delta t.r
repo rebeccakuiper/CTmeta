@@ -1,13 +1,13 @@
 #' Time-interval (DeltaT) for which Phi_ij(DeltaT) reaches its minimum or maximum (together with that minimum or maximum)
 #'
-#' Time-interval (DeltaT) for which Phi_ij(DeltaT) reaches its minimum or maximum (together with that minimum or maximum). The interactive web application 'Phi-and-Psi-Plots and Find DeltaT' also contains this functionality, you can find it on my website: \url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}.
+#' Provides the time-interval (DeltaT) for which Phi_ij(DeltaT) reaches its minimum or maximum (together with that minimum or maximum). The interactive web application 'Phi-and-Psi-Plots and Find DeltaT' also contains this functionality, you can find it on my website: \url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}.
 #'
 #' @param DeltaT Optional. The time interval used. By default, DeltaT = 1.
-#' @param Phi Matrix of size q times q of (un)standardized lagged effects.
-#' It also takes a fitted object from the classes "varest" (from the VAR() function in vars package) and "ctsemFit" (from the ctFit() function in the ctsem package); see example below. From such an object, the (standardized) Drift matrix is calculated/extracted.
-#' @param Drift Optional (either Phi or Drift). Matrix of size q times q of (un)standardized continuous-time lagged effects, called drift matrix. Note that Phi(DeltaT) = expm(Drift*DeltaT). By default, input for Phi is used; only when Phi = NULL, Drift will be used.
+#' @param Phi Matrix of size q x q of (un)standardized lagged effects.
+#' It can also take a fitted object from the classes "varest" (from the VAR() function in vars package) and "ctsemFit" (from the ctFit() function in the ctsem package); see example below. The (standardized) Drift matrix is extracted from such an object.
+#' @param Drift Optional (either Phi or Drift). Matrix of size q x q of (un)standardized continuous-time lagged effects, called the drift matrix. Note that Phi(DeltaT) = expm(Drift*DeltaT). If both Phi and Drift are specified, only Drift is used.
 #'
-#' @return The output renders, per element (i,j), the time-interval for which Phi_ij reaches its minimum/maximum together with this minimum/maximum Phi_ij. Note that even though a matrix is presented, the elements in it refer to different time-intervals when DeltaT differs per element (see in examples below).
+#' @return The output renders the time-interval for which Phi_ij reaches its minimum/maximum together with this minimum/maximum Phi_ij for each element (i,j). Note that even though a matrix is presented, the elements in it refer to different time-intervals when DeltaT differs per element (see in examples below).
 #' @importFrom expm expm
 #' @importFrom nleqslv nleqslv
 #' @export
@@ -32,11 +32,11 @@
 #'
 #' # Note that the DeltaT for which Phi_ij reaches its maximum or minimum ('DeltaT_MinOrMaxPhi') differs per Phi_ij.
 #' # Therefore, the matrix 'MinOrMaxPhi' is not a Phi-matrix, but each element should be inspected separately.
-#' # To obtain the full Phi-matrix for a specific DeltaT one can use:
+#' # To obtain the full Phi-matrix for a specific DeltaT:
 #' DeltaT_MinOrMaxPhi <- MaxDeltaT(DeltaT, Phi)$DeltaT_MinOrMaxPhi
 #' StandTransPhi(DeltaTStar = DeltaT_MinOrMaxPhi[1,2], DeltaT, N = NULL, Phi)
 #'
-#' # If you would use the drift matrix Drift as input, then use:
+#' # Using the drift matrix Drift as input:
 #' MaxDeltaT(DeltaT, Drift = Drift)
 #'
 #'
@@ -62,11 +62,22 @@ MaxDeltaT <- function(DeltaT = 1, Phi = NULL, Drift = NULL) {
 
   # Checks:
   if(length(DeltaT) != 1){
-    ErrorMessage <- (paste0("The argument DeltaT should be a scalar, that is, one number, that is, a vector with one element. Currently, DeltaT = ", DeltaT))
-    return(ErrorMessage)
+    ErrorMessage <- (paste0("The argument DeltaT should be a scalar (i.e., one number or a vector with one element)."))
     stop(ErrorMessage)
   }
+  if(DeltaT <= 0) {
+    stop("DeltaT should be a strictly positive number.")
+  }
   #
+  if(!is.null(Drift) & !is.null(Phi)) {
+    warning("Both Phi and Drift are specified. Phi is ignored.")
+  }
+  if(!is.null(Drift) && anyNA(Drift)) {
+    stop("There are NA values in Drift.")
+  }
+  if(!is.null(Drift) && !is.numeric(Drift)) {
+    stop("There are non-numerical values in Drift.")
+  }
   # Check on Phi
   if(any(class(Phi) == "varest")){
     Phi <- Acoef(Phi)[[1]]
@@ -75,7 +86,6 @@ MaxDeltaT <- function(DeltaT = 1, Phi = NULL, Drift = NULL) {
       B <- -CTMp$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
     }else{
       ErrorMessage <- CTMp$ErrorMessage
-      return(ErrorMessage)
       stop(ErrorMessage)
     }
   } else if(any(class(Phi) == "ctsemFit")){
@@ -91,13 +101,11 @@ MaxDeltaT <- function(DeltaT = 1, Phi = NULL, Drift = NULL) {
           B <- -CTMp$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
         }else{
           ErrorMessage <- CTMp$ErrorMessage
-          return(ErrorMessage)
           stop(ErrorMessage)
         }
       }else{ # is.null(Phi)
-        ErrorMessage <- ("Either the drift matrix Drift or the autoregressive matrix Phi should be input to the function.")
+        ErrorMessage <- ("Either the drift matrix Drift or the autoregressive matrix Phi should be part of the input.")
         #("Note that Phi(DeltaT) = expm(-B*DeltaT).")
-        return(ErrorMessage)
         stop(ErrorMessage)
       }
     }else{ # !is.null(Drift)
@@ -107,7 +115,7 @@ MaxDeltaT <- function(DeltaT = 1, Phi = NULL, Drift = NULL) {
     if(length(B) > 1){
       Check_B_or_Phi(B)
       if(all(Re(eigen(B)$val) < 0)){
-        cat("All (the real parts of) the eigenvalues of the drift matrix Drift are positive. Therefore. I assume the input for Drift was B = -A instead of A (or -Phi instead of Phi). I will use Drift = -B = A.")
+        cat("All (the real parts of) the eigenvalues of the drift matrix Drift are positive. Therefore, I assume the input for Drift was B = -A instead of A (or -Phi instead of Phi). Drift = -B = A will be used.")
         cat("Note that Phi(DeltaT) = expm(-B*DeltaT) = expm(A*DeltaT) = expm(Drift*DeltaT).")
         B = -B
       }
@@ -115,7 +123,7 @@ MaxDeltaT <- function(DeltaT = 1, Phi = NULL, Drift = NULL) {
         #ErrorMessage <- ("The function stopped, since some of (the real parts of) the eigenvalues of the drift matrix Drift are positive.")
         #return(ErrorMessage)
         #stop(ErrorMessage)
-        cat("If the function stopped, this is because some of (the real parts of) the eigenvalues of the drift matrix Drift are positive.")
+        cat("Some of (the real parts of) the eigenvalues of the drift matrix Drift are positive.")
       }
     }
   }
@@ -152,7 +160,7 @@ MaxDeltaT <- function(DeltaT = 1, Phi = NULL, Drift = NULL) {
       fstart_ij <- SolveForMaxDelta_ij(xstart_ij)
       # Check
       if(all(is.nan(fstart_ij) == FALSE) == FALSE){
-        ("There is no DeltaT such that the Phi(DeltaT) functions reach a minimum or maximum!")
+        ("There is no DeltaT such that the Phi(DeltaT) functions reach a minimum or maximum.")
         message <- "There is no DeltaT such that the Phi(DeltaT) functions reach a minimum or maximum."
       }
       #

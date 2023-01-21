@@ -2,13 +2,13 @@
 #' This function makes a Phi-plot of Phi(DeltaT) for a range of time intervals based on its underlying drift matrix. There is also an interactive web application on my website to create a Phi-plot: Phi-and-Psi-Plots and Find DeltaT (\url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}).
 #'
 #' @param DeltaT Optional. The time interval used. By default, DeltaT = 1.
-#' @param Phi Matrix of size q times q of (un)standardized lagged effects. Note that the Phi (or Drift) matrix should be standardized to make a fair comparison between cross-lagged effects.
-#' It also takes a fitted object from the classes "varest" (from the VAR() function in vars package) and "ctsemFit" (from the ctFit() function in the ctsem package); see example below. From such an object, the (standardized) Drift matrix is calculated/extracted.
-#' @param Drift Optional (either Phi or Drift). Underlying continuous-time lagged effects matrix (i.e., Drift matrix) of the discrete-time lagged effects matrix Phi(DeltaT). By default, input for Phi is used; only when Phi = NULL, Drift will be used.
-#' @param Stand Optional. Indicator for whether Phi (or Drift) should be standardized (1) or not (0). In case Stand = 1, one of the following matrices should be input as well: SigmaVAR, Sigma, or Gamma  (or it is subtracted from a varest or ctsemFit object). By default, Stand = 0.
-#' @param SigmaVAR Optional (if Stand = 1, then either SigmaVAR, Sigma, or Gamma needed). Residual covariance matrix of the first-order discrete-time vector autoregressive (DT-VAR(1)) model.
-#' @param Sigma Optional (if Stand = 1, then either SigmaVAR, Sigma, or Gamma needed). Residual covariance matrix of the first-order continuous-time (CT-VAR(1)) model, that is, the diffusion matrix.
-#' @param Gamma Optional (either SigmaVAR, Sigma, or Gamma). Stationary covariance matrix, that is, the contemporaneous covariance matrix of the data.
+#' @param Phi Optional (either Phi or Drift). Matrix of size q x q of (un)standardized lagged effects. Note that the Phi (or Drift) matrix should be standardized to make a fair comparison between cross-lagged effects.
+#' It can also take a fitted object from the classes "varest" (from the VAR() function in vars package) and "ctsemFit" (from the ctFit() function in the ctsem package); see example below. If such an object is used, the (standardized) Phi/Drift matrix is calculated/extracted.
+#' @param Drift Optional (either Phi or Drift). Matrix of size q x q. Underling continuous-time lagged effects matrix (i.e., Drift matrix) of the discrete-time lagged effects matrix Phi(DeltaT). If Phi and Drift are both specified, Phi will be ignored.
+#' @param Stand Optional. Indicator for whether Phi (or Drift) should be standardized (1) or not (0). If Stand = 1, one of the following matrices should be input as well: SigmaVAR, Sigma, or Gamma (or if a varest or ctsemFit object is input, it will be extracted from that). By default, Stand = 0.
+#' @param SigmaVAR Optional (if Stand = 1, then either SigmaVAR, Sigma, or Gamma needed; otherwise, they are ignored. If all three are specified, only Gamma will be used. If SigmaVAR and Sigma are both specified, SigmaVAR will be used.). Matrix of size q x q. Residual covariance matrix of the first-order discrete-time vector autoregressive (DT-VAR(1)) model.
+#' @param Sigma Optional (if Stand = 1, then either SigmaVAR, Sigma, or Gamma needed; otherwise, they are ignored. If all three are specified, only Gamma will be used. If SigmaVAR and Sigma are both specified, SigmaVAR will be used.). Matrix of size q x q. Residual covariance matrix of the first-order continuous-time (CT-VAR(1)) model, that is, the diffusion matrix.
+#' @param Gamma Optional (if Stand = 1, then either SigmaVAR, Sigma, or Gamma needed; otherwise, they are ignored. If all three are specified, only Gamma will be used. If SigmaVAR and Sigma are both specified, SigmaVAR will be used.). Matrix of size q x q. Stationary covariance matrix, that is, the contemporaneous covariance matrix of the data.
 #' @param Min Optional. Minimum time interval used in the Phi-plot. By default, Min = 0.
 #' @param Max Optional. Maximum time interval used in the Phi-plot. By default, Max = 10.
 #' @param Step Optional. The step-size taken in the time intervals. By default, Step = 0.05. Hence, using the defaults, the Phi-plots is based on the values of Phi(DeltaT) for DeltaT = 0, 0.05, 0.10, ..., 10. Note: Especially in case of complex eigenvalues, this step size should be very small (then, the oscillating behavior can be seen best).
@@ -87,48 +87,58 @@
 
 
 PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = NULL, Sigma = NULL, Gamma = NULL, Min = 0, Max = 10, Step = 0.05, WhichElements = NULL, Labels = NULL, Col = NULL, Lty = NULL, Title = NULL, MaxMinPhi = FALSE) {
+  
   #Min = 0; Max = 10; Step = 0.05; WhichElements = NULL; Labels = NULL; Col = NULL; Lty = NULL; Title = NULL; MaxMinPhi = FALSE
   #DeltaT = 1; Drift = NULL; Stand = 0; SigmaVAR = NULL; Sigma = NULL; Gamma = NULL; Min = 0; Max = 10; Step = 0.05; WhichElements = NULL; Labels = NULL; Col = NULL; Lty = NULL; Title = NULL; MaxMinPhi = FALSE
-
-#  #######################################################################################################################
-#
-#  #if (!require("expm")) install.packages("expm")
-#  library(expm)
-#
-#  #######################################################################################################################
-
+  
+  #  #######################################################################################################################
+  #
+  #  #if (!require("expm")) install.packages("expm")
+  #  library(expm)
+  #
+  #  #######################################################################################################################
+  
   # Checks:
   if(length(DeltaT) != 1){
-    ErrorMessage <- (paste0("The argument DeltaT should be a scalar, that is, one number, that is, a vector with one element. Currently, DeltaT = ", DeltaT))
-    return(ErrorMessage)
+    ErrorMessage <- (paste0("The argument DeltaT should be a scalar (i.e., one number or a vector with one element)."))
     stop(ErrorMessage)
+  }
+  if(!is.numeric(DeltaT)) {
+    stop("DeltaT should be a scalar.")
+  }
+  if(DeltaT <= 0) {
+    stop("DeltaT should be strictly positive.")
   }
   if(Stand != 0 & Stand != 1){
     ErrorMessage <- (paste0("The argument Stand should be a 0 or a 1, not ", Stand))
-    return(ErrorMessage)
     stop(ErrorMessage)
   }
-  if(length(Min) != 1){
-    ErrorMessage <- (paste0("The argument Min should be a scalar, that is, one number, that is, a vector with one element. Currently, Min = ", Min))
-    return(ErrorMessage)
+  if(length(Min) != 1 | !is.numeric(Min)){
+    ErrorMessage <- (paste0("The argument Min should be a scalar (i.e., one number or a vector with one element)."))
     stop(ErrorMessage)
   }
-  if(length(Max) != 1){
-    ErrorMessage <- (paste0("The argument Max should be a scalar, that is, one number, that is, a vector with one element. Currently, Max = ", Max))
-    return(ErrorMessage)
+  if(length(Max) != 1 | !is.numeric(Max)){
+    ErrorMessage <- (paste0("The argument Max should be a scalar (i.e., one number or a vector with one element)."))
     stop(ErrorMessage)
   }
-  if(length(Step) != 1){
-    ErrorMessage <- (paste0("The argument Step should be a scalar, that is, one number, that is, a vector with one element. Currently, Step = ", Step))
-    return(ErrorMessage)
+  if(Min > Max) {
+    stop("Min is larger than Max. Try switching the arguments.")
+  }
+  if(length(Step) != 1 | !is.numeric(Step)){
+    ErrorMessage <- (paste0("The argument Step should be a scalar (i.e., one number or a vector with one element)."))
     stop(ErrorMessage)
+  }
+  if(!is.null(MaxMinPhi) && length(MaxMinPhi) > 1) {
+    stop("MaxMinPhi should be a single value; either TRUE or FALSE")
   }
   if(!is.logical(MaxMinPhi) & MaxMinPhi != FALSE & MaxMinPhi != TRUE){
-    ErrorMessage <- (paste0("The argument 'MaxMinPhi' should be T(RUE) or F(ALSE); or 1 or 0; not ", MaxMinPhi))
-    return(ErrorMessage)
+    ErrorMessage <- (paste0("The argument 'MaxMinPhi' should be T(RUE) or F(ALSE) (or 1 or 0), not ", MaxMinPhi))
     stop(ErrorMessage)
   }
   #
+  if(!is.null(Phi) & !is.null(Drift)) {
+    warning("Both Phi and Drift are specified. Phi is ignored.")
+  }
   # Check on Phi
   if(any(class(Phi) == "varest")){
     Phi_VARest <- Acoef(Phi)[[1]]
@@ -137,36 +147,39 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
       Drift <- CTMp$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
     }else{
       ErrorMessage <- CTMp$ErrorMessage
-      return(ErrorMessage)
       stop(ErrorMessage)
     }
   } else if(any(class(Phi) == "ctsemFit")){
     Drift <- summary(Phi)$DRIFT
   } else{
-
+    
     if(is.null(Drift)){
       if(!is.null(Phi)){
+        if(!is.numeric(Phi)) {
+          stop("There are non-numerical values in Phi.")
+        }
         CTMp <- CTMparam(DeltaT, Phi)
         if(is.null(CTMp$ErrorMessage)){
           Drift <- CTMp$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
         }else{
           ErrorMessage <- CTMp$ErrorMessage
-          return(ErrorMessage)
           stop(ErrorMessage)
         }
       }else{ # is.null(Phi)
         cat("Either the drift matrix Drift or the autoregressive matrix Phi should be input to the function.")
         #("Note that Phi(DeltaT) = expm(Drift*DeltaT).")
-        return(ErrorMessage)
         stop(ErrorMessage)
       }
     }
     #
     # Check on B
+    if(!is.numeric(Drift)) {
+      stop("There are non-numerical values in Drift.")
+    }
     if(length(Drift) > 1){
       Check_B_or_Phi(B=-Drift)
       if(all(Re(eigen(Drift)$val) > 0)){
-        cat("All (the real parts of) the eigenvalues of the drift matrix Drift are positive. Therefore. I assume the input for Drift was B = -A instead of A (or -Phi instead of Phi). I will use Drift = -B = A.")
+        cat("All (the real parts of) the eigenvalues of the drift matrix Drift are positive. Therefore, it is assumed the input for Drift was B = -A instead of A (or -Phi instead of Phi). Drift = -B = A will be used.")
         cat("Note that Phi(DeltaT) = expm(-B*DeltaT) = expm(A*DeltaT) = expm(Drift*DeltaT).")
         Drift = -Drift
       }
@@ -196,16 +209,28 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
       Sigma <- summary(Phi)$DIFFUSION
       Gamma <- Gamma.fromCTM(Drift, Sigma)
     }else if(is.null(SigmaVAR) & is.null(Gamma) & is.null(Sigma)){ # All three unknown
-      ErrorMessage <- (paste0("The arguments SigmaVAR, Sigma, or Gamma are not found: one should be part of the input (when Stand = 1). Notably, in case of the first matrix, specify 'SigmaVAR = SigmaVAR'."))
-      return(ErrorMessage)
+      ErrorMessage <- (paste0("At least one of SigmaVAR, Sigma, or Gamma needs to be specified when Stand = 1."))
       stop(ErrorMessage)
     }else if(is.null(Gamma)){ # Gamma unknown, calculate Gamma from Phi & SigmaVAR or Drift & Sigma
-
+      
       if(!is.null(SigmaVAR)){ # SigmaVAR known, calculate Gamma from Phi & SigmaVAR
-
+        
         # Check on SigmaVAR
-        Check_SigmaVAR(SigmaVAR, q)
-
+        if(!is.numeric(SigmaVAR)) {
+          stop("There are non-numerical values in SigmaVAR.")
+        }
+        if(anyNA(SigmaVAR)) {
+          stop("There are missing values in SigmaVAR.")
+        }
+        if (!is.null(try(Check_SigmaVAR(SigmaVAR, q), silent = TRUE)) &&
+            grepl("The residual covariance matrix SigmaVAR should, like Phi, be a matrix with dimensions q x q, with q = ",
+                  as.character(try(Check_SigmaVAR(SigmaVAR, q), silent = TRUE)),
+                  fixed = TRUE)) {
+          stop("SigmaVAR and Phi have different dimensions, but should both be square matrices with dimensions q x q.")
+        } else {
+          Check_SigmaVAR(SigmaVAR, q)
+        }
+        
         # Calculate Gamma
         if(is.null(Phi)){
           if(q == 1){
@@ -215,13 +240,26 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
           }
         }
         Gamma <- Gamma.fromVAR(Phi, SigmaVAR)
-
-
+        
+        
       }else if(!is.null(Sigma)){ # Sigma known, calculate Gamma from Drift & Sigma
-
+        
+        if(!is.numeric(Sigma)) {
+          stop("There are non-numerical values in Sigma.")
+        }
+        if(anyNA(Sigma)) {
+          stop("There are missing values in Sigma.")
+        }
         # Check on Sigma
-        Check_Sigma(Sigma, q)
-
+        if (!is.null(try(Check_Sigma(Sigma, q), silent = TRUE)) &&
+            grepl("The residual covariance matrix Sigma should, like Drift (or Phi), be a matrix with dimensions q x q, with q = ",
+                  as.character(try(Check_Sigma(Sigma, q), silent = TRUE)),
+                  fixed = TRUE)) {
+          stop("Sigma and Phi (or Drift) have different dimensions, but should both be square matrices with dimensions q x q.")
+        } else {
+          Check_Sigma(Sigma, q)
+        }
+        
         # Calculate Gamma
         if(is.null(Drift)){
           CTMp <- CTMparam(DeltaT, Phi)
@@ -229,21 +267,26 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
             Drift <- CTMp$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
           }else{
             ErrorMessage <- CTMp$ErrorMessage
-            return(ErrorMessage)
             stop(ErrorMessage)
           }
         }
         Gamma <- Gamma.fromCTM(Drift, Sigma)
-
+        
       }
-
+      
     }else if(!is.null(Gamma)){ # Gamma known, only check on Gamma needed
-
+      
       # Checks on Gamma
+      if(!is.numeric(Gamma)) {
+        stop("There are non-numerical values in Gamma.")
+      }
+      if(anyNA(Gamma)) {
+        stop("There are missing values in Gamma.")
+      }
       Check_Gamma(Gamma, q)
-
+      
     }
-
+    
     # Standardize Drift and Gamma
     Sxy <- sqrt(diag(diag(Gamma)))
     Gamma <- solve(Sxy) %*% Gamma %*% solve(Sxy)
@@ -264,7 +307,6 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
   if(!is.null(Labels)){
     if(length(Labels) != nrLines){
       ErrorMessage <- (paste0("The argument Labels should contain ", nrLines, " elements, that is, q*q or the number of 1s in WhichElements (or WhichElements is incorrectly specified); not ", length(Labels)))
-      return(ErrorMessage)
       stop(ErrorMessage)
     }
     #if(any(!is.character(Labels))){ # Note: This does not suffice, since it could also be an expression
@@ -276,45 +318,46 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
   if(!is.null(Col)){
     if(length(Col) != nrLines){
       ErrorMessage <- (paste0("The argument Col should contain ", nrLines, " elements, that is, q*q or the number of 1s in WhichElements (or WhichElements is incorrectly specified); not ", length(Col)))
-      return(ErrorMessage)
       stop(ErrorMessage)
     }
+    if(!is.numeric(Col)) {
+      stop("Col should be a vector of integers.")
+    }
     if(any(Col %% 1 != 0)){
-      ErrorMessage <- (paste0("The argument Col should consist of solely integers."))
-      return(ErrorMessage)
+      ErrorMessage <- (paste0("The argument Col should consist solely of integers."))
       stop(ErrorMessage)
     }
   }
   if(!is.null(Lty)){
     if(length(Lty) != nrLines){
       ErrorMessage <- (paste0("The argument Lty should contain ", nrLines, " elements, that is, q*q or the number of 1s in WhichElements (or WhichElements is incorrectly specified); not ", length(Lty)))
-      return(ErrorMessage)
       stop(ErrorMessage)
     }
+    if(!is.numeric(Lty)) {
+      stop("Lty should be a vector of integers.")
+    }
     if(any(Lty %% 1 != 0)){
-      ErrorMessage <- (paste0("The argument Lty should consist of solely integers."))
-      return(ErrorMessage)
+      ErrorMessage <- (paste0("The argument Lty should consist solely of integers."))
       stop(ErrorMessage)
     }
   }
   if(!is.null(Title)){
     if(length(Title) != 1 & !is.list(Title)){
-      ErrorMessage <- (paste0("The argument Title should be a character or a list (containing at max 3 items)."))
-      return(ErrorMessage)
+      ErrorMessage <- (paste0("The argument Title should be a character or a list (containing maximum 3 items)."))
       stop(ErrorMessage)
     }
     if(length(Title) > 3){
-      ErrorMessage <- (paste0("The list Title should at max contain 3 items. Currently, it consists of ", length(Title), " items."))
-      return(ErrorMessage)
+      ErrorMessage <- (paste0("The list Title should contain maximum 3 items. In the given input, it consists of ", length(Title), " items."))
       stop(ErrorMessage)
     }
-  # Option: Also check whether each element in list either a "call" or a 'character' is...
+    # Option: Also check whether each element in list either a "call" or a 'character' is...
   }
-
-
+  
+  
+  
   #def.par <- par(no.readonly = TRUE) # save default, for resetting...
   #par(def.par)  #- reset to default
-
+  
   if(is.null(Labels)){
     subscripts = NULL
     for(i in 1:q){
@@ -325,10 +368,11 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
       e <- bquote(expression(Phi(Delta[t])[.(subscripts[i])]))
       legendT <- c(legendT, eval(e))
     }
+    legendT <- legendT[as.logical(as.vector(t(WhichElements)))]
   } else{
     legendT <- as.vector(Labels)
   }
-
+  
   if(is.null(Col)){
     Col <- matrix(NA, ncol = q, nrow = q)
     for(i in 1:q){
@@ -336,7 +380,7 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
     }
     Col <- as.vector(t(Col))
   }
-
+  
   if(is.null(Lty)){
     Lty <- matrix(NA, ncol = q, nrow = q)
     diag(Lty) <- 1
@@ -344,12 +388,12 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
     Lty[lower.tri(Lty, diag = FALSE)] <- Lty[upper.tri(Lty, diag = FALSE)]
     Lty <- as.vector(t(Lty))
   }
-
+  
   if(is.null(Title)){
     Title_1 <- expression(Phi(Delta[t])~plot)
     Title_2 <- "How do the lagged parameters vary"
     #Title_2 <- "How do the overall lagged parameters"
-    Title_3 <- "as a function of the time-interval"
+    Title_3 <- "as a function of the time-interval?"
   }else{
     Title_1 <- NULL
     Title_2 <- NULL
@@ -368,9 +412,9 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
       Title_3 <- Title[[3]]
     }
   }
-
-##########################################################################################
-
+  
+  ##########################################################################################
+  
   if(any(is.complex(eigen(Drift)$val))){
     while (!is.null(dev.list()))  dev.off()  # to reset the graphics pars to defaults
     # Multiple solutions, then 2x2 plots
@@ -382,25 +426,26 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
     op <- par(mfrow=c(1,1))
     complex <- FALSE
     #
-    while (!is.null(dev.list()))  dev.off()  # to reset the graphics pars to defaults
-    par(mar=c(par('mar')[1:3], 0)) # optional, removes extraneous right inner margin space
-    plot.new()
-    l <- legend(0, 0,
-           legend = legendT, #cex=CEX,
-           bty = "n",
-           lty=Lty, # gives the legend appropriate symbols (lines)
-           lwd=rep(2, q*q),
-           col=Col # gives the legend lines the correct color and width
-    )
+    #while (!is.null(dev.list()))  dev.off()  # to reset the graphics pars to defaults
+    #par(mar=c(par('mar')[1:3], 0))           # optional, removes extraneous right inner margin space
+    #plot.new()  # TO DO Alex, here I create an empty plot such that I can determine the location of the legend (later on I also do this for the case of complex eigenvalues)
+    # Alex, can you look into how to do this in another way?
+    #l <- legend(0, 0,
+    #  legend = legendT, #cex=CEX,
+    #  bty = "n",
+    #  lty=Lty, # gives the legend appropriate symbols (lines)
+    #  lwd=rep(2, q*q),
+    #  col=Col # gives the legend lines the correct color and width
+    #)
     # calculate right margin width in ndc
-    w <- 1.5 *( grconvertX(l$rect$w, to='ndc') - grconvertX(0, to='ndc') )
-    par(omd=c(0, 1-w, 0, 1))
+    #w <- 1.5 *( grconvertX(l$rect$w, to='ndc') - grconvertX(0, to='ndc') )
+    #par(omd=c(0, 1-w, 0, 1))
     #
   }
-
-
+  
+  
   DeltaTs<-seq(Min,Max,by=Step)
-
+  
   PhiDeltaTs<-array(data=NA,dim=c(q,q,length(DeltaTs)))
   if(length(Drift) == 1){
     for(i in 1:length(DeltaTs)){
@@ -411,7 +456,7 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
       PhiDeltaTs[,,i]<-expm(Drift*DeltaTs[i])
     }
   }
-
+  
   Xlab <- expression(Time-interval (Delta[t]))
   Ylab <- expression(Phi(Delta[t])~values)
   #
@@ -436,16 +481,21 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
       }
     }
   }
-
-  #Add lines for max or min of Phi
+  
+  # Add lines for max or min of Phi
+  
+  if(is.null(Phi)){ Phi <- expm(Drift*DeltaT) }
+  
   if(MaxMinPhi == TRUE){
+    if(is.null(Phi)){
+      Phi <- expm(Drift*DeltaT)
+    }
     MaxD <- MaxDeltaT(Phi = Phi)
     if(is.null(MaxD$ErrorMessage)){
       Max_DeltaT <- MaxD$DeltaT_MinOrMaxPhi
       Phi_MinMax <- MaxD$MinOrMaxPhi
     }else{
       ErrorMessage <- MaxD$ErrorMessage
-      return(ErrorMessage)
       stop(ErrorMessage)
     }
     #
@@ -455,19 +505,18 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
         if(WhichElements[j,i] == 1){
           teller <- teller + 1
           #abline(v=Max_DeltaT[j,i], col=Col[teller], lwd=1, lty=Lty[teller])
-          abline(v=Max_DeltaT[j,i], col="white", lwd=0.5, lty=Lty[teller])
+          #abline(v=Max_DeltaT[j,i], col="white", lwd=0.5, lty=Lty[teller])
           segments(x0=Max_DeltaT[j,i], y0=0, x1=Max_DeltaT[j,i], y1=Phi_MinMax[j,i], col=Col[teller], lwd=0.5, lty=Lty[teller])
         }
       }
     }
   }
-
-
+  
+  
+  
   if(complex == FALSE){
     if(q<4){CEX = 1}else{CEX = (1.4-q/10)} # Check for optimal values!
-    #
-    #legend("topright",
-    legend(par('usr')[2], par('usr')[4], xpd=NA,
+    legend("topright",
            legend = legendT, cex=CEX,
            bty = "n",
            lty=Lty, # gives the legend appropriate symbols (lines)
@@ -475,10 +524,8 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
            col=Col # gives the legend lines the correct color and width
     )
   }
-
-
-
-
+  
+  
   if(complex){
     # Multiple solutions and add 3 plots (2 for 2 different solutions and one scatter plot)
     Title_2_N <- "using an 'aliasing' matrix"
@@ -486,10 +533,10 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
     Title_1_N2 <- expression(Phi(Delta[t])~scatter~plot~'for'~multiples~of~Delta[t])
     Title_2_N2 <- expression(Note~that~'for'~multiples~of~Delta[t])
     Title_3_N2 <- expression(Phi(Delta[t])~is~unique)
-
+    
     EigenDrift <- eigen(Drift)
     V <- EigenDrift$vector
-
+    
     for(N in 1:2){ # Note: last plot is scatter plot
       im <- complex(real = 0, imaginary = 1)
       diagN <- matrix(0, ncol = q, nrow = q)
@@ -558,42 +605,39 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
       }
     }
   } # end if complex
-
-
+  
   if(complex == TRUE){
     if(q<4){CEX = 1}else{CEX = (1.4-q/10)} # Check for optimal values!
     par(mar = c(0,0,0,0))
     plot.new()
-    legend("center",
+    legend("topright",
            legend = legendT, cex=CEX,
            bty = "n",
            lty=Lty, # gives the legend appropriate symbols (lines)
-           lwd=rep(2, q*q),
-           col=Col # gives the legend lines the correct color and width
-    )
-    plot.new()
-    legend("center",
-           legend = legendT, cex=CEX,
-           bty = "n",
-           pch=Lty, # gives the legend appropriate symbols (lines)
            #lwd=rep(2, q*q),
            col=Col # gives the legend lines the correct color and width
     )
+    # ALEX'S NOTE: Why are there two of these? 
+    #plot.new()
+    #legend("center",
+    #legend = legendT, cex=CEX,
+    #bty = "n",
+    #pch=Lty, # gives the legend appropriate symbols (lines)
+    #lwd=rep(2, q*q),
+    #col=Col # gives the legend lines the correct color and width
+    #)
   }
-
   #dev.off()
-
+  
   par(op)
-
-
-
-
-
+  
+  
+  
+  
+  
   ############################################################################################################
-
+  
   #final <- list(.. = ...)
   #return(final)
-
+  
 }
-
-

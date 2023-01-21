@@ -2,7 +2,7 @@
 % Please edit documentation in R/SigmaVAR-plot.R
 \name{SigmaVARPlot}
 \alias{SigmaVARPlot}
-\title{Psi-Plot: Plot of Psi / SigmaVAR}
+\title{SigmaVAR-Plot: visualize how elements of a discrete-time residual variance matrix vary as a function of the time-interval.}
 \usage{
 SigmaVARPlot(
   DeltaT = 1,
@@ -23,11 +23,13 @@ SigmaVARPlot(
   Title = NULL
 )
 }
+\description{
+This function generates a plot illustrating how the elements of a discrete-time residual covariance matrix (SigmaVAR) vary as a function of the time-interval (DeltaT).  Note, the discrete-time residual covariance matrix (SigmaVAR) is called 'Psi' in Kuiper and Hamaker (unpublished).  An interactive web application offering the same functionality can be found on my website: Phi-and-Psi-Plots and Find DeltaT (\url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}).
+}
 \arguments{
-\item{DeltaT}{Optional. The time interval used. By default, DeltaT = 1.}
+\item{DeltaT}{Optional. The observed time interval. By default, DeltaT = 1.}
 
-\item{Phi}{Matrix of size q times q of (un)standardized lagged effects of the first-order discrete-time vector autoregressive (DT-VAR(1)) model.
-It also takes a fitted object from the classes "varest" (from the VAR() function in vars package) and "ctsemFit" (from the ctFit() function in the ctsem package); see example below. From such an object, the (standardized) Phi/Drift and SigmaVAR/Sigma matrices are calculated/extracted.}
+\item{Phi}{Matrix of size q x q of (un)standardized discrete-time lagged effects arising from one primary study.  Alternatively, the overall Phi matrix output by CTmeta can be used.  It also takes a fitted object from the classes "varest" (from the VAR() function in vars package) and "ctsemFit" (from the ctFit() function in the ctsem package); see example below. From such an object, the (standardized) Phi/Drift and SigmaVAR/Sigma matrices are calculated/extracted.}
 
 \item{SigmaVAR}{Residual covariance matrix of the first-order discrete-time vector autoregressive (DT-VAR(1)) model.}
 
@@ -60,11 +62,9 @@ Note that SigmaVAR converges to Gamma, so the time-interval dependent curves of 
 \item{Title}{Optional. A character or a list consisting of maximum 3 character-strings or 'expression' class objects that together represent the title of the Phi-plot. By default, Title = NULL, then the following code will be used for the title: as.list(expression(Sigma[VAR](Delta[t])~plot), "How do the VAR(1) (co)variance parameters vary", "as a function of the time-interval").}
 }
 \value{
-This function returns a Psi/SigmaVAR-plot for a range of time intervals.
+This function returns a SigmaVAR-plot for a range of time intervals.
 }
-\description{
-This function makes a plot of Psi(DeltaT) / SigmaVAR(DeltaT), the residual covariance matrix of the discrete-time model, for a range of time intervals based on its underlying drift matrix. There is also an interactive web application on my website to create a Phi-plot: Phi-and-Psi-Plots and Find DeltaT (\url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}).
-}
+
 \examples{
 
 # library(CTmeta)
@@ -74,21 +74,21 @@ This function makes a plot of Psi(DeltaT) / SigmaVAR(DeltaT), the residual covar
 ## Example 1 ##
 
 # Phi(DeltaT)
-DeltaT <- 1
-Phi <- myPhi[1:2,1:2]
-q <- dim(Phi)[1]
-SigmaVAR <- diag(q) # for ease
-#
-# or
-Drift <- myDrift
-q <- dim(Drift)[1]
-Sigma <- diag(q) # for ease. Note that this is not the CT-equivalent of SigmaVAR.
+DeltaT <- 1            # save the observed time-interval (DeltaT)
+
+Phi <- myPhi[1:2,1:2]  # select a portion of myPhi that corresponds to one primary study 
+q <- dim(Phi)[1]       
+SigmaVAR <- diag(q)    
+
+Drift <- myDrift       # OR select the underlying drift matrix
+q <- dim(Drift)[1]     
+Sigma <- diag(q)       # Note: this is not the CT-equivalent of SigmaVAR.
 
 # Example 1.1: unstandardized Phi&SigmaVAR #
 #
 # Make plot of SigmaVAR (3 examples):
 SigmaVARPlot(DeltaT, Phi, SigmaVAR)
-SigmaVARPlot(DeltaT, Phi, SigmaVAR, Min = 0, Max = 10, Step = 0.01)                # Specifying range x-axis and precision
+SigmaVARPlot(DeltaT, Phi, SigmaVAR, Min = 0, Max = 10, Step = 0.01)                # Specifying range of x-axis and precision
 SigmaVARPlot(DeltaT, Drift = Drift, Sigma = Sigma, Min = 0, Max = 10, Step = 0.01) # Using Drift&Sigma instead of Phi&SigmaVAR
 
 
@@ -118,7 +118,7 @@ q <- dim(Phi)[1]
 SigmaVAR <- diag(q) # for ease
 #
 WhichElements <- matrix(1, ncol = q, nrow = q) # Now, all elements are 1
-diag(WhichElements) <- 0 # Now, the covariances are excluded by setting the diagonals to 0.
+diag(WhichElements) <- 0                       # Now, the covariances are excluded by setting the diagonals to 0.
 Lab <- c("12", "21")
 LabelsS <- NULL
 LabelsG <- NULL
@@ -131,6 +131,7 @@ for(i in 1:length(Lab)){
 Labels <- c(LabelsS, LabelsG)
 Col <- c(1,2,1,2)
 Lty <- c(1,2,1,2)
+
 # Standardized Phi and SigmaVAR
 SigmaVARPlot(DeltaT, Phi, SigmaVAR, Stand = 1, Min = 0, Max = 10, Step = 0.05, WhichElements = WhichElements, Labels = Labels, Col = Col, Lty = Lty)
 

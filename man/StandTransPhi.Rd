@@ -14,6 +14,11 @@ StandTransPhi(
   alpha = 0.05
 )
 }
+
+\description{
+Transforms (un)standardized discrete-time model lagged parameters and their corresponding residual covariance matrix to reflect scenarios in which another time-interval is used. This function also renders the univariate (i.e., simultaneous) and multivariate (i.e., elliptical) confidence intervals of the (un)standardized lagged effects.  An interactive web application offering the same functionality can be found at my website: Standardizing and/or transforming lagged regression estimates (\url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}).
+}
+
 \arguments{
 \item{DeltaTStar}{The time interval to which the (un)standardized lagged effects matrix (Phi) should be transformed to.}
 
@@ -34,9 +39,7 @@ Note that if Phi and SigmaVAR are known, Gamma can be calculated; hence, only Si
 \value{
 This function returns the vectorized transformed (standardized) lagged effects and - if N is part of input - their covariance matrix and the corresponding elliptical/multivariate 95\% CI. If both Sigma and Gamma are not part of the input, only the transformed Phi is calculated.
 }
-\description{
-This function calculates the (vectorized) transformed standardized Phi, their covariance matrix and elliptical 95\% confidence interval (CI). There is also an interactive web application on my website: Standardizing and/or transforming lagged regression estimates (\url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}).
-}
+
 \examples{
 
 # library(CTmeta)

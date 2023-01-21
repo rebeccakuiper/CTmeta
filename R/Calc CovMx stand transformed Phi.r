@@ -80,24 +80,20 @@ StandTransPhi <- function(DeltaTStar, DeltaT = 1, N = NULL, Phi, SigmaVAR = NULL
 
   # Checks:
   if(length(DeltaTStar) != 1){
-    ErrorMessage <- (paste0("The argument DeltaTStar should be a scalar, that is, one number, that is, a vector with one element. Currently, DeltaTStar = ", DeltaTStar))
-    return(ErrorMessage)
+    ErrorMessage <- (paste0("The argument DeltaTStar should be a scalar (i.e., one number or a vector with one element."))
     stop(ErrorMessage)
   }
   if(length(DeltaT) != 1){
-    ErrorMessage <- (paste0("The argument DeltaT should be a scalar, that is, one number, that is, a vector with one element. Currently, DeltaT = ", DeltaT))
-    return(ErrorMessage)
+    ErrorMessage <- (paste0("The argument DeltaT should be a scalar (i.e., one number or a vector with one element."))
     stop(ErrorMessage)
   }
   if(!is.null(N) & length(N) != 1){
-    ErrorMessage <- (paste0("The argument N should be a scalar, that is, one number, that is, a vector with one element. Currently, N = ", N))
-    return(ErrorMessage)
+    ErrorMessage <- (paste0("The argument N should be a scalar (i.e., one number or a vector with one element."))
     stop(ErrorMessage)
   }
   #
   if(length(alpha) != 1){
-    ErrorMessage <- (paste0("The argument alpha should be a scalar, that is, one number, that is, a vector with one element. Currently, alpha = ", alpha))
-    return(ErrorMessage)
+    ErrorMessage <- (paste0("The argument alpha should be a scalar (i.e., one number or a vector with one element."))
     stop(ErrorMessage)
   }
   #
