@@ -135,16 +135,18 @@
 #'
 #' out_CTmeta <- CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR)
 #' H1 <- "abs(overallPhi12) < abs(overallPhi21)"
-#' goric(out_CTmeta, H1, type = "gorica", comparison = "complement")
+#' goric(out_CTmeta, hypotheses = list(H1), type = "gorica", comparison = "complement")
 #'
 #' out_CTmeta <- CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR)
 #' H1 <- "abs(overallPhi12) < abs(overallPhi21); abs(overallPhi11) < abs(overallPhi22)"
-#' goric(out_CTmeta, H1, type = "gorica", comparison = "complement")
+#' goric(out_CTmeta, hypotheses = list(H1), type = "gorica", comparison = "complement")
 #'
 #' out_CTmeta <- CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR)
 #' est <- coef(out_CTmeta)  # or: est  <- out_CTmeta$Overall_vecStandPhi_DeltaTStar
 #' VCOV <- vcov(out_CTmeta) # or: VCOV <- out_CTmeta$CovMx_OverallPhi_DeltaTStar
-#' goric(est, VCOV = VCOV, H1, type = "gorica", comparison = "complement")
+#' #goric(est, VCOV = VCOV, hypotheses = list(H1), type = "gorica", comparison = "complement")
+#' # With this input, one can only obtain the GORICA, so one can also use:
+#' goric(est, VCOV = VCOV, hypotheses = list(H1), comparison = "complement")
 #'
 #'
 #' ## What if primary studies report a (lagged) correlation matrix ##
@@ -320,14 +322,14 @@
 #' H1 <- "abs(overallPhi12) < abs(overallPhi21)"
 #' #H2 <- "abs(overallPhi12) > abs(overallPhi21)" # = complement of H1 and does not need to be specified, see below.
 #' # Evaluate dominance of cross-lagged effects via AIC-type criterion called the GORICA (Altinisik, Nederhof, Hoijtink, Oldehinkel, Kuiper, accepted 2021).
-#' #goric(out_CTmeta, H1, H2, type = "gorica", comparison = "none")
+#' #goric(out_CTmeta, hypotheses = list(H1, H2), type = "gorica", comparison = "none")
 #' # or, since H2 is complement of H1, equivalently:
-#' goric(out_CTmeta, H1, type = "gorica", comparison = "complement")
+#' goric(out_CTmeta, hypotheses = list(H1), type = "gorica", comparison = "complement")
 #' #
 #' # Example 2: dominance of (absolute values of) cross-lagged effects and autoregressive effects
 #' H1 <- "abs(overallPhi12) < abs(overallPhi21); abs(overallPhi11) < abs(overallPhi22)"
 #' # Note that, now, specification of complement 'by hand' harder.
-#' goric(out_CTmeta, H1, type = "gorica", comparison = "complement")
+#' goric(out_CTmeta, hypotheses = list(H1), type = "gorica", comparison = "complement")
 #' #
 #' #
 #' # Option 2
@@ -336,7 +338,7 @@
 #' out_CTmeta <- CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR)
 #' est <- coef(out_CTmeta)  # or: est  <- out_CTmeta$Overall_vecStandPhi_DeltaTStar
 #' VCOV <- vcov(out_CTmeta) # or: VCOV <- out_CTmeta$CovMx_OverallPhi_DeltaTStar
-#' goric(est, VCOV = VCOV, H1, type = "gorica", comparison = "complement")
+#' goric(est, VCOV = VCOV, hypotheses = list(H1), type = "gorica", comparison = "complement")
 #'
 #'
 #' ## What if primary studies report a (lagged) correlation matrix ##
@@ -864,6 +866,24 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
                                random = ~ 1 | BetweenLevel / Study,
                                slab = Label_Phi,
                                method = "ML")
+              # TO DO
+              BL <- matrix(rep(BetweenLevel, each = (q*q)), byrow = T, ncol = (q*q))
+              metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ overallPhi + overallPhi:Mod. - 1,
+                     random = list(~ overallPhi | BL, ~ overallPhi | Study),
+                     method = "ML",
+                     struct = "UN",
+                     control=list(optimizer="optim", optmethod="BFGS")
+              )
+              # TO DO ALSO make the following available? (also below then).
+              # Btw add comparison of models in the examples above. Using "performance::compare_performance()"
+              # Btw also add making plots like Geri does! For both see emails with Geri!
+              BL <- matrix(rep(BetweenLevel, each = (q*q)), byrow = T, ncol = (q*q))
+              metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ overallPhi + overallPhi:Mod. - 1,
+                               random = ~ overallPhi | BL,
+                               method = "ML",
+                               struct = "UN",
+                               control=list(optimizer="optim", optmethod="BFGS")
+              )
             }
           }else{ # No Moderators
             if(is.null(BetweenLevel)){
@@ -876,6 +896,14 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
                                random = ~ 1 | BetweenLevel / Study,
                                slab = Label_Phi,
                                method = "ML")
+              # TO DO
+              BL <- matrix(rep(BetweenLevel, each = (q*q)), byrow = T, ncol = (q*q))
+              metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ overallPhi - 1,
+                               random = list(~ overallPhi | BL, ~ overallPhi | Study),
+                               method = "ML",
+                               struct = "UN",
+                               control=list(optimizer="optim", optmethod="BFGS")
+              )
             }
           }
           tau2_metaan_MV <- metaan$tau2
@@ -904,7 +932,7 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
           eigenCovMx <- eigen(CovMx_metaan)
           lambda <- eigenCovMx$val
           E <- eigenCovMx$vec
-          Chi2 <- qchisq(p=0.05, df=(q*q), lower.tail=FALSE)
+          Chi2 <- qchisq(p=alpha, df=(q*q), lower.tail=FALSE)
           LB_vecPhi <- matrix(NA, nrow=q*q, ncol =q*q)
           UB_vecPhi <- matrix(NA, nrow=q*q, ncol =q*q)
           LL <- matrix(NA, nrow=q*q, ncol=2)
@@ -952,6 +980,7 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
                                  random = ~ 1 | BetweenLevel / Study,
                                  slab = Label_Phi,
                                  method = "ML")
+                # TO DO
               }
             }else{ # No Moderators
               if(is.null(BetweenLevel)){
@@ -964,6 +993,7 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
                                  random = ~ 1 | BetweenLevel / Study,
                                  slab = Label_Phi,
                                  method = "ML")
+                # TO DO
               }
             }
             tau2_metaan_MV <- metaan$tau2
@@ -1036,7 +1066,7 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
           eigenCovMx <- eigen(CovMx_metaan)
           lambda <- eigenCovMx$val
           E <- eigenCovMx$vec
-          Chi2 <- qchisq(p=0.05, df=(q*q), lower.tail=FALSE)
+          Chi2 <- qchisq(p=alpha, df=(q*q), lower.tail=FALSE)
           LB_vecPhi <- matrix(NA, nrow=q*q, ncol =q*q)
           UB_vecPhi <- matrix(NA, nrow=q*q, ncol =q*q)
           LL <- matrix(NA, nrow=q*q, ncol=2)

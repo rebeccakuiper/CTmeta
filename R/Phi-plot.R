@@ -13,10 +13,10 @@
 #' @param Max Optional. Maximum time interval used in the Phi-plot. By default, Max = 10.
 #' @param Step Optional. The step-size taken in the time intervals. By default, Step = 0.05. Hence, using the defaults, the Phi-plots is based on the values of Phi(DeltaT) for DeltaT = 0, 0.05, 0.10, ..., 10. Note: Especially in case of complex eigenvalues, this step size should be very small (then, the oscillating behavior can be seen best).
 #' @param WhichElements Optional. Matrix of same size as Drift denoting which element/line should be plotted (1) or not (0). By default, WhichElements = NULL. Note that even though not all lines have to be plotted, the full Drift matrix is needed to determine the selected lines.
-#' @param Labels Optional. Vector with (character) labels of the lines to be plotted. The length of this vector equals the number of 1s in WhichElements (or equals q*q). By default, Labels = NULL, which renders labels with Greek letter of Phi (as a function of the time-interval) together with the indices (of outcome and predictor variables).
+#' @param Labels Optional. Vector with (character) labels of the lines to be plotted. The length of this vector equals the number of 1s in WhichElements (or equals q*q). By default, Labels = NULL, which renders labels with Greek letter of Phi (as a function of the time interval) together with the indices (of outcome and predictor variables).
 #' @param Col Optional. Vector with color values (integers) of the lines to be plotted. The length of this vector equals the number of 1s in WhichElements (or equals q*q). By default, Col = NULL, which renders the same color for effects that belong to the same outcome variable (i.e. a row in the Drift matrix). See \url{https://www.statmethods.net/advgraphs/parameters.html} for more information about the values.
 #' @param Lty Optional. Vector with line type values (integers) of the lines to be plotted. The length of this vector equals the number of 1s in WhichElements (or equals q*q). By default, Lty = NULL, which renders solid lines for the autoregressive effects and the same type of dashed line for reciprocal effects (i.e., same type for Phi_ij as for Phi_ji). See \url{https://www.statmethods.net/advgraphs/parameters.html} for more information about the values.
-#' @param Title Optional. A character or a list consisting of maximum 3 character-strings or 'expression' class objects that together represent the title of the Phi-plot. By default, Title = NULL, then the following code will be used for the title: as.list(expression(Phi(Delta[t])~plot), "How do the lagged parameters vary", "as a function of the time-interval").
+#' @param Title Optional. A character or a list consisting of maximum 3 character-strings or 'expression' class objects that together represent the title of the Phi-plot. By default, Title = NULL, then the following code will be used for the title: as.list(expression(Phi(Delta[t])~plot), "How do the lagged parameters vary", "as a function of the time interval?").
 #' @param MaxMinPhi Optional. An indicator (TRUE/FALSE) whether vertical lines for the optimum (maximum or minimum) should be added to the plot (TRUE) or not (FALSE). These values are obtained by the function MaxDeltaT(). By default, MaxMinPhi = FALSE; hence, by default, no vertical are added.
 #'
 #' @return This function returns a Phi-plot for a range of time intervals.
@@ -90,42 +90,46 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
   #Min = 0; Max = 10; Step = 0.05; WhichElements = NULL; Labels = NULL; Col = NULL; Lty = NULL; Title = NULL; MaxMinPhi = FALSE
   #DeltaT = 1; Drift = NULL; Stand = 0; SigmaVAR = NULL; Sigma = NULL; Gamma = NULL; Min = 0; Max = 10; Step = 0.05; WhichElements = NULL; Labels = NULL; Col = NULL; Lty = NULL; Title = NULL; MaxMinPhi = FALSE
 
-#  #######################################################################################################################
-#
-#  #if (!require("expm")) install.packages("expm")
-#  library(expm)
-#
-#  #######################################################################################################################
+  #  #######################################################################################################################
+  #
+  #  #if (!require("expm")) install.packages("expm")
+  #  library(expm)
+  #
+  #  #######################################################################################################################
 
   # Checks:
   if(length(DeltaT) != 1){
-    ErrorMessage <- (paste0("The argument DeltaT should be a scalar, that is, one number, that is, a vector with one element. Currently, DeltaT = ", DeltaT))
-    return(ErrorMessage)
-    stop(ErrorMessage)
+    #ErrorMessage <- (paste0("The argument DeltaT should be a scalar (i.e., one number or a vector with one element). In the given input, DeltaT = ", DeltaT))
+    if(is.matrix(DeltaT)){
+      ErrorMessage1 <- (paste0("The argument DeltaT should be a scalar (i.e., one number or a vector/matrix with one element). In the given input, DeltaT is a matrix with dimensions "))
+      Value1 <- paste(dim(DeltaT), collapse = " x ")
+      ErrorMessage2 <- (paste0(" and contains the values "))
+      Value2 <- paste(DeltaT, collapse = "|")
+      stop(ErrorMessage1, Value1, ErrorMessage2, Value2)
+    }else{
+      ErrorMessage <- (paste0("The argument DeltaT should be a scalar (i.e., one number or a vector/matrix with one element). In the given input, DeltaT contains the values "))
+      Value <- paste(DeltaT, collapse = "|")
+      stop(ErrorMessage, Value)
+    }
   }
   if(Stand != 0 & Stand != 1){
     ErrorMessage <- (paste0("The argument Stand should be a 0 or a 1, not ", Stand))
-    return(ErrorMessage)
     stop(ErrorMessage)
   }
   if(length(Min) != 1){
-    ErrorMessage <- (paste0("The argument Min should be a scalar, that is, one number, that is, a vector with one element. Currently, Min = ", Min))
-    return(ErrorMessage)
+    ErrorMessage <- (paste0("The argument Min should be a scalar (i.e., one number or a vector with one element). In the given input, Min = ", Min))
     stop(ErrorMessage)
   }
   if(length(Max) != 1){
-    ErrorMessage <- (paste0("The argument Max should be a scalar, that is, one number, that is, a vector with one element. Currently, Max = ", Max))
-    return(ErrorMessage)
+    ErrorMessage <- (paste0("The argument Max should be a scalar (i.e., one number or a vector with one element). In the given input, Max = ", Max))
     stop(ErrorMessage)
   }
   if(length(Step) != 1){
-    ErrorMessage <- (paste0("The argument Step should be a scalar, that is, one number, that is, a vector with one element. Currently, Step = ", Step))
-    return(ErrorMessage)
+    ErrorMessage <- (paste0("The argument Step should be a scalar (i.e., one number or a vector with one element). In the given input, Step = ", Step))
     stop(ErrorMessage)
   }
   if(!is.logical(MaxMinPhi) & MaxMinPhi != FALSE & MaxMinPhi != TRUE){
-    ErrorMessage <- (paste0("The argument 'MaxMinPhi' should be T(RUE) or F(ALSE); or 1 or 0; not ", MaxMinPhi))
-    return(ErrorMessage)
+    ErrorMessage <- (paste0("The argument 'MaxMinPhi' should be T(RUE) or F(ALSE) (or 1 or 0), not ", MaxMinPhi))
     stop(ErrorMessage)
   }
   #
@@ -137,7 +141,6 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
       Drift <- CTMp$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
     }else{
       ErrorMessage <- CTMp$ErrorMessage
-      return(ErrorMessage)
       stop(ErrorMessage)
     }
   } else if(any(class(Phi) == "ctsemFit")){
@@ -151,13 +154,11 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
           Drift <- CTMp$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
         }else{
           ErrorMessage <- CTMp$ErrorMessage
-          return(ErrorMessage)
           stop(ErrorMessage)
         }
       }else{ # is.null(Phi)
         cat("Either the drift matrix Drift or the autoregressive matrix Phi should be input to the function.")
         #("Note that Phi(DeltaT) = expm(Drift*DeltaT).")
-        return(ErrorMessage)
         stop(ErrorMessage)
       }
     }
@@ -166,7 +167,7 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
     if(length(Drift) > 1){
       Check_B_or_Phi(B=-Drift)
       if(all(Re(eigen(Drift)$val) > 0)){
-        cat("All (the real parts of) the eigenvalues of the drift matrix Drift are positive. Therefore. I assume the input for Drift was B = -A instead of A (or -Phi instead of Phi). I will use Drift = -B = A.")
+        cat("All (the real parts of) the eigenvalues of the drift matrix Drift are positive. Therefore, it is assumed the input for Drift was B = -A instead of A (or -Phi instead of Phi). Drift = -B = A will be used.")
         cat("Note that Phi(DeltaT) = expm(-B*DeltaT) = expm(A*DeltaT) = expm(Drift*DeltaT).")
         Drift = -Drift
       }
@@ -196,15 +197,14 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
       Sigma <- summary(Phi)$DIFFUSION
       Gamma <- Gamma.fromCTM(Drift, Sigma)
     }else if(is.null(SigmaVAR) & is.null(Gamma) & is.null(Sigma)){ # All three unknown
-      ErrorMessage <- (paste0("The arguments SigmaVAR, Sigma, or Gamma are not found: one should be part of the input (when Stand = 1). Notably, in case of the first matrix, specify 'SigmaVAR = SigmaVAR'."))
-      return(ErrorMessage)
+      ErrorMessage <- (paste0("One of the arguments SigmaVAR, Sigma, or Gamma is not found: it should be part of the input (when Stand = 1). In case of the first matrix, specify 'SigmaVAR = SigmaVAR'."))
       stop(ErrorMessage)
     }else if(is.null(Gamma)){ # Gamma unknown, calculate Gamma from Phi & SigmaVAR or Drift & Sigma
 
       if(!is.null(SigmaVAR)){ # SigmaVAR known, calculate Gamma from Phi & SigmaVAR
 
         # Check on SigmaVAR
-        Check_SigmaVAR(SigmaVAR, q)
+        Check_SigmaVAR(SigmaVAR, q) # TO DO lijkt niet te runnen.... "could not find function "Check_SigmaVAR""
 
         # Calculate Gamma
         if(is.null(Phi)){
@@ -229,7 +229,6 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
             Drift <- CTMp$Drift  # Drift <- logm(Phi)/DeltaT  # Phi <- expm(Drift * DeltaT)
           }else{
             ErrorMessage <- CTMp$ErrorMessage
-            return(ErrorMessage)
             stop(ErrorMessage)
           }
         }
@@ -264,7 +263,6 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
   if(!is.null(Labels)){
     if(length(Labels) != nrLines){
       ErrorMessage <- (paste0("The argument Labels should contain ", nrLines, " elements, that is, q*q or the number of 1s in WhichElements (or WhichElements is incorrectly specified); not ", length(Labels)))
-      return(ErrorMessage)
       stop(ErrorMessage)
     }
     #if(any(!is.character(Labels))){ # Note: This does not suffice, since it could also be an expression
@@ -276,39 +274,33 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
   if(!is.null(Col)){
     if(length(Col) != nrLines){
       ErrorMessage <- (paste0("The argument Col should contain ", nrLines, " elements, that is, q*q or the number of 1s in WhichElements (or WhichElements is incorrectly specified); not ", length(Col)))
-      return(ErrorMessage)
       stop(ErrorMessage)
     }
     if(any(Col %% 1 != 0)){
-      ErrorMessage <- (paste0("The argument Col should consist of solely integers."))
-      return(ErrorMessage)
+      ErrorMessage <- (paste0("The argument Col should consist solely of integers."))
       stop(ErrorMessage)
     }
   }
   if(!is.null(Lty)){
     if(length(Lty) != nrLines){
       ErrorMessage <- (paste0("The argument Lty should contain ", nrLines, " elements, that is, q*q or the number of 1s in WhichElements (or WhichElements is incorrectly specified); not ", length(Lty)))
-      return(ErrorMessage)
       stop(ErrorMessage)
     }
     if(any(Lty %% 1 != 0)){
-      ErrorMessage <- (paste0("The argument Lty should consist of solely integers."))
-      return(ErrorMessage)
+      ErrorMessage <- (paste0("The argument Lty should consist solely of integers."))
       stop(ErrorMessage)
     }
   }
   if(!is.null(Title)){
     if(length(Title) != 1 & !is.list(Title)){
-      ErrorMessage <- (paste0("The argument Title should be a character or a list (containing at max 3 items)."))
-      return(ErrorMessage)
+      ErrorMessage <- (paste0("The argument Title should be a character or a list (containing maximum 3 items)."))
       stop(ErrorMessage)
     }
     if(length(Title) > 3){
-      ErrorMessage <- (paste0("The list Title should at max contain 3 items. Currently, it consists of ", length(Title), " items."))
-      return(ErrorMessage)
+      ErrorMessage <- (paste0("The list Title should contain maximum 3 items. In the given input, it consists of ", length(Title), " items."))
       stop(ErrorMessage)
     }
-  # Option: Also check whether each element in list either a "call" or a 'character' is...
+    # Option: Also check whether each element in list either a "call" or a 'character' is...
   }
 
 
@@ -349,7 +341,7 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
     Title_1 <- expression(Phi(Delta[t])~plot)
     Title_2 <- "How do the lagged parameters vary"
     #Title_2 <- "How do the overall lagged parameters"
-    Title_3 <- "as a function of the time-interval"
+    Title_3 <- "as a function of the time interval?"
   }else{
     Title_1 <- NULL
     Title_2 <- NULL
@@ -369,7 +361,7 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
     }
   }
 
-##########################################################################################
+  ##########################################################################################
 
   if(any(is.complex(eigen(Drift)$val))){
     while (!is.null(dev.list()))  dev.off()  # to reset the graphics pars to defaults
@@ -384,13 +376,14 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
     #
     while (!is.null(dev.list()))  dev.off()  # to reset the graphics pars to defaults
     par(mar=c(par('mar')[1:3], 0)) # optional, removes extraneous right inner margin space
-    plot.new()
+    plot.new() # TO DO Alex, here I create an empty plot such that I can determine the location of the legend (later on I also do this for the case of complex eigenvalues)
+    # Alex, can you look into how to do this in another way?
     l <- legend(0, 0,
-           legend = legendT, #cex=CEX,
-           bty = "n",
-           lty=Lty, # gives the legend appropriate symbols (lines)
-           lwd=rep(2, q*q),
-           col=Col # gives the legend lines the correct color and width
+                legend = legendT, #cex=CEX,
+                bty = "n",
+                lty=Lty, # gives the legend appropriate symbols (lines)
+                lwd=rep(2, q*q),
+                col=Col # gives the legend lines the correct color and width
     )
     # calculate right margin width in ndc
     w <- 1.5 *( grconvertX(l$rect$w, to='ndc') - grconvertX(0, to='ndc') )
@@ -412,7 +405,7 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
     }
   }
 
-  Xlab <- expression(Time-interval (Delta[t]))
+  Xlab <- expression(Time~interval (Delta[t]))
   Ylab <- expression(Phi(Delta[t])~values)
   #
   #wd <- getwd()
@@ -439,13 +432,15 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
 
   #Add lines for max or min of Phi
   if(MaxMinPhi == TRUE){
+    if(is.null(Phi)){
+      Phi <- expm(Drift*DeltaT)
+    }
     MaxD <- MaxDeltaT(Phi = Phi)
     if(is.null(MaxD$ErrorMessage)){
       Max_DeltaT <- MaxD$DeltaT_MinOrMaxPhi
       Phi_MinMax <- MaxD$MinOrMaxPhi
     }else{
       ErrorMessage <- MaxD$ErrorMessage
-      return(ErrorMessage)
       stop(ErrorMessage)
     }
     #
@@ -455,7 +450,7 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
         if(WhichElements[j,i] == 1){
           teller <- teller + 1
           #abline(v=Max_DeltaT[j,i], col=Col[teller], lwd=1, lty=Lty[teller])
-          abline(v=Max_DeltaT[j,i], col="white", lwd=0.5, lty=Lty[teller])
+          #abline(v=Max_DeltaT[j,i], col="white", lwd=0.5, lty=Lty[teller])
           segments(x0=Max_DeltaT[j,i], y0=0, x1=Max_DeltaT[j,i], y1=Phi_MinMax[j,i], col=Col[teller], lwd=0.5, lty=Lty[teller])
         }
       }
@@ -595,5 +590,4 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
   #return(final)
 
 }
-
 

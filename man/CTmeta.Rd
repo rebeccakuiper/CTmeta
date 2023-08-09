@@ -163,16 +163,18 @@ library(restriktor)
 
 out_CTmeta <- CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR)
 H1 <- "abs(overallPhi12) < abs(overallPhi21)"
-goric(out_CTmeta, H1, type = "gorica", comparison = "complement")
+goric(out_CTmeta, hypotheses = list(H1), type = "gorica", comparison = "complement")
 
 out_CTmeta <- CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR)
 H1 <- "abs(overallPhi12) < abs(overallPhi21); abs(overallPhi11) < abs(overallPhi22)"
-goric(out_CTmeta, H1, type = "gorica", comparison = "complement")
+goric(out_CTmeta, hypotheses = list(H1), type = "gorica", comparison = "complement")
 
 out_CTmeta <- CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR)
 est <- coef(out_CTmeta)  # or: est  <- out_CTmeta$Overall_vecStandPhi_DeltaTStar
 VCOV <- vcov(out_CTmeta) # or: VCOV <- out_CTmeta$CovMx_OverallPhi_DeltaTStar
-goric(est, VCOV = VCOV, H1, type = "gorica", comparison = "complement")
+#goric(est, VCOV = VCOV, hypotheses = list(H1), type = "gorica", comparison = "complement")
+# With this input, one can only obtain the GORICA, so one can also use:
+goric(est, VCOV = VCOV, hypotheses = list(H1), comparison = "complement")
 
 
 ## What if primary studies report a (lagged) correlation matrix ##
@@ -348,14 +350,14 @@ out_CTmeta <- CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR)
 H1 <- "abs(overallPhi12) < abs(overallPhi21)"
 #H2 <- "abs(overallPhi12) > abs(overallPhi21)" # = complement of H1 and does not need to be specified, see below.
 # Evaluate dominance of cross-lagged effects via AIC-type criterion called the GORICA (Altinisik, Nederhof, Hoijtink, Oldehinkel, Kuiper, accepted 2021).
-#goric(out_CTmeta, H1, H2, type = "gorica", comparison = "none")
+#goric(out_CTmeta, hypotheses = list(H1, H2), type = "gorica", comparison = "none")
 # or, since H2 is complement of H1, equivalently:
-goric(out_CTmeta, H1, type = "gorica", comparison = "complement")
+goric(out_CTmeta, hypotheses = list(H1), type = "gorica", comparison = "complement")
 #
 # Example 2: dominance of (absolute values of) cross-lagged effects and autoregressive effects
 H1 <- "abs(overallPhi12) < abs(overallPhi21); abs(overallPhi11) < abs(overallPhi22)"
 # Note that, now, specification of complement 'by hand' harder.
-goric(out_CTmeta, H1, type = "gorica", comparison = "complement")
+goric(out_CTmeta, hypotheses = list(H1), type = "gorica", comparison = "complement")
 #
 #
 # Option 2
@@ -364,7 +366,7 @@ goric(out_CTmeta, H1, type = "gorica", comparison = "complement")
 out_CTmeta <- CTmeta(N, DeltaT, DeltaTStar, Phi, SigmaVAR)
 est <- coef(out_CTmeta)  # or: est  <- out_CTmeta$Overall_vecStandPhi_DeltaTStar
 VCOV <- vcov(out_CTmeta) # or: VCOV <- out_CTmeta$CovMx_OverallPhi_DeltaTStar
-goric(est, VCOV = VCOV, H1, type = "gorica", comparison = "complement")
+goric(est, VCOV = VCOV, hypotheses = list(H1), type = "gorica", comparison = "complement")
 
 
 ## What if primary studies report a (lagged) correlation matrix ##

@@ -150,6 +150,7 @@ MaxDeltaT <- function(DeltaT = 1, Phi = NULL, Drift = NULL) {
       #
       xstart_ij <- 1
       fstart_ij <- SolveForMaxDelta_ij(xstart_ij)
+      #fstart_ij
       # Check
       if(all(is.nan(fstart_ij) == FALSE) == FALSE){
         ("There is no DeltaT such that the Phi(DeltaT) functions reach a minimum or maximum!")
@@ -185,7 +186,7 @@ MaxDeltaT <- function(DeltaT = 1, Phi = NULL, Drift = NULL) {
   #cat("")
 
   # If loop is in place
-  MaxDeltaT_mx
+  #MaxDeltaT_mx
   Phi_MaxDeltaT_mx <- matrix(NA, nrow = q, ncol = q)
   for(i in 1:q){
     for(j in 1:q){
@@ -197,6 +198,66 @@ MaxDeltaT <- function(DeltaT = 1, Phi = NULL, Drift = NULL) {
       #cat("")
     }
   }
+
+
+  ####
+
+  # Check Second optimum
+
+  MaxDeltaT_mx_2 <- matrix(NA, nrow = q, ncol = q)
+  # If single i and j
+  #i <- 1
+  #j <- 2
+  # If loop
+  for(i in 1:q){
+    for(j in 1:q){
+      #
+      SolveForMaxDelta_ij <- SolveForMaxDelta_ij_fie(q, B, i, j)
+      #
+      #
+      xstart_ij <- max(MaxDeltaT_mx)
+      fstart_ij <- SolveForMaxDelta_ij(xstart_ij)
+      #fstart_ij
+      # Check
+      if(all(is.nan(fstart_ij) == FALSE) == FALSE){
+        ("There is no DeltaT such that the Phi(DeltaT) functions reach a minimum or maximum!")
+        message <- "There is no DeltaT such that the Phi(DeltaT) functions reach a minimum or maximum."
+      }
+      #
+      #
+      #
+      sol_ij <- nleqslv(xstart_ij, SolveForMaxDelta_ij, control=list(btol=.0000001, allowSingular = TRUE)) #, method="Newton")
+      MaxDeltaT_ij <- sol_ij$x
+      #MaxDeltaT_ij
+      # Function terminated if sol$termcd does not equal 1 (and 1 is "Function criterion is near zero. Convergence of function values has been achieved.")
+      sol_ij$message
+      sol_ij$fvec
+      if(sol_ij$termcd != 1){
+        cat("The nleqslv-function terminated.")
+        cat("Hence, there is no DeltaT such that the Phi(DeltaT) functions reach a minimum or maximum.")
+        message <- "There is no DeltaT such that the Phi(DeltaT) functions reach a minimum or maximum."
+        #stop(message)
+      }
+      #
+      #
+      MaxDeltaT_mx_2[i,j] <- MaxDeltaT_ij
+    } #end loop j
+  } #end loop i
+  #
+  #MaxDeltaT_mx_2
+  Phi_MaxDeltaT_mx_2 <- matrix(NA, nrow = q, ncol = q)
+  for(i in 1:q){
+    for(j in 1:q){
+      Phi_MaxDeltaT_mx_2[i,j] <- (expm(-B*MaxDeltaT_mx_2[i,j]))[i,j]
+    }
+  }
+
+  #MaxDeltaT_mx
+  #MaxDeltaT_mx_2
+  #
+  Phi_MaxDeltaT_mx
+  Phi_MaxDeltaT_mx_2
+
 
   ############################################################################################################
 
