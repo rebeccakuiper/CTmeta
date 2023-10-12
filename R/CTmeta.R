@@ -866,24 +866,6 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
                                random = ~ 1 | BetweenLevel / Study,
                                slab = Label_Phi,
                                method = "ML")
-              # TO DO
-              BL <- matrix(rep(BetweenLevel, each = (q*q)), byrow = T, ncol = (q*q))
-              metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ overallPhi + overallPhi:Mod. - 1,
-                     random = list(~ overallPhi | BL, ~ overallPhi | Study),
-                     method = "ML",
-                     struct = "UN",
-                     control=list(optimizer="optim", optmethod="BFGS")
-              )
-              # TO DO ALSO make the following available? (also below then).
-              # Btw add comparison of models in the examples above. Using "performance::compare_performance()"
-              # Btw also add making plots like Geri does! For both see emails with Geri!
-              BL <- matrix(rep(BetweenLevel, each = (q*q)), byrow = T, ncol = (q*q))
-              metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ overallPhi + overallPhi:Mod. - 1,
-                               random = ~ overallPhi | BL,
-                               method = "ML",
-                               struct = "UN",
-                               control=list(optimizer="optim", optmethod="BFGS")
-              )
             }
           }else{ # No Moderators
             if(is.null(BetweenLevel)){
@@ -896,14 +878,6 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
                                random = ~ 1 | BetweenLevel / Study,
                                slab = Label_Phi,
                                method = "ML")
-              # TO DO
-              BL <- matrix(rep(BetweenLevel, each = (q*q)), byrow = T, ncol = (q*q))
-              metaan <- rma.mv(yi=vecVecStandPhi, V=CovMx, mods = ~ overallPhi - 1,
-                               random = list(~ overallPhi | BL, ~ overallPhi | Study),
-                               method = "ML",
-                               struct = "UN",
-                               control=list(optimizer="optim", optmethod="BFGS")
-              )
             }
           }
           tau2_metaan_MV <- metaan$tau2
