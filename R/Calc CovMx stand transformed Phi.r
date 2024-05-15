@@ -122,13 +122,9 @@ StandTransPhi <- function(DeltaTStar, DeltaT = 1, N = NULL, Phi, SigmaVAR = NULL
     }
     #
     # Check on SigmaVAR and Gamma
+    SigmaVARandGammaNull <- 0
     if(is.null(SigmaVAR) & is.null(Gamma)){ # Both SigmaVAR and Gamma unknown
-      cat("Note:") # TO DO
-      cat(paste0("Both SigmaVAR and Gamma are NULL."))
-      cat(paste0("Consequently, only the (unstandardized) transformed Phi is calculated."))
-      cat(paste0("In case you want a standarized matrix or more: either SigmaVAR and/or Gamma should be part of the input. In case of first matrix, specify 'SigmaVAR = <insert your matrix name>'."))
-      cat("")
-      #stop()
+      SigmaVARandGammaNull <- 1
     }else if(!is.null(SigmaVAR)){ # SigmaVAR known
       # Check on SigmaVAR
       Check_SigmaVAR(SigmaVAR, q)
@@ -271,4 +267,18 @@ if(is.null(SigmaVAR) & is.null(Gamma)){
 }
 
 return(final)
+
+
+if(SigmaVARandGammaNull == 1){
+  cat(" \n")
+  cat(" \n")
+cat("Note: \n")
+cat(paste0("Both SigmaVAR and Gamma are NULL. \n"))
+cat(paste0("Consequently, only the (unstandardized) transformed Phi is calculated. \n"))
+cat(paste0("In case you want a standarized matrix or more: either SigmaVAR and/or Gamma should be part of the input. In case of first matrix, specify 'SigmaVAR = <insert your matrix name>'. \n"))
+cat(" \n")
+#stop()
+}
+
+
 }

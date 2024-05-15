@@ -43,7 +43,7 @@ MaxDeltaT(DeltaT, Phi)
 # Therefore, the matrix 'MinOrMaxPhi' is not a Phi-matrix, but each element should be inspected separately.
 # To obtain the full Phi-matrix for a specific DeltaT one can use:
 DeltaT_MinOrMaxPhi <- MaxDeltaT(DeltaT, Phi)$DeltaT_MinOrMaxPhi
-StandTransPhi(DeltaTStar = DeltaT_MinOrMaxPhi[1,2], DeltaT, N = NULL, Phi)
+StandTransPhi(DeltaTStar = DeltaT_MinOrMaxPhi[1,2], DeltaT, N = NULL, Phi)$Phi_DeltaTStar
 
 # If you would use the drift matrix Drift as input, then use:
 MaxDeltaT(DeltaT, Drift = Drift)
@@ -53,6 +53,10 @@ MaxDeltaT(DeltaT, Drift = Drift)
 PhiPlot(DeltaT, Phi)
 # or:
 ggPhiPlot(DeltaT, Phi)
+
+# Often there is a minimum and a maximum, the function can give this by
+# calculating the optimum from three different starting points.
+
 
 
 ## Example 2: input from fitted object of class "varest" ##

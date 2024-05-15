@@ -34,7 +34,7 @@
 #' # Therefore, the matrix 'MinOrMaxPhi' is not a Phi-matrix, but each element should be inspected separately.
 #' # To obtain the full Phi-matrix for a specific DeltaT one can use:
 #' DeltaT_MinOrMaxPhi <- MaxDeltaT(DeltaT, Phi)$DeltaT_MinOrMaxPhi
-#' StandTransPhi(DeltaTStar = DeltaT_MinOrMaxPhi[1,2], DeltaT, N = NULL, Phi)
+#' StandTransPhi(DeltaTStar = DeltaT_MinOrMaxPhi[1,2], DeltaT, N = NULL, Phi)$Phi_DeltaTStar
 #'
 #' # If you would use the drift matrix Drift as input, then use:
 #' MaxDeltaT(DeltaT, Drift = Drift)
@@ -44,6 +44,10 @@
 #' PhiPlot(DeltaT, Phi)
 #' # or:
 #' ggPhiPlot(DeltaT, Phi)
+#'
+#' # Often there is a minimum and a maximum, the function can give this by
+#' # calculating the optimum from three different starting points.
+#'
 #'
 #'
 #' ## Example 2: input from fitted object of class "varest" ##
@@ -59,6 +63,10 @@
 #'
 
 MaxDeltaT <- function(DeltaT = 1, Phi = NULL, Drift = NULL) {
+
+  #DeltaT <- 1
+  #Drift <- matrix(c( -3.12 , 0.08, 0.00,  2.56, -2.80, -0.32,
+  #                   -11.68, 9.44,-6.64), 3,3, byrow=TRUE)
 
   # Checks:
   if(length(DeltaT) != 1){
@@ -148,7 +156,7 @@ MaxDeltaT <- function(DeltaT = 1, Phi = NULL, Drift = NULL) {
       SolveForMaxDelta_ij <- SolveForMaxDelta_ij_fie(q, B, i, j)
       #
       #
-      xstart_ij <- 1
+      xstart_ij <- 0
       fstart_ij <- SolveForMaxDelta_ij(xstart_ij)
       #fstart_ij
       # Check
@@ -259,10 +267,77 @@ MaxDeltaT <- function(DeltaT = 1, Phi = NULL, Drift = NULL) {
   Phi_MaxDeltaT_mx_2
 
 
+  ####
+
+  # Check Third optimum
+
+  MaxDeltaT_mx_3 <- matrix(NA, nrow = q, ncol = q)
+  # If single i and j
+  #i <- 1
+  #j <- 2
+  # If loop
+  for(i in 1:q){
+    for(j in 1:q){
+      #
+      SolveForMaxDelta_ij <- SolveForMaxDelta_ij_fie(q, B, i, j)
+      #
+      #
+      xstart_ij <- max(MaxDeltaT_mx_2)
+      fstart_ij <- SolveForMaxDelta_ij(xstart_ij)
+      #fstart_ij
+      # Check
+      if(all(is.nan(fstart_ij) == FALSE) == FALSE){
+        ("There is no DeltaT such that the Phi(DeltaT) functions reach a minimum or maximum!")
+        message <- "There is no DeltaT such that the Phi(DeltaT) functions reach a minimum or maximum."
+      }
+      #
+      #
+      #
+      sol_ij <- nleqslv(xstart_ij, SolveForMaxDelta_ij, control=list(btol=.0000001, allowSingular = TRUE)) #, method="Newton")
+      MaxDeltaT_ij <- sol_ij$x
+      #MaxDeltaT_ij
+      # Function terminated if sol$termcd does not equal 1 (and 1 is "Function criterion is near zero. Convergence of function values has been achieved.")
+      sol_ij$message
+      sol_ij$fvec
+      if(sol_ij$termcd != 1){
+        cat("The nleqslv-function terminated.")
+        cat("Hence, there is no DeltaT such that the Phi(DeltaT) functions reach a minimum or maximum.")
+        message <- "There is no DeltaT such that the Phi(DeltaT) functions reach a minimum or maximum."
+        #stop(message)
+      }
+      #
+      #
+      MaxDeltaT_mx_3[i,j] <- MaxDeltaT_ij
+    } #end loop j
+  } #end loop i
+  #
+  #MaxDeltaT_mx_3
+  Phi_MaxDeltaT_mx_3 <- matrix(NA, nrow = q, ncol = q)
+  for(i in 1:q){
+    for(j in 1:q){
+      Phi_MaxDeltaT_mx_3[i,j] <- (expm(-B*MaxDeltaT_mx_3[i,j]))[i,j]
+    }
+  }
+
+  #MaxDeltaT_mx
+  #MaxDeltaT_mx_2
+  #MaxDeltaT_mx_3
+  #
+  Phi_MaxDeltaT_mx
+  Phi_MaxDeltaT_mx_2
+  Phi_MaxDeltaT_mx_3
+
+
+
   ############################################################################################################
 
   final <- list(DeltaT_MinOrMaxPhi = MaxDeltaT_mx,
-                MinOrMaxPhi = Phi_MaxDeltaT_mx)
+                MinOrMaxPhi = Phi_MaxDeltaT_mx,
+                DeltaT_MinOrMaxPhi_2 = MaxDeltaT_mx_2,
+                MinOrMaxPhi_2 = Phi_MaxDeltaT_mx_2,
+                DeltaT_MinOrMaxPhi_3 = MaxDeltaT_mx_3,
+                MinOrMaxPhi_3 = Phi_MaxDeltaT_mx_3
+                )
 
   return(final)
 

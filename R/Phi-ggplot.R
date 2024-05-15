@@ -267,9 +267,11 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
     # Check on WhichElements
     Check_WhichElts(WhichElements, q)
     nrLines <- sum(WhichElements)
+    Which <- which(t(WhichElements) == 1)
   } else{
     WhichElements <- matrix(1, ncol = q, nrow = q)
     nrLines <- q*q #<- sum(WhichElements)
+    Which <- which(t(WhichElements) == 1)
   }
   #
   if(!is.null(Labels)){
@@ -399,13 +401,16 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
               Color = rep(as.character(Col), length(DeltaTs)),
               LineType = rep(as.character(Lty), length(DeltaTs)),
               Labels = rep(as.character(legendT), length(DeltaTs)))
+  # TO DO hoe nu colors en linetype goed zetten? In Phiplot met Which[teller]
 
   Xlab <- expression(Time-interval (Delta[t]))
   Ylab <- expression(Phi(Delta[t])~values)
   #
+  min_y <- min(PhiDeltaTsDF$Values)
+  max_y <- max(PhiDeltaTsDF$Values)
   phi_plot <- ggplot(PhiDeltaTsDF, aes(DeltaTs, Values, color = Labels, linetype = Labels)) +
     geom_line(lwd = 0.75) +
-    geom_abline(intercept = 0, slope = 0, alpha = .5) +
+    geom_abline(intercept = 0, slope = 0, alpha = .5) + # TO DO wat doet alpha?
     scale_linetype_manual(name = " ", values = Lty, labels = legendT) +
     scale_color_manual(name = " ", values = Col, labels = legendT) +
     ylab(Ylab) +
@@ -415,7 +420,11 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
     ggtitle(as.expression(Title_1), subtitle = Title_2) +
     theme_classic() +
     theme(plot.title = element_text(margin = margin(t = 20))) +
-    ylim(0,1) +
+    #ylim(0,1) + # TO DO dit weghalen op aanpassen neem ik aan
+    # Nu iig range van plots niet goed.
+    # Baseer op waardes van PhiDeltaTsDF lijkt mij
+    # Hierboven gedaan
+    ylim(min_y,max_y) +
     theme(
       legend.key.width = unit(2, "lines"),
       legend.spacing.x = unit(1.5, "lines"),
@@ -445,6 +454,7 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
 
 
   if(complex){
+
     # Multiple solutions and add 3 plots (2 for 2 different solutions and one scatter plot)
     Title_2_N <- "using an 'aliasing' matrix \n (i.e., another solution for A)"
     Title_1_N2 <- expression(Phi(Delta[t])~scatter~plot~'for'~multiples~of~Delta[t])
@@ -487,6 +497,7 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
                   Color = rep(as.character(Col), length(DeltaTs)),
                   LineType = rep(as.character(Lty), length(DeltaTs)),
                   Labels = rep(as.character(legendT), length(DeltaTs)))
+        # TO DO
 
       PhiDeltaTsDF_L[[N]] <- PhiDeltaTsDF_N
       #
@@ -508,6 +519,7 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
                 Color = rep(as.character(Col), length(DeltaTs)),
                 LineType = rep(as.character(Lty), length(DeltaTs)),
                 Labels = rep(as.character(legendT), length(DeltaTs)))
+      # TO DO
 
     for (i in 1:2) {
       p.plot <- ggplot(PhiDeltaTsDF_L[[i]], aes(DeltaTs, Values, color = Labels, linetype = Labels)) +
@@ -522,7 +534,7 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
         ggtitle(as.expression(Title_1), subtitle = Title_2_N) +
         theme_classic() +
         theme(plot.title = element_text(margin = margin(t = 20))) +
-        ylim(0,1) +
+        ylim(0,1) + # TO DO dit dan ook! zie hierboven
         theme(
           legend.key.width = unit(2, "lines"),
           legend.spacing.x = unit(1.5, "lines"),
@@ -547,7 +559,7 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
     ggtitle(as.expression(Title_1_N2), subtitle = Title_2_N2) +
     theme_classic() +
     theme(plot.title = element_text(margin = margin(t = 20))) +
-    ylim(0,1) +
+    ylim(0,1) + # TO DO
     theme(
       legend.key.width = unit(2, "lines"),
       legend.spacing.x = unit(1, "lines"),
@@ -566,6 +578,7 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
                   PhiPlot_aliasing_2 = Plot_2,
                   PhiPlot_scatter = Plot_3,
                   PhiPlot_all = Plot_complex)
+    print(PhiPlot_all)
 
   }else{ # if not complex, then only one plot
     final <- list(PhiPlot = phi_plot,

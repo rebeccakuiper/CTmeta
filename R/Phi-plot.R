@@ -255,9 +255,11 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
     # Check on WhichElements
     Check_WhichElts(WhichElements, q)
     nrLines <- sum(WhichElements)
+    Which <- which(t(WhichElements) == 1)
   } else{
     WhichElements <- matrix(1, ncol = q, nrow = q)
     nrLines <- q*q #<- sum(WhichElements)
+    Which <- which(t(WhichElements) == 1) # 1 : q*q
   }
   #
   if(!is.null(Labels)){
@@ -376,8 +378,8 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
     #
     while (!is.null(dev.list()))  dev.off()  # to reset the graphics pars to defaults
     par(mar=c(par('mar')[1:3], 0)) # optional, removes extraneous right inner margin space
-    plot.new() # TO DO Alex, here I create an empty plot such that I can determine the location of the legend (later on I also do this for the case of complex eigenvalues)
-    # Alex, can you look into how to do this in another way?
+    plot.new() # TO DO here I create an empty plot such that I can determine the location of the legend (later on I also do this for the case of complex eigenvalues)
+    # look into how to do this in another way?
     l <- legend(0, 0,
                 legend = legendT, #cex=CEX,
                 bty = "n",
@@ -411,7 +413,7 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
   #wd <- getwd()
   #dev.copy(png, filename = paste0(wd, "/www/PhiPlot.png"))
   teller <- 1
-  plot(y=rep(0, length(DeltaTs)), x=DeltaTs, type="l", ylim=c(min(PhiDeltaTs), max(PhiDeltaTs)),
+  phi_plot <- plot(y=rep(0, length(DeltaTs)), x=DeltaTs, type="l", ylim=c(min(PhiDeltaTs), max(PhiDeltaTs)),
        #ylab = expression(Overall~Phi(Delta[t])~values),
        ylab = Ylab,
        xlab = Xlab,
@@ -425,7 +427,7 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
     for(i in 1:q){
       if(WhichElements[j,i] == 1){
         teller <- teller + 1
-        lines(y=PhiDeltaTs[j,i,], x=DeltaTs, col=Col[teller], lwd=2, lty=Lty[teller])
+        lines(y=PhiDeltaTs[j,i,], x=DeltaTs, col=Col[Which[teller]], lwd=2, lty=Lty[Which[teller]])
       }
     }
   }
@@ -451,7 +453,7 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
           teller <- teller + 1
           #abline(v=Max_DeltaT[j,i], col=Col[teller], lwd=1, lty=Lty[teller])
           #abline(v=Max_DeltaT[j,i], col="white", lwd=0.5, lty=Lty[teller])
-          segments(x0=Max_DeltaT[j,i], y0=0, x1=Max_DeltaT[j,i], y1=Phi_MinMax[j,i], col=Col[teller], lwd=0.5, lty=Lty[teller])
+          segments(x0=Max_DeltaT[j,i], y0=0, x1=Max_DeltaT[j,i], y1=Phi_MinMax[j,i], col=Col[Which[teller]], lwd=0.5, lty=Lty[Which[teller]])
         }
       }
     }
@@ -485,7 +487,8 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
     EigenDrift <- eigen(Drift)
     V <- EigenDrift$vector
 
-    for(N in 1:2){ # Note: last plot is scatter plot
+    #for(N in 1:2){ # Note: last plot is scatter plot
+      N = 1
       im <- complex(real = 0, imaginary = 1)
       diagN <- matrix(0, ncol = q, nrow = q)
       # Note: ordering eigenvalues is based on Mod(eigenvalues): so, if find one complex then next is its conjugate.
@@ -509,7 +512,8 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
         PhiDeltaTs_N[,,i] <- expm(Drift_N*DeltaTs[i])
       }
       #
-      plot(y=rep(0, length(DeltaTs)), x=DeltaTs, type="l", ylim=c(min(PhiDeltaTs_N), max(PhiDeltaTs_N)),
+      #plotName <- paste0("Plot_", N)
+      Plot_1 <- plot(y=rep(0, length(DeltaTs)), x=DeltaTs, type="l", ylim=c(min(PhiDeltaTs_N), max(PhiDeltaTs_N)),
            ylab = Ylab, xlab = Xlab,
            col=1000, lwd=2, lty=1,
            main = mtext(side=3, line=2, adj=0, as.expression(Title_1)),
@@ -521,11 +525,53 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
         for(i in 1:q){
           if(WhichElements[j,i] == 1){
             teller <- teller + 1
-            lines(y=PhiDeltaTs_N[j,i,], x=DeltaTs, col=Col[teller], lwd=2, lty=Lty[teller])
+            lines(y=PhiDeltaTs_N[j,i,], x=DeltaTs, col=Col[Which[teller]], lwd=2, lty=Lty[Which[teller]])
           }
         }
       }
-    }
+      #
+      N = 2
+      im <- complex(real = 0, imaginary = 1)
+      diagN <- matrix(0, ncol = q, nrow = q)
+      # Note: ordering eigenvalues is based on Mod(eigenvalues): so, if find one complex then next is its conjugate.
+      W_complex <- which(Im(EigenDrift$val) != 0)
+      NrComplexPairs <- length(W_complex)/2
+      tellerComplex = -1
+      for(i in 1:NrComplexPairs){
+        tellerComplex = tellerComplex + 2
+        index <- W_complex[tellerComplex]
+        diagN[index,index] <- 1
+        diagN[index+1,index+1] <- -diagN[index,index]
+        # Note if nr of complex pairs > 1: 'diagN' should always be x and -x within a conjugate pair, but over the complex pairs x does not have to be the same...
+      }
+      diagN <- N * diagN
+      A_N = Drift + (2 * base::pi * im / DeltaT) * V %*% diagN %*% solve(V)
+      #A_N
+      #print(A_N)
+      Drift_N <- Re(A_N)
+      PhiDeltaTs_N<-array(data=NA,dim=c(q,q,length(DeltaTs)))
+      for(i in 1:length(DeltaTs)){
+        PhiDeltaTs_N[,,i] <- expm(Drift_N*DeltaTs[i])
+      }
+      #
+      #plotName <- paste0("Plot_", N)
+      Plot_2 <- plot(y=rep(0, length(DeltaTs)), x=DeltaTs, type="l", ylim=c(min(PhiDeltaTs_N), max(PhiDeltaTs_N)),
+                     ylab = Ylab, xlab = Xlab,
+                     col=1000, lwd=2, lty=1,
+                     main = mtext(side=3, line=2, adj=0, as.expression(Title_1)),
+                     sub = mtext(side=3, line=c(1,0), adj=0, c(as.expression(Title_2_N), as.expression(Title_3_N)))
+      )
+      #
+      teller <- 0
+      for(j in 1:q){
+        for(i in 1:q){
+          if(WhichElements[j,i] == 1){
+            teller <- teller + 1
+            lines(y=PhiDeltaTs_N[j,i,], x=DeltaTs, col=Col[Which[teller]], lwd=2, lty=Lty[Which[teller]])
+          }
+        }
+      }
+    #}
     # In case last plot is scatter plot
     # In last plot a scatter plot, for multiples of DeltaT, from Min to Max.
     Min_ <- Min + Min%%DeltaT # last part is remainder after integer division
@@ -536,7 +582,7 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
       PhiDeltaTs_N[,,i]<-expm(Drift_N*DeltaTs[i])
     }
     #
-    plot(y=rep(0, length(DeltaTs)), x=DeltaTs, type="l", ylim=c(min(PhiDeltaTs_N), max(PhiDeltaTs_N)),
+    Plot_3 <- plot(y=rep(0, length(DeltaTs)), x=DeltaTs, type="l", ylim=c(min(PhiDeltaTs_N), max(PhiDeltaTs_N)),
          ylab = Ylab, xlab = Xlab,
          col=1000, lwd=2, lty=1,
          main = mtext(side=3, line=2, adj=0, as.expression(Title_1_N2)),
@@ -548,7 +594,7 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
       for(i in 1:q){
         if(WhichElements[j,i] == 1){
           teller <- teller + 1
-          points(y=PhiDeltaTs_N[j,i,], x=DeltaTs, col=Col[teller], lwd=2, pch=Lty[teller])
+          points(y=PhiDeltaTs_N[j,i,], x=DeltaTs, col=Col[Which[teller]], lwd=2, pch=Lty[Which[teller]])
         }
       }
     }
@@ -574,6 +620,19 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
            #lwd=rep(2, q*q),
            col=Col # gives the legend lines the correct color and width
     )
+
+    final <- list(PhiPlot = phi_plot,
+                  complex = complex,
+                  PhiPlot_aliasing_1 = Plot_1,
+                  PhiPlot_aliasing_2 = Plot_2,
+                  PhiPlot_scatter = Plot_3,
+                  PhiPlot_all = Plot_complex)
+    print(PhiPlot_all)
+
+  }else{ # if not complex, then only one plot
+    final <- list(PhiPlot = phi_plot,
+                  complex = complex)
+    print(phi_plot)
   }
 
   #dev.off()
