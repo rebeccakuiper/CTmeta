@@ -537,7 +537,7 @@ ResidCorrMxPlot <- function(DeltaT = 1, Phi = NULL, SigmaVAR = NULL, Drift = NUL
     SigmaVAR <- VarEst$SigmaVAR
     }
     DiagDt <- DiagDeltaT(Phi = Phi, SigmaVAR = SigmaVAR)
-    #DiagDeltaT(Drift = Drift, Sigma = Sigma)
+    #DiagDt <- DiagDeltaT(Drift = Drift, Sigma = Sigma)
     if(is.null(DiagDt$ErrorMessage)){
       DeltaT_DiagDt <- round(DiagDt$DeltaT_diag, 2)
       if(DeltaT_DiagDt >= Min & DeltaT_DiagDt <= Max){
