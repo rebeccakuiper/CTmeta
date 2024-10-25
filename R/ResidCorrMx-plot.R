@@ -420,6 +420,9 @@ ResidCorrMxPlot <- function(DeltaT = 1, Phi = NULL, SigmaVAR = NULL, Drift = NUL
   }
 
 
+  ###
+
+
   if(any(is.complex(eigen(Drift)$val))){
     while (!is.null(dev.list()))  dev.off()  # to reset the graphics pars to defaults
     # Multiple solutions, then 2x2 plots
@@ -527,25 +530,28 @@ ResidCorrMxPlot <- function(DeltaT = 1, Phi = NULL, SigmaVAR = NULL, Drift = NUL
 
   #Add lines for DiagDeltaT (if Diag == TRUE)
   if(Diag == TRUE){
-    #if(is.null(Phi)){
-    ##Phi <- expm(Drift*DeltaT)
-    #VarEst <- VARparam(DeltaT, Drift, Sigma)
-    #Phi <- VarEst$Phi
-    #SigmaVAR <- VarEst$SigmaVAR
-    #}
-    #DiagDt <- DiagDeltaT(Phi = Phi, SigmaVAR = SigmaVAR)
-    DiagDeltaT(Drift = Drift, Sigma = Sigma)
+    if(is.null(Phi)){
+    #Phi <- expm(Drift*DeltaT)
+    VarEst <- VARparam(DeltaT, Drift, Sigma)
+    Phi <- VarEst$Phi
+    SigmaVAR <- VarEst$SigmaVAR
+    }
+    DiagDt <- DiagDeltaT(Phi = Phi, SigmaVAR = SigmaVAR)
+    #DiagDeltaT(Drift = Drift, Sigma = Sigma)
     if(is.null(DiagDt$ErrorMessage)){
-      DeltaT_DiagDt <- DiagDt$DeltaT_diag
+      DeltaT_DiagDt <- round(DiagDt$DeltaT_diag, 2)
       if(DeltaT_DiagDt >= Min & DeltaT_DiagDt <= Max){
         abline(v=DeltaT_DiagDt,
                col="gray", lwd=LWD_0)
-        axis(side = 1, DeltaT_DiagDt, cex.axis = .7, col.axis = "darkgray", col = "darkgray", lwd=LWD_0) # 3 = Add axis on top
+        axis(side = 1, pos = (offset = YLIM[1]), DeltaT_DiagDt, cex.axis = .7, col.axis = "darkgray", col = "darkgray", lwd=LWD_0) # 3 = Add axis on top
       }
     }else{
       ErrorMessage <- DiagDt$ErrorMessage
       return(ErrorMessage)
       # TO DO is dit nu informatief?
+      # TO DO zegt nu:
+      #  Error in ResidCorrMxPlot(DeltaT, Phi, SigmaVAR, Diag = TRUE) :
+      #    object 'DiagDt' not found
     }
   }
 

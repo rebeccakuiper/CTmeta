@@ -137,12 +137,18 @@ if(q > 1){
   Phi_s <- solve(Sxy) %*% Phi %*% Sxy
   SigmaVAR_s <- solve(Sxy) %*% SigmaVAR %*% solve(Sxy)
   #
+  S <- sqrt(diag(diag(SigmaVAR)))
+  ResidCorrMx <- solve(S) %*% SigmaVAR %*% solve(S)
+  #
   vecPhi <- as.vector(t(Phi_s))
 }else{
   Sxy <- sqrt(diag(diag(Gamma)))
   Gamma_s <- solve(Sxy) * Gamma * solve(Sxy)
   Phi_s <- solve(Sxy) * Phi * Sxy
   SigmaVAR_s <- solve(Sxy) * SigmaVAR * solve(Sxy)
+  #
+  S <- sqrt(diag(diag(SigmaVAR)))
+  ResidCorrMx <- solve(S) * SigmaVAR * solve(S)
   #
   vechi <- Phi_s
 }
@@ -193,10 +199,12 @@ if(!is.null(N)){
   final <- list(Phi_DeltaT = Phi, StandPhi_DeltaT = Phi_s,
                 vecStandPhi_DeltaT = vecPhi, CovMx_vecStandPhi_DeltaT = CovMx, multiCI_vecStandPhi_DeltaT = multiCI,
                 SigmaVAR_DeltaT = SigmaVAR, standSigmaVAR_DeltaT = SigmaVAR_s,
+                ResidCorrMx = ResidCorrMx,
                 Gamma = Gamma, standGamma = Gamma_s)
 }else{
   final <- list(Phi_DeltaT = Phi, StandPhi_DeltaT = Phi_s,
                 SigmaVAR_DeltaT = SigmaVAR, standSigmaVAR_DeltaT = SigmaVAR_s,
+                ResidCorrMx = ResidCorrMx,
                 Gamma = Gamma, standGamma = Gamma_s)
 }
 

@@ -193,6 +193,9 @@ if(!(is.null(SigmaVAR) & is.null(Gamma))){
     Phi_DeltaT_s <- solve(Sxy) %*% Phi_DeltaT %*% Sxy
     SigmaVAR_DeltaT_s <- solve(Sxy) %*% SigmaVAR_DeltaT %*% solve(Sxy)
     #
+    S <- sqrt(diag(diag(SigmaVAR_DeltaT)))
+    ResidCorrMx <- solve(S) %*% SigmaVAR_DeltaT %*% solve(S)
+    #
     vecPhi <- as.vector(t(Phi_DeltaT_s))
   }else{
     SigmaVAR_DeltaT <- Gamma - Phi_DeltaT * Gamma * t(Phi_DeltaT)
@@ -201,6 +204,9 @@ if(!(is.null(SigmaVAR) & is.null(Gamma))){
     Gamma_s <- solve(Sxy) * Gamma * solve(Sxy)
     Phi_DeltaT_s <- solve(Sxy) * Phi_DeltaT * Sxy
     SigmaVAR_DeltaT_s <- solve(Sxy) * SigmaVAR_DeltaT * solve(Sxy)
+    #
+    S <- sqrt(diag(diag(SigmaVAR_DeltaT)))
+    ResidCorrMx <- solve(S) * SigmaVAR_DeltaT * solve(S)
     #
     vecPhi <- Phi_DeltaT_s
   }
@@ -253,14 +259,19 @@ if(is.null(SigmaVAR) & is.null(Gamma)){
                 Warning = Warning, warning = warning)
 }else if(!is.null(N)){
   final <- list(Phi_DeltaTStar = Phi_DeltaT,
-                SigmaVAR_DeltaTStar = SigmaVAR_DeltaT, Gamma = Gamma,
+                SigmaVAR_DeltaTStar = SigmaVAR_DeltaT,
+                ResidCorrMx_DeltaTStar = ResidCorrMx,
+                Gamma = Gamma,
                 standPhi_DeltaTStar = Phi_DeltaT_s,
                 vecStandPhi_DeltaTStar = vecPhi, CovMx_vecStandPhi_DeltaTStar = CovMx, multiCI_vecStandPhi_DeltaTStar = multiCI,
-                standSigmaVAR_DeltaTStar = SigmaVAR_DeltaT_s, standGamma = Gamma_s,
+                standSigmaVAR_DeltaTStar = SigmaVAR_DeltaT_s,
+                standGamma = Gamma_s,
                 Warning = Warning, warning = warning)
 } else{
   final <- list(Phi_DeltaTStar = Phi_DeltaT,
-                SigmaVAR_DeltaTStar = SigmaVAR_DeltaT, Gamma = Gamma,
+                SigmaVAR_DeltaTStar = SigmaVAR_DeltaT,
+                ResidCorrMx_DeltaTStar = ResidCorrMx,
+                Gamma = Gamma,
                 standPhi_DeltaTStar = Phi_DeltaT_s,
                 standSigmaVAR_DeltaTStar = SigmaVAR_DeltaT_s, standGamma = Gamma_s,
                 Warning = Warning, warning = warning)

@@ -463,12 +463,12 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
   #Add lines for max or min of Phi (if MaxMinPhi == TRUE)
   # TO DO evt kijken naar alle oplossingen! Nu alleen eerste.
   if(MaxMinPhi == TRUE){
-    #if(is.null(Phi)){
-    #  Phi <- expm(Drift*DeltaT)
-    #}
-    #MaxD <- MaxDeltaT(Phi = Phi)
+    if(is.null(Phi)){
+      Phi <- expm(Drift*DeltaT)
+    }
+    MaxD <- MaxDeltaT(Phi = Phi)
     #MaxD <- MaxDeltaT(DeltaT, Phi = Phi)
-    MaxD <- MaxDeltaT(DeltaT, Drift = Drift)
+    #MaxD <- MaxDeltaT(DeltaT, Drift = Drift)
     if(is.null(MaxD$ErrorMessage)){
       Max_DeltaT <- MaxD$DeltaT_MinOrMaxPhi
       Phi_MinMax <- MaxD$MinOrMaxPhi
@@ -491,8 +491,9 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
           }
         }
       }
-      axis(side = 1, axis_x, las = 2, cex.axis = .7, col.axis = "darkgray", col = "darkgray", lwd=0) # 3 = Add axis on top
-      axis(side = 2, axis_y, las = 2, cex.axis = .7, col.axis = "darkgray", col = "darkgray", lwd=0) # 4 = Add axis on right side
+      # If turned text, then: las = 2
+      axis(side = 1, pos = (offset = YLIM[1]), axis_x, cex.axis = .7, col.axis = "darkgray", col = "darkgray", lwd=0) # 3 = Add axis on top
+      axis(side = 2, pos = (offset = YLIM[2]), axis_y, cex.axis = .7, col.axis = "darkgray", col = "darkgray", lwd=0) # 4 = Add axis on right side
       }else{
         ErrorMessage <- MaxD$ErrorMessage
         return(ErrorMessage)

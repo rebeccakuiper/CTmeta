@@ -449,9 +449,12 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
   #Add lines for max or min of Phi (if MaxMinPhi == TRUE)
   # TO DO evt kijken naar alle oplossingen! Nu alleen eerste.
   if(MaxMinPhi == TRUE){
-    #MaxD <- MaxDeltaT(Phi = Phi)
+    if(is.null(Phi)){
+      Phi <- expm(Drift*DeltaT)
+    }
+    MaxD <- MaxDeltaT(Phi = Phi)
     #MaxD <- MaxDeltaT(DeltaT, Phi = Phi)
-    MaxD <- MaxDeltaT(DeltaT, Drift = Drift)
+    #MaxD <- MaxDeltaT(DeltaT, Drift = Drift)
    if(is.null(MaxD$ErrorMessage)){
      Max_DeltaT <- as.vector(MaxD$DeltaT_MinOrMaxPhi[WhichTF])
      Phi_MinMax <- as.vector(MaxD$MinOrMaxPhi[WhichTF])
