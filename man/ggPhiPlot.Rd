@@ -55,7 +55,7 @@ It also takes a fitted object from the classes "varest" (from the VAR() function
 
 \item{Title}{Optional. A character or a list consisting of maximum 2 character-strings or 'expression' class objects that together represent the title of the Phi-plot. By default, Title = NULL, then the following code will be used for the title: as.list(expression(Phi(Delta[t])~plot), "How do the lagged parameters vary \n as a function of the time-interval")). Note that the default 2-items list will result in 3 lines because of the use of '\n'.}
 
-\item{MaxMinPhi}{Work in progress, is available in PhiPlot(). Optional. An indicator (TRUE/FALSE) whether vertical lines for the optimum (maximum or minimum) should be added to the plot (TRUE) or not (FALSE). These values are obtained by the function MaxDeltaT(). By default, MaxMinPhi = FALSE; hence, by default, no vertical are added.}
+\item{MaxMinPhi}{Work in progress, is available in PhiPlot(). Optional. An indicator (TRUE/FALSE) whether vertical lines for the optimum (maximum or minimum) should be added to the plot (TRUE) or not (FALSE). These values are obtained by the function MaxDeltaT(). By default, MaxMinPhi = FALSE; hence, by default, no vertical lines are added.}
 }
 \value{
 This function returns a Phi-plot for a range of time intervals.
@@ -89,6 +89,9 @@ ggPhiPlot(DeltaT, Drift = Drift, Min = 0, Max = 10, Step = 0.01) # Using Drift i
 q <- dim(Phi)[1]
 SigmaVAR <- diag(q) # for ease
 ggPhiPlot(DeltaT, Phi, Stand = 1, SigmaVAR = SigmaVAR)
+#
+# Including minimum or maximum of Phi
+ggPhiPlot(DeltaT, Phi, Stand = 1, SigmaVAR = SigmaVAR, MaxMinPhi = TRUE)
 
 
 ## Example 2: input from fitted object of class "varest" ##

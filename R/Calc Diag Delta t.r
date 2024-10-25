@@ -53,11 +53,32 @@
 #' if (!require("vars")) install.packages("vars")
 #' library(vars)
 #' out_VAR <- VAR(data, p = 1)
+#'
 #' DiagDeltaT(out_VAR)
 #'
 #' # Note that the function 'SigmaVARPlot' can help to see whether there is a DeltaT for which SigmaVAr(DeltaT) is diagonal.
 #' SigmaVARPlot(DeltaT, out_VAR)
 #' SigmaVARPlot(DeltaT, out_VAR, Min = 0, Max = 1)
+#'
+#'
+#'
+#' ## Example 3 ##
+#' Here, there exists a DeltaT_diag unequal to 0 (DeltaT_diag = 0.3565)
+#'
+#' q <- 2
+#' Phi_2 <- matrix(c(0.5543025, 0.2547274,
+#'                   0.1477329, 0.6612970),
+#'                 nrow = q, ncol = q)
+#' SigmaVAR_2 <- matrix(c(1.1990749, 0.1990749,
+#'                        0.1990749, 1.1990749),
+#'                      nrow = q, ncol = q)
+#'
+#' DiagDeltaT(Phi_2, SigmaVAR_2)
+#'
+#' # Note that the function 'SigmaVARPlot' can help to see whether there is a DeltaT for which SigmaVAr(DeltaT) is diagonal.
+#' DeltaT <- 1
+#' SigmaVARPlot(DeltaT, Phi_2, SigmaVAR_2)
+#' SigmaVARPlot(DeltaT, Phi_2, SigmaVAR_2, Min = 0, Max = 1)
 #'
 
 

@@ -18,7 +18,7 @@
 #' @param Col Optional. Vector with color values (integers) of the lines to be plotted. The length of this vector equals the number of 1s in WhichElements (or equals q*q). By default, Col = NULL, which renders the same color for effects that belong to the same outcome variable (i.e. a row in the Drift matrix). See \url{https://www.statmethods.net/advgraphs/parameters.html} for more information about the values.
 #' @param Lty Optional. Vector with line type values (integers) of the lines to be plotted. The length of this vector equals the number of 1s in WhichElements (or equals q*q). By default, Lty = NULL, which renders solid lines for the autoregressive effects and the same type of dashed line for reciprocal effects (i.e., same type for Phi_ij as for Phi_ji). See \url{https://www.statmethods.net/advgraphs/parameters.html} for more information about the values.
 #' @param Title Optional. A character or a list consisting of maximum 2 character-strings or 'expression' class objects that together represent the title of the Phi-plot. By default, Title = NULL, then the following code will be used for the title: as.list(expression(Phi(Delta[t])~plot), "How do the lagged parameters vary \n as a function of the time-interval")). Note that the default 2-items list will result in 3 lines because of the use of '\n'.
-#' @param MaxMinPhi Work in progress, is available in PhiPlot(). Optional. An indicator (TRUE/FALSE) whether vertical lines for the optimum (maximum or minimum) should be added to the plot (TRUE) or not (FALSE). These values are obtained by the function MaxDeltaT(). By default, MaxMinPhi = FALSE; hence, by default, no vertical are added.
+#' @param MaxMinPhi Work in progress, is available in PhiPlot(). Optional. An indicator (TRUE/FALSE) whether vertical lines for the optimum (maximum or minimum) should be added to the plot (TRUE) or not (FALSE). These values are obtained by the function MaxDeltaT(). By default, MaxMinPhi = FALSE; hence, by default, no vertical lines are added.
 #'
 #' @return This function returns a Phi-plot for a range of time intervals.
 #' @importFrom expm expm
@@ -53,6 +53,9 @@
 #' q <- dim(Phi)[1]
 #' SigmaVAR <- diag(q) # for ease
 #' ggPhiPlot(DeltaT, Phi, Stand = 1, SigmaVAR = SigmaVAR)
+#' #
+#' # Including minimum or maximum of Phi
+#' ggPhiPlot(DeltaT, Phi, Stand = 1, SigmaVAR = SigmaVAR, MaxMinPhi = TRUE)
 #'
 #'
 #' ## Example 2: input from fitted object of class "varest" ##
@@ -95,6 +98,7 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
 # DeltaT = 1; Drift = NULL; Stand = 0; SigmaVAR = NULL; Sigma = NULL; Gamma = NULL; Min = 0; Max = 10; Step = 0.05; WhichElements = NULL; Labels = NULL; Col = NULL; Lty = NULL; Title = NULL; MaxMinPhi = FALSE
 # library(expm); library(purrr); library(ggplot2); library(dplyr); library(ggpubr) # library(tidyverse)
 # library(CTmeta); Phi <- myPhi[1:2,1:2]
+#MaxMinPhi = TRUE
 
   # Note needed:
   #@import tidyverse
@@ -267,12 +271,11 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
     # Check on WhichElements
     Check_WhichElts(WhichElements, q)
     nrLines <- sum(WhichElements)
-    Which <- which(t(WhichElements) == 1)
   } else{
     WhichElements <- matrix(1, ncol = q, nrow = q)
     nrLines <- q*q #<- sum(WhichElements)
-    Which <- which(t(WhichElements) == 1)
   }
+  WhichTF <- matrix(as.logical(WhichElements), q, q)
   #
   if(!is.null(Labels)){
     if(length(Labels) != nrLines){
@@ -328,33 +331,25 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
   #par(def.par)  #- reset to default
 
   if(is.null(Labels)){
+    #subscripts = NULL
+    #for(i in 1:q){
+    #  subscripts = c(subscripts, paste0(i, 1:q, sep=""))
+    #}
     subscripts = NULL
-    for(i in 1:q){
-      subscripts = c(subscripts, paste0(i, 1:q, sep=""))
+    for(j in 1:q){
+      for(i in 1:q){
+        if(WhichElements[j,i] == 1){
+          subscripts = c(subscripts, paste0(j, i, sep=""))
+        }
+      }
     }
     legendT = NULL
-    for(i in 1:(q*q)){
+    for(i in 1:length(subscripts)){
       e <- bquote(expression(Phi(Delta[t])[.(subscripts[i])]))
       legendT <- c(legendT, eval(e))
     }
   } else{
     legendT <- as.vector(Labels)
-  }
-
-  if(is.null(Col)){
-    Col <- matrix(NA, ncol = q, nrow = q)
-    for(i in 1:q){
-      Col[i, 1:q] <- i
-    }
-    Col <- as.vector(t(Col))
-  }
-
-  if(is.null(Lty)){
-    Lty <- matrix(NA, ncol = q, nrow = q)
-    diag(Lty) <- 1
-    Lty[upper.tri(Lty, diag = FALSE)] <- 2:(1+length(Lty[upper.tri(Lty, diag = FALSE)]))
-    Lty[lower.tri(Lty, diag = FALSE)] <- Lty[upper.tri(Lty, diag = FALSE)]
-    Lty <- as.vector(t(Lty))
   }
 
   if(is.null(Title)){
@@ -373,6 +368,29 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
       Title_2 <- Title[[2]]
     }
   }
+
+  if(is.null(Col)){
+    Col_mx <- matrix(NA, ncol = q, nrow = q)
+    for(i in 1:q){
+      Col_mx[i, 1:q] <- i
+    }
+    Col <- t(Col_mx)[t(WhichTF)]
+    #Col <- as.vector(t(Col_mx))
+  }
+  #
+  if(is.null(Lty)){
+    Lty_mx <- matrix(NA, ncol = q, nrow = q)
+    diag(Lty_mx) <- 1
+    Lty_mx[upper.tri(Lty_mx, diag = FALSE)] <- 2:(1+length(Lty_mx[upper.tri(Lty_mx, diag = FALSE)]))
+    Lty_mx[lower.tri(Lty_mx, diag = FALSE)] <- Lty_mx[upper.tri(Lty_mx, diag = FALSE)]
+    Lty <- t(Lty_mx)[t(WhichTF)]
+    #Lty <- as.vector(t(Lty_mx))
+  }
+  #
+  LWD_P <- 0.75 #2.5
+  LWD_0 <- 0.25 #1.5
+  LWD <- rep(LWD_P, length(Lty))
+
 
 ###############################################################################################
 
@@ -395,22 +413,23 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
   }) %>%
     map(function(x) data.frame(Values = as.vector(t(x)))) %>%
     bind_rows %>%
-    bind_cols(WhichElements = rep(as.vector(WhichElements), length(DeltaTs))) %>%
+    #bind_cols(WhichElements = rep(as.vector(WhichElements), length(DeltaTs))) %>%
+    bind_cols(WhichElements = rep(as.vector(t(WhichElements)), length(DeltaTs))) %>%
     filter(WhichElements == 1) %>%
     bind_cols(DeltaTs = rep(DeltaTs, each = sum(WhichElements)),
               Color = rep(as.character(Col), length(DeltaTs)),
               LineType = rep(as.character(Lty), length(DeltaTs)),
               Labels = rep(as.character(legendT), length(DeltaTs)))
-  # TO DO hoe nu colors en linetype goed zetten? In Phiplot met Which[teller]
 
-  Xlab <- expression(Time-interval (Delta[t]))
+  Xlab <- expression(Time-interval~(Delta[t]))
   Ylab <- expression(Phi(Delta[t])~values)
   #
-  min_y <- min(PhiDeltaTsDF$Values)
-  max_y <- max(PhiDeltaTsDF$Values)
+  # Determine limits y based on what to be plotted (and making sure 0 is in it)
+  min_y <- min(PhiDeltaTsDF$Values, 0)
+  max_y <- max(PhiDeltaTsDF$Values, 0)
   phi_plot <- ggplot(PhiDeltaTsDF, aes(DeltaTs, Values, color = Labels, linetype = Labels)) +
-    geom_line(lwd = 0.75) +
-    geom_abline(intercept = 0, slope = 0, alpha = .5) + # TO DO wat doet alpha?
+    geom_line(lwd = LWD_P) +
+    geom_abline(intercept = 0, slope = 0, alpha = .5) + # alpha = transparency of the line
     scale_linetype_manual(name = " ", values = Lty, labels = legendT) +
     scale_color_manual(name = " ", values = Col, labels = legendT) +
     ylab(Ylab) +
@@ -420,36 +439,68 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
     ggtitle(as.expression(Title_1), subtitle = Title_2) +
     theme_classic() +
     theme(plot.title = element_text(margin = margin(t = 20))) +
-    #ylim(0,1) + # TO DO dit weghalen op aanpassen neem ik aan
-    # Nu iig range van plots niet goed.
-    # Baseer op waardes van PhiDeltaTsDF lijkt mij
-    # Hierboven gedaan
     ylim(min_y,max_y) +
     theme(
-      legend.key.width = unit(2, "lines"),
-      legend.spacing.x = unit(1.5, "lines"),
-      legend.text = element_text(size = 12)
+      legend.key.width = unit(1.5, "lines"),
+      legend.box.margin = margin(0, 20, 0, 0),
+      legend.text = element_text(size = 10)
     ) #; phi_plot
 
-  # TO DO
-  #Add lines for max or min of Phi
-  #if(MaxMinPhi == TRUE){
-  #  MaxD <- MaxDeltaT(Phi = Phi)
-  #  if(is.null(MaxD$ErrorMessage)){
-  #    Max_DeltaT <- as.vector(MaxD$DeltaT_MinOrMaxPhi[WhichElements])
-  #    Phi_MinMax <- as.vector(MaxD$MinOrMaxPhi[WhichElements])
-  #  }else{
-  #    ErrorMessage <- MaxD$ErrorMessage
-  #    return(ErrorMessage)
-  #    stop(ErrorMessage)
-  #  }
-  #  #
-  #  phi_plot <- phi_plot +
-  #    geom_vline(xintercept = Max_DeltaT, linetype=Lty, color = Col, size=0.5)
-  #  #geom_vline(xintercept = Max_DeltaT, linetype=Lty, color = "white", size=0.5) +
-  #  #geom_segment(aes(x = Max_DeltaT, y = 0, xend = Max_DeltaT, yend = Phi_MinMax), linetype=Lty,
-  #  #             color = Col, size=0.5)
-  #}
+  #Add lines for max or min of Phi (if MaxMinPhi == TRUE)
+  # TO DO evt kijken naar alle oplossingen! Nu alleen eerste.
+  if(MaxMinPhi == TRUE){
+    #MaxD <- MaxDeltaT(Phi = Phi)
+    #MaxD <- MaxDeltaT(DeltaT, Phi = Phi)
+    MaxD <- MaxDeltaT(DeltaT, Drift = Drift)
+   if(is.null(MaxD$ErrorMessage)){
+     Max_DeltaT <- as.vector(MaxD$DeltaT_MinOrMaxPhi[WhichTF])
+     Phi_MinMax <- as.vector(MaxD$MinOrMaxPhi[WhichTF])
+     # Select the one in plot range
+     Max_DeltaT_range <- Max_DeltaT[Max_DeltaT > Min & Max_DeltaT <= Max]
+     Phi_MinMax_range <- Phi_MinMax[Max_DeltaT > Min & Max_DeltaT <= Max]
+     Lty_range <- Lty[Max_DeltaT > Min & Max_DeltaT <= Max]
+     Col_range <- Col[Max_DeltaT > Min & Max_DeltaT <= Max]
+     #
+     segment_data = data.frame(
+       x = Max_DeltaT_range,
+       xend = Max_DeltaT_range,
+       y = rep(0, length(Phi_MinMax_range)), #rep(max(min_y, 0), length(Phi_MinMax_range)),
+       yend = Phi_MinMax_range
+     )
+     WhichNonZero <- (segment_data$yend-segment_data$y != 0)
+     segment_data_NonZero <- segment_data[segment_data$yend-segment_data$y != 0,]
+     segment_data_NonZero$yend[(segment_data_NonZero$yend > max_y)] <- max_y
+     # TO DO voeg die data combi aan plot data toe (hiervoor dus al), dan geen probleem hier!
+     Lty_segment <- Lty_range[WhichNonZero]
+     Col_segment <- Col_range[WhichNonZero]
+     #
+     phi_plot <- phi_plot +
+       geom_segment(data = segment_data_NonZero, aes(x = x, y = y, xend = xend, yend = yend),
+                    linetype=Lty_segment, colour=Col_segment, linewidth=LWD_0)
+     #
+     extra_x <- round(segment_data_NonZero$x, 2)
+     extra_y <- round(segment_data_NonZero$yend, 2)
+     phi_plot <- phi_plot +
+       scale_y_continuous(sec.axis = sec_axis(~., breaks = extra_y)) +
+       scale_x_continuous(sec.axis = sec_axis(~., breaks = extra_x)) +
+       theme(axis.text.y.right = element_text(face = 1, color = "darkgray", size = 7),
+             axis.text.x.top = element_text(angle = 90, color = "darkgray", size = 7))
+
+     #
+     #xbreaks <- ggplot_build(phi_plot)$layout$panel_params[[1]]$x$breaks
+     #ybreaks <- ggplot_build(phi_plot)$layout$panel_params[[1]]$y$breaks
+     #breaks_x = c(xbreaks, extra_x)
+     #breaks_y = c(ybreaks, extra_y)
+     #phi_plot <- phi_plot +
+     # scale_x_continuous(breaks = breaks_x) +
+     # scale_y_continuous(breaks = breaks_y) +
+     # theme(axis.text.x = element_text(angle = 90))
+   }else{
+     ErrorMessage <- MaxD$ErrorMessage
+     return(ErrorMessage)
+     # TO DO is dit nu informatief?
+   }
+  }
 
 
 
@@ -497,7 +548,6 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
                   Color = rep(as.character(Col), length(DeltaTs)),
                   LineType = rep(as.character(Lty), length(DeltaTs)),
                   Labels = rep(as.character(legendT), length(DeltaTs)))
-        # TO DO
 
       PhiDeltaTsDF_L[[N]] <- PhiDeltaTsDF_N
       #
@@ -519,11 +569,10 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
                 Color = rep(as.character(Col), length(DeltaTs)),
                 LineType = rep(as.character(Lty), length(DeltaTs)),
                 Labels = rep(as.character(legendT), length(DeltaTs)))
-      # TO DO
 
     for (i in 1:2) {
       p.plot <- ggplot(PhiDeltaTsDF_L[[i]], aes(DeltaTs, Values, color = Labels, linetype = Labels)) +
-        geom_line(lwd = 0.75) +
+        geom_line(lwd = LWD_P) +
         geom_abline(intercept = 0, slope = 0, alpha = .5) +
         scale_linetype_manual(name = " ", values = Lty, labels = legendT) +
         scale_color_manual(name = " ", values = Col, labels = legendT) +
@@ -534,11 +583,12 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
         ggtitle(as.expression(Title_1), subtitle = Title_2_N) +
         theme_classic() +
         theme(plot.title = element_text(margin = margin(t = 20))) +
-        ylim(0,1) + # TO DO dit dan ook! zie hierboven
+        ylim(min_y,max_y) +
         theme(
           legend.key.width = unit(2, "lines"),
           legend.spacing.x = unit(1.5, "lines"),
-          legend.text = element_text(size = 12)
+          #legend.text = element_text(size = 12)
+          legend.text = element_text(size = 10)
         )
 
       PlotName <- paste0("Plot_", i)
@@ -559,11 +609,12 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
     ggtitle(as.expression(Title_1_N2), subtitle = Title_2_N2) +
     theme_classic() +
     theme(plot.title = element_text(margin = margin(t = 20))) +
-    ylim(0,1) + # TO DO
+    ylim(min_y,max_y) +
     theme(
       legend.key.width = unit(2, "lines"),
-      legend.spacing.x = unit(1, "lines"),
-      legend.text = element_text(size = 12)
+      legend.spacing.x = unit(1.5, "lines"),
+      #legend.text = element_text(size = 12)
+      legend.text = element_text(size = 10)
     )
     # Plot_3
 

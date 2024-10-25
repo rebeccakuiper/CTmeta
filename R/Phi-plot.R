@@ -17,7 +17,7 @@
 #' @param Col Optional. Vector with color values (integers) of the lines to be plotted. The length of this vector equals the number of 1s in WhichElements (or equals q*q). By default, Col = NULL, which renders the same color for effects that belong to the same outcome variable (i.e. a row in the Drift matrix). See \url{https://www.statmethods.net/advgraphs/parameters.html} for more information about the values.
 #' @param Lty Optional. Vector with line type values (integers) of the lines to be plotted. The length of this vector equals the number of 1s in WhichElements (or equals q*q). By default, Lty = NULL, which renders solid lines for the autoregressive effects and the same type of dashed line for reciprocal effects (i.e., same type for Phi_ij as for Phi_ji). See \url{https://www.statmethods.net/advgraphs/parameters.html} for more information about the values.
 #' @param Title Optional. A character or a list consisting of maximum 3 character-strings or 'expression' class objects that together represent the title of the Phi-plot. By default, Title = NULL, then the following code will be used for the title: as.list(expression(Phi(Delta[t])~plot), "How do the lagged parameters vary", "as a function of the time interval?").
-#' @param MaxMinPhi Optional. An indicator (TRUE/FALSE) whether vertical lines for the optimum (maximum or minimum) should be added to the plot (TRUE) or not (FALSE). These values are obtained by the function MaxDeltaT(). By default, MaxMinPhi = FALSE; hence, by default, no vertical are added.
+#' @param MaxMinPhi Optional. An indicator (TRUE/FALSE) whether vertical lines for the optimum (maximum or minimum) should be added to the plot (TRUE) or not (FALSE). These values are obtained by the function MaxDeltaT(). By default, MaxMinPhi = FALSE; hence, by default, no vertical lines are added.
 #'
 #' @return This function returns a Phi-plot for a range of time intervals.
 #' @importFrom expm expm
@@ -48,6 +48,9 @@
 #' q <- dim(Phi)[1]
 #' SigmaVAR <- diag(q) # for ease
 #' PhiPlot(DeltaT, Phi, Stand = 1, SigmaVAR = SigmaVAR)
+#' #
+#' # Including minimum or maximum of Phi
+#' PhiPlot(DeltaT, Phi, Stand = 1, SigmaVAR = SigmaVAR, MaxMinPhi = TRUE)
 #'
 #'
 #' ## Example 2: input from fitted object of class "varest" ##
@@ -89,6 +92,7 @@
 PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = NULL, Sigma = NULL, Gamma = NULL, Min = 0, Max = 10, Step = 0.05, WhichElements = NULL, Labels = NULL, Col = NULL, Lty = NULL, Title = NULL, MaxMinPhi = FALSE) {
   #Min = 0; Max = 10; Step = 0.05; WhichElements = NULL; Labels = NULL; Col = NULL; Lty = NULL; Title = NULL; MaxMinPhi = FALSE
   #DeltaT = 1; Drift = NULL; Stand = 0; SigmaVAR = NULL; Sigma = NULL; Gamma = NULL; Min = 0; Max = 10; Step = 0.05; WhichElements = NULL; Labels = NULL; Col = NULL; Lty = NULL; Title = NULL; MaxMinPhi = FALSE
+  #MaxMinPhi = TRUE
 
   #  #######################################################################################################################
   #
@@ -204,7 +208,7 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
       if(!is.null(SigmaVAR)){ # SigmaVAR known, calculate Gamma from Phi & SigmaVAR
 
         # Check on SigmaVAR
-        Check_SigmaVAR(SigmaVAR, q) # TO DO lijkt niet te runnen.... "could not find function "Check_SigmaVAR""
+        Check_SigmaVAR(SigmaVAR, q)
 
         # Calculate Gamma
         if(is.null(Phi)){
@@ -255,12 +259,13 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
     # Check on WhichElements
     Check_WhichElts(WhichElements, q)
     nrLines <- sum(WhichElements)
-    Which <- which(t(WhichElements) == 1)
+    #Which <- which(t(WhichElements) == 1)
   } else{
     WhichElements <- matrix(1, ncol = q, nrow = q)
     nrLines <- q*q #<- sum(WhichElements)
-    Which <- which(t(WhichElements) == 1) # 1 : q*q
+    #Which <- which(t(WhichElements) == 1) # 1 : q*q
   }
+  WhichTF <- matrix(as.logical(WhichElements), q, q)
   #
   if(!is.null(Labels)){
     if(length(Labels) != nrLines){
@@ -310,33 +315,25 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
   #par(def.par)  #- reset to default
 
   if(is.null(Labels)){
+    #subscripts = NULL
+    #for(i in 1:q){
+    #  subscripts = c(subscripts, paste0(i, 1:q, sep=""))
+    #}
     subscripts = NULL
-    for(i in 1:q){
-      subscripts = c(subscripts, paste0(i, 1:q, sep=""))
+    for(j in 1:q){
+      for(i in 1:q){
+        if(WhichElements[j,i] == 1){
+          subscripts = c(subscripts, paste0(j, i, sep=""))
+        }
+      }
     }
     legendT = NULL
-    for(i in 1:(q*q)){
+    for(i in 1:length(subscripts)){
       e <- bquote(expression(Phi(Delta[t])[.(subscripts[i])]))
       legendT <- c(legendT, eval(e))
     }
   } else{
     legendT <- as.vector(Labels)
-  }
-
-  if(is.null(Col)){
-    Col <- matrix(NA, ncol = q, nrow = q)
-    for(i in 1:q){
-      Col[i, 1:q] <- i
-    }
-    Col <- as.vector(t(Col))
-  }
-
-  if(is.null(Lty)){
-    Lty <- matrix(NA, ncol = q, nrow = q)
-    diag(Lty) <- 1
-    Lty[upper.tri(Lty, diag = FALSE)] <- 2:(1+length(Lty[upper.tri(Lty, diag = FALSE)]))
-    Lty[lower.tri(Lty, diag = FALSE)] <- Lty[upper.tri(Lty, diag = FALSE)]
-    Lty <- as.vector(t(Lty))
   }
 
   if(is.null(Title)){
@@ -363,7 +360,31 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
     }
   }
 
+  if(is.null(Col)){
+    Col_mx <- matrix(NA, ncol = q, nrow = q)
+    for(i in 1:q){
+      Col_mx[i, 1:q] <- i
+    }
+    Col <- t(Col_mx)[t(WhichTF)]
+    #Col <- as.vector(t(Col_mx))
+  }
+  #
+  if(is.null(Lty)){
+    Lty_mx <- matrix(NA, ncol = q, nrow = q)
+    diag(Lty_mx) <- 1
+    Lty_mx[upper.tri(Lty_mx, diag = FALSE)] <- 2:(1+length(Lty_mx[upper.tri(Lty_mx, diag = FALSE)]))
+    Lty_mx[lower.tri(Lty_mx, diag = FALSE)] <- Lty_mx[upper.tri(Lty_mx, diag = FALSE)]
+    Lty <- t(Lty_mx)[t(WhichTF)]
+    #Lty <- as.vector(t(Lty_mx))
+  }
+  #
+  LWD_P <- 2.5
+  LWD_0 <- 1.5
+  LWD <- rep(LWD_P, length(Lty))
+
+
   ##########################################################################################
+
 
   if(any(is.complex(eigen(Drift)$val))){
     while (!is.null(dev.list()))  dev.off()  # to reset the graphics pars to defaults
@@ -378,13 +399,13 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
     #
     while (!is.null(dev.list()))  dev.off()  # to reset the graphics pars to defaults
     par(mar=c(par('mar')[1:3], 0)) # optional, removes extraneous right inner margin space
-    plot.new() # TO DO here I create an empty plot such that I can determine the location of the legend (later on I also do this for the case of complex eigenvalues)
-    # look into how to do this in another way?
+    plot.new() # here I create an empty plot such that I can determine the location of the legend (later on I also do this for the case of complex eigenvalues)
+    # TO DO look into how to do this in another way?
     l <- legend(0, 0,
                 legend = legendT, #cex=CEX,
                 bty = "n",
                 lty=Lty, # gives the legend appropriate symbols (lines)
-                lwd=rep(2, q*q),
+                lwd=LWD,
                 col=Col # gives the legend lines the correct color and width
     )
     # calculate right margin width in ndc
@@ -407,17 +428,23 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
     }
   }
 
-  Xlab <- expression(Time~interval (Delta[t]))
+  Xlab <- expression(Time~interval~(Delta[t]))
   Ylab <- expression(Phi(Delta[t])~values)
+  #
+  # Determine YLIM based on what to be plotted (and making sure 0 is in it)
+  #YLIM=c(min(PhiDeltaTs), max(PhiDeltaTs))
+  WhichTF_array <- array(WhichTF, dim = dim(PhiDeltaTs))
+  EltsInPlot <- PhiDeltaTs[WhichTF_array]
+  YLIM=c(min(EltsInPlot, 0), max(EltsInPlot, 0))
   #
   #wd <- getwd()
   #dev.copy(png, filename = paste0(wd, "/www/PhiPlot.png"))
   teller <- 1
-  phi_plot <- plot(y=rep(0, length(DeltaTs)), x=DeltaTs, type="l", ylim=c(min(PhiDeltaTs), max(PhiDeltaTs)),
+  phi_plot <- plot(y=rep(0, length(DeltaTs)), x=DeltaTs, type="l", ylim=YLIM,
        #ylab = expression(Overall~Phi(Delta[t])~values),
        ylab = Ylab,
        xlab = Xlab,
-       col=1000, lwd=2, lty=1,
+       col=1000, lwd=LWD_0, lty=1,
        main = mtext(side=3, line=2, adj=0, as.expression(Title_1)),
        sub = mtext(side=3, line=c(1,0), adj=0, c(as.expression(Title_2), as.expression(Title_3)))
   )
@@ -427,35 +454,49 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
     for(i in 1:q){
       if(WhichElements[j,i] == 1){
         teller <- teller + 1
-        lines(y=PhiDeltaTs[j,i,], x=DeltaTs, col=Col[Which[teller]], lwd=2, lty=Lty[Which[teller]])
+        #lines(y=PhiDeltaTs[j,i,], x=DeltaTs, col=Col[Which[teller]], lwd=LWD_P, lty=Lty[Which[teller]])
+        lines(y=PhiDeltaTs[j,i,], x=DeltaTs, col=Col[teller], lwd=LWD_P, lty=Lty[teller])
       }
     }
   }
 
-  #Add lines for max or min of Phi
+  #Add lines for max or min of Phi (if MaxMinPhi == TRUE)
+  # TO DO evt kijken naar alle oplossingen! Nu alleen eerste.
   if(MaxMinPhi == TRUE){
-    if(is.null(Phi)){
-      Phi <- expm(Drift*DeltaT)
-    }
-    MaxD <- MaxDeltaT(Phi = Phi)
+    #if(is.null(Phi)){
+    #  Phi <- expm(Drift*DeltaT)
+    #}
+    #MaxD <- MaxDeltaT(Phi = Phi)
+    #MaxD <- MaxDeltaT(DeltaT, Phi = Phi)
+    MaxD <- MaxDeltaT(DeltaT, Drift = Drift)
     if(is.null(MaxD$ErrorMessage)){
       Max_DeltaT <- MaxD$DeltaT_MinOrMaxPhi
       Phi_MinMax <- MaxD$MinOrMaxPhi
-    }else{
-      ErrorMessage <- MaxD$ErrorMessage
-      stop(ErrorMessage)
-    }
-    #
-    teller <- 0
-    for(j in 1:q){
-      for(i in 1:q){
-        if(WhichElements[j,i] == 1){
-          teller <- teller + 1
-          #abline(v=Max_DeltaT[j,i], col=Col[teller], lwd=1, lty=Lty[teller])
-          #abline(v=Max_DeltaT[j,i], col="white", lwd=0.5, lty=Lty[teller])
-          segments(x0=Max_DeltaT[j,i], y0=0, x1=Max_DeltaT[j,i], y1=Phi_MinMax[j,i], col=Col[Which[teller]], lwd=0.5, lty=Lty[Which[teller]])
+      #
+      teller <- 0
+      axis_x <- character()
+      axis_y <- character()
+      for(j in 1:q){
+        for(i in 1:q){
+          if(WhichElements[j,i] == 1){
+            teller <- teller + 1
+            maxDT <- Max_DeltaT[j,i]
+            segments(x0=maxDT, y0=0, x1=maxDT, y1=Phi_MinMax[j,i],
+                     col=Col[teller], lwd=LWD_0, lty=Lty[teller])
+            #
+            if(maxDT >= Min & maxDT <= Max){
+              axis_x <- c(axis_x, round(maxDT,2))
+              axis_y <- c(axis_y, round(Phi_MinMax[j,i],2))
+            }
+          }
         }
       }
+      axis(side = 1, axis_x, las = 2, cex.axis = .7, col.axis = "darkgray", col = "darkgray", lwd=0) # 3 = Add axis on top
+      axis(side = 2, axis_y, las = 2, cex.axis = .7, col.axis = "darkgray", col = "darkgray", lwd=0) # 4 = Add axis on right side
+      }else{
+        ErrorMessage <- MaxD$ErrorMessage
+        return(ErrorMessage)
+        # TO DO is dit nu informatief?
     }
   }
 
@@ -468,7 +509,7 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
            legend = legendT, cex=CEX,
            bty = "n",
            lty=Lty, # gives the legend appropriate symbols (lines)
-           lwd=rep(2, q*q),
+           lwd=LWD_P,
            col=Col # gives the legend lines the correct color and width
     )
   }
@@ -513,9 +554,14 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
       }
       #
       #plotName <- paste0("Plot_", N)
-      Plot_1 <- plot(y=rep(0, length(DeltaTs)), x=DeltaTs, type="l", ylim=c(min(PhiDeltaTs_N), max(PhiDeltaTs_N)),
+      # Determine YLIM based on what to be plotted (and making sure 0 is in it)
+      #YLIM_N <- c(min(PhiDeltaTs_N), max(PhiDeltaTs_N))
+      WhichTF_array <- array(WhichTF, dim = dim(PhiDeltaTs_N))
+      EltsInPlot <- PhiDeltaTs_N[WhichTF_array]
+      YLIM_N=c(min(EltsInPlot, 0), max(EltsInPlot, 0))
+      Plot_1 <- plot(y=rep(0, length(DeltaTs)), x=DeltaTs, type="l", ylim=YLIM_N,
            ylab = Ylab, xlab = Xlab,
-           col=1000, lwd=2, lty=1,
+           col=1000, lwd=LWD_0, lty=1,
            main = mtext(side=3, line=2, adj=0, as.expression(Title_1)),
            sub = mtext(side=3, line=c(1,0), adj=0, c(as.expression(Title_2_N), as.expression(Title_3_N)))
       )
@@ -525,7 +571,8 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
         for(i in 1:q){
           if(WhichElements[j,i] == 1){
             teller <- teller + 1
-            lines(y=PhiDeltaTs_N[j,i,], x=DeltaTs, col=Col[Which[teller]], lwd=2, lty=Lty[Which[teller]])
+            #lines(y=PhiDeltaTs_N[j,i,], x=DeltaTs, col=Col[Which[teller]], lwd=LWD_P, lty=Lty[Which[teller]])
+            lines(y=PhiDeltaTs_N[j,i,], x=DeltaTs, col=Col[teller], lwd=LWD_P, lty=Lty[teller])
           }
         }
       }
@@ -555,9 +602,14 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
       }
       #
       #plotName <- paste0("Plot_", N)
-      Plot_2 <- plot(y=rep(0, length(DeltaTs)), x=DeltaTs, type="l", ylim=c(min(PhiDeltaTs_N), max(PhiDeltaTs_N)),
+      # Determine YLIM based on what to be plotted (and making sure 0 is in it)
+      #YLIM_N <- c(min(PhiDeltaTs_N), max(PhiDeltaTs_N))
+      WhichTF_array <- array(WhichTF, dim = dim(PhiDeltaTs_N))
+      EltsInPlot <- PhiDeltaTs_N[WhichTF_array]
+      YLIM_N=c(min(EltsInPlot, 0), max(EltsInPlot, 0))
+      Plot_2 <- plot(y=rep(0, length(DeltaTs)), x=DeltaTs, type="l", ylim=YLIM_N,
                      ylab = Ylab, xlab = Xlab,
-                     col=1000, lwd=2, lty=1,
+                     col=1000, lwd=LWD_0, lty=1,
                      main = mtext(side=3, line=2, adj=0, as.expression(Title_1)),
                      sub = mtext(side=3, line=c(1,0), adj=0, c(as.expression(Title_2_N), as.expression(Title_3_N)))
       )
@@ -567,7 +619,8 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
         for(i in 1:q){
           if(WhichElements[j,i] == 1){
             teller <- teller + 1
-            lines(y=PhiDeltaTs_N[j,i,], x=DeltaTs, col=Col[Which[teller]], lwd=2, lty=Lty[Which[teller]])
+            #lines(y=PhiDeltaTs_N[j,i,], x=DeltaTs, col=Col[Which[teller]], lwd=LWD_P, lty=Lty[Which[teller]])
+            lines(y=PhiDeltaTs_N[j,i,], x=DeltaTs, col=Col[teller], lwd=LWD_P, lty=Lty[teller])
           }
         }
       }
@@ -582,9 +635,14 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
       PhiDeltaTs_N[,,i]<-expm(Drift_N*DeltaTs[i])
     }
     #
-    Plot_3 <- plot(y=rep(0, length(DeltaTs)), x=DeltaTs, type="l", ylim=c(min(PhiDeltaTs_N), max(PhiDeltaTs_N)),
+    # Determine YLIM based on what to be plotted (and making sure 0 is in it)
+    #YLIM_N <- c(min(PhiDeltaTs_N), max(PhiDeltaTs_N))
+    WhichTF_array <- array(WhichTF, dim = dim(PhiDeltaTs_N))
+    EltsInPlot <- PhiDeltaTs_N[WhichTF_array]
+    YLIM_N=c(min(EltsInPlot, 0), max(EltsInPlot, 0))
+    Plot_3 <- plot(y=rep(0, length(DeltaTs)), x=DeltaTs, type="l", ylim=YLIM_N,
          ylab = Ylab, xlab = Xlab,
-         col=1000, lwd=2, lty=1,
+         col=1000, lwd=LWD_0, lty=1,
          main = mtext(side=3, line=2, adj=0, as.expression(Title_1_N2)),
          sub = mtext(side=3, line=c(1,0), adj=0, c(as.expression(Title_2_N2), as.expression(Title_3_N2)))
     )
@@ -594,7 +652,8 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
       for(i in 1:q){
         if(WhichElements[j,i] == 1){
           teller <- teller + 1
-          points(y=PhiDeltaTs_N[j,i,], x=DeltaTs, col=Col[Which[teller]], lwd=2, pch=Lty[Which[teller]])
+          #points(y=PhiDeltaTs_N[j,i,], x=DeltaTs, col=Col[Which[teller]], lwd=LWD_P, pch=Lty[Which[teller]])
+          points(y=PhiDeltaTs_N[j,i,], x=DeltaTs, col=Col[teller], lwd=LWD_P, pch=Lty[teller])
         }
       }
     }
@@ -609,7 +668,7 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
            legend = legendT, cex=CEX,
            bty = "n",
            lty=Lty, # gives the legend appropriate symbols (lines)
-           lwd=rep(2, q*q),
+           lwd=LWD,
            col=Col # gives the legend lines the correct color and width
     )
     plot.new()
@@ -617,7 +676,7 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
            legend = legendT, cex=CEX,
            bty = "n",
            pch=Lty, # gives the legend appropriate symbols (lines)
-           #lwd=rep(2, q*q),
+           #lwd=LWD_P,
            col=Col # gives the legend lines the correct color and width
     )
 
