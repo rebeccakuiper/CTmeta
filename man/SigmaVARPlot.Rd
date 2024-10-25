@@ -91,8 +91,8 @@ Sigma <- diag(q) # for ease. Note that this is not the CT-equivalent of SigmaVAR
 #
 # Make plot of SigmaVAR (3 examples):
 SigmaVARPlot(DeltaT, Phi, SigmaVAR)
-SigmaVARPlot(DeltaT, Phi, SigmaVAR, Min = 0, Max = 10, Step = 0.01)                # Specifying range x-axis and precision
-SigmaVARPlot(DeltaT, Drift = Drift, Sigma = Sigma, Min = 0, Max = 10, Step = 0.01) # Using Drift&Sigma instead of Phi&SigmaVAR
+SigmaVARPlot(DeltaT, Phi, SigmaVAR, Min = 0, Max = 6, Step = 0.01)                # Specifying range x-axis and precision
+SigmaVARPlot(DeltaT, Drift = Drift, Sigma = Sigma, Min = 0, Max = 6, Step = 0.01) # Using Drift&Sigma instead of Phi&SigmaVAR
 
 
 # Example 1.2: standardized Phi&SigmaVAR #

@@ -42,7 +42,7 @@ Note that if Phi and SigmaVAR (or Drift and Sigma) are known, Gamma can be calcu
 \item{AddGamma}{Optional. Indicator (0/1) for including horizontal lines at the values for Gamma in the plot. By default, AddGamma = 1.
 Note that SigmaVAR converges to Gamma, so the time-interval dependent curves of SigmaVAR will converge for large time-intervals to the Gamma-lines.}
 
-\item{Stand}{Optional. Indicator for whether Phi (or Drift) and SigmaVAR (or Sigma) should be standardized (1) or not (0). By default, Stand = 0.}
+\item{Stand}{Optional. Indicator for whether Phi (or Drift) and SigmaVAR (or Sigma) should be standardized (1) or not (0). By default, Stand = 0. Notably, both choices render the same plot, since we inspect correlations here.}
 
 \item{Min}{Optional. Minimum time interval used in the Phi-plot. By default, Min = 0.}
 
@@ -91,12 +91,13 @@ Sigma <- diag(q) # for ease. Note that this is not the CT-equivalent of SigmaVAR
 #
 # Make plot of SigmaVAR (3 examples):
 ResidCorrMxPlot(DeltaT, Phi, SigmaVAR)
-ResidCorrMxPlot(DeltaT, Phi, SigmaVAR, Min = 0, Max = 10, Step = 0.01)                # Specifying range x-axis and precision
-ResidCorrMxPlot(DeltaT, Drift = Drift, Sigma = Sigma, Min = 0, Max = 10, Step = 0.01) # Using Drift&Sigma instead of Phi&SigmaVAR
+ResidCorrMxPlot(DeltaT, Phi, SigmaVAR, Min = 0, Max = 6, Step = 0.01)                # Specifying range x-axis and precision
+ResidCorrMxPlot(DeltaT, Drift = Drift, Sigma = Sigma, Min = 0, Max = 6, Step = 0.01) # Using Drift&Sigma instead of Phi&SigmaVAR
 
 
 # Example 1.2: standardized Phi&SigmaVAR #
 ResidCorrMxPlot(DeltaT, Phi, SigmaVAR, Stand = 1)
+# Which renders the same as above, since we inspect correlations.
 
 
 ## Example 2: input from fitted object of class "varest" ##
@@ -107,34 +108,7 @@ if (!require("vars")) install.packages("vars")
 library(vars)
 out_VAR <- VAR(data, p = 1)
 
-# Example 2.1: unstandardized Phi #
+# (unstandardized) Phi #
 ResidCorrMxPlot(DeltaT, out_VAR)
-
-# Example 2.2: standardized Phi #
-ResidCorrMxPlot(DeltaT, out_VAR, Stand = 1)
-
-
-## Example 3: Change plot options ##
-DeltaT <- 1
-Phi <- myPhi[1:2,1:2]
-q <- dim(Phi)[1]
-SigmaVAR <- diag(q) # for ease
-#
-WhichElements <- matrix(1, ncol = q, nrow = q) # Now, all elements are 1
-diag(WhichElements) <- 0 # Now, the covariances are excluded by setting the diagonals to 0.
-Lab <- c("12", "21")
-LabelsS <- NULL
-LabelsG <- NULL
-for(i in 1:length(Lab)){
- e <- bquote(expression(Sigma[VAR](Delta[t])[.(Lab[i])]))
- LabelsS <- c(LabelsS, eval(e))
- e <- bquote(expression(Gamma[.(Lab[i])]))
- LabelsG <- c(LabelsG, eval(e))
-}
-Labels <- c(LabelsS, LabelsG)
-Col <- c(1,2,1,2)
-Lty <- c(1,2,1,2)
-# Standardized Phi and SigmaVAR
-ResidCorrMxPlot(DeltaT, Phi, SigmaVAR, Stand = 1, Min = 0, Max = 10, Step = 0.05, WhichElements = WhichElements, Labels = Labels, Col = Col, Lty = Lty)
 
 }
