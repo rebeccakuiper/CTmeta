@@ -492,12 +492,14 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
         }
       }
       # If turned text, then: las = 2
-      axis(side = 1, pos = (offset = YLIM[1]), axis_x, cex.axis = .7, col.axis = "darkgray", col = "darkgray", lwd=0) # 3 = Add axis on top
-      axis(side = 2, pos = (offset = YLIM[2]), axis_y, cex.axis = .7, col.axis = "darkgray", col = "darkgray", lwd=0) # 4 = Add axis on right side
-      }else{
-        ErrorMessage <- MaxD$ErrorMessage
-        return(ErrorMessage)
-        # TO DO is dit nu informatief?
+      axis(side = 1, pos = (offset = YLIM[1]+0.02), axis_x, cex.axis = .7, col.axis = "darkgray", col = "darkgray", lwd=0) # 3 = Add axis on top
+      axis(side = 2, pos = (offset = 0.07), las = 2, axis_y, cex.axis = .7, col.axis = "darkgray", col = "darkgray", lwd=0) # 4 = Add axis on right side
+    }else{
+      ErrorMessage <- MaxD$ErrorMessage
+      return(ErrorMessage)
+      # TO DO is dit nu informatief?
+      # TO DO zegt ws iets als
+      # Error in DiagDt$ErrorMessage : $ operator is invalid for atomic vectors
     }
   }
 

@@ -544,8 +544,7 @@ SigmaVARPlot <- function(DeltaT = 1, Phi = NULL, SigmaVAR = NULL, Drift = NULL, 
       return(ErrorMessage)
       # TO DO is dit nu informatief?
       # TO DO zegt nu:
-      #  Error in ResidCorrMxPlot(DeltaT, Phi, SigmaVAR, Diag = TRUE) :
-      #    object 'DiagDt' not found
+      # Error in DiagDt$ErrorMessage : $ operator is invalid for atomic vectors
     }
   }
 

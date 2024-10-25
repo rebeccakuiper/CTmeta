@@ -502,6 +502,8 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
      ErrorMessage <- MaxD$ErrorMessage
      return(ErrorMessage)
      # TO DO is dit nu informatief?
+     # TO DO zegt ws iets als
+     # Error in DiagDt$ErrorMessage : $ operator is invalid for atomic vectors
    }
   }
 
