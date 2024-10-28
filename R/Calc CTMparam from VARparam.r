@@ -178,11 +178,12 @@ if(is.null(B)){
 #if(all(abs(Im(B)) < 0.0001) == TRUE){B <- Re(B)}
 
 if(is.null(SigmaVAR) & is.null(Gamma)){
-  Sigma <- "Input for SigmaVAR(DeltaT) or Gamma is required to calculate the corresponding Sigma."
-  Gamma <- "Input for SigmaVAR(DeltaT) or Gamma is required to calculate the corresponding Gamma."
-  Gamma_s <- "Input for SigmaVAR(DeltaT) or Gamma is required to calculate the corresponding standGamma."
-  Drift_s <- "Input for SigmaVAR(DeltaT) or Gamma is required to calculate the corresponding standDrift."
-  Sigma_s <- "Input for SigmaVAR(DeltaT) or Gamma is required to calculate the corresponding standSigma."
+  Sigma <- "Input for SigmaVAR(DeltaT) or Gamma is required to calculate the corresponding CT residual covariance matrix 'Sigma'."
+  ResidCorrMx <- "Input for SigmaVAR(DeltaT) or Gamma is required to calculate the corresponding CT residual correlation matrix 'ResidCorrMx'."
+  Gamma <- "Input for SigmaVAR(DeltaT) or Gamma is required to calculate the corresponding stationary covariance matrix 'Gamma'."
+  Gamma_s <- "Input for SigmaVAR(DeltaT) or Gamma is required to calculate the corresponding stationary correlation matrix 'standGamma'."
+  Drift_s <- "Input for SigmaVAR(DeltaT) or Gamma is required to calculate the corresponding standardized CT lagged relationships matrix 'standDrift'."
+  Sigma_s <- "Input for SigmaVAR(DeltaT) or Gamma is required to calculate the corresponding standardized CT residual covariance matrix 'standSigma'."
 }else{
   if(is.null(Sigma)){
     kronprod <- kronecker(Phi,Phi)
