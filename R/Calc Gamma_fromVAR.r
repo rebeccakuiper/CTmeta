@@ -76,7 +76,20 @@ Gamma.fromVAR <- function(Phi, SigmaVAR) {
 if(q > 1){
   vecS <- as.vector(SigmaVAR)
   PhiKronPhi <- kronecker(Phi, Phi)
-  vecGamma <- solve(diag(q*q) - PhiKronPhi) %*% vecS
+  #
+  IdmxMinPhiKronPhi <- diag(q*q) - PhiKronPhi
+  Decomp <- eigen(IdmxMinPhiKronPhi, symmetric=F)
+  Eigen <- Decomp$val
+  #
+  #if (any(is.na(logm(Phi)) == TRUE)){ # In that case, there does not exist a solution
+  if (any(is.na(log(Eigen)))){ # In that case, there does not exist a solution
+    ErrorMessage <- "The stationar covariance matrix 'Gamma' cannot be calculated. You may want to check whether Phi and SigmaVAR are specified correctly."
+    final <- list(ErrorMessage = ErrorMessage)
+    return(final)
+    stop(ErrorMessage)
+  }
+  #
+  vecGamma <- solve(IdmxMinPhiKronPhi) %*% vecS
 
   Gamma_fromVAR <- matrix(vecGamma, nrow=q)
 } else{

@@ -83,6 +83,7 @@
 
 
 DiagDeltaT <- function(Phi = NULL, SigmaVAR = NULL, Drift = NULL, Sigma = NULL, Gamma = NULL, xstart_DeltaT = 1) {
+  #Phi = NULL; SigmaVAR = NULL; Drift = NULL; Sigma = NULL; Gamma = NULL; xstart_DeltaT = 1
   #xstart_DeltaT <- 1
 
   DeltaT <- 1 # Needed for determining B/Drift.
@@ -195,6 +196,11 @@ DiagDeltaT <- function(Phi = NULL, SigmaVAR = NULL, Drift = NULL, Sigma = NULL, 
 
         # Calculate Gamma
         Gamma <- Gamma.fromVAR(Phi, SigmaVAR)
+        if (!is.null(Gamma$ErrorMessage)){ # In that case, there does not exist a solution
+          final <- list(ErrorMessage = Gamma$ErrorMessage)
+          return(final)
+          stop(Gamma$ErrorMessage)
+        }
 
       }else if(!is.null(Sigma)){ # Sigma known
 
@@ -203,6 +209,12 @@ DiagDeltaT <- function(Phi = NULL, SigmaVAR = NULL, Drift = NULL, Sigma = NULL, 
 
         # Calculate Gamma
         Gamma <- Gamma.fromCTM(Drift, Sigma)
+        # TO DO
+        #if (!is.null(Gamma$ErrorMessage)){ # In that case, there does not exist a solution
+        #  final <- list(ErrorMessage = Gamma$ErrorMessage)
+        #  return(final)
+        #  stop(Gamma$ErrorMessage)
+        #}
 
       }
 

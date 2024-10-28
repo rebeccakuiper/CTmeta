@@ -180,7 +180,9 @@ Sxy <- sqrt(diag(diag(Gamma)))
 Gamma_s <- solve(Sxy) %*% Gamma %*% solve(Sxy)
 ParamVAR_s <- solve(Sxy) %*% ParamVAR %*% Sxy
 Sigma_VAR_s <- solve(Sxy) %*% Sigma_VAR %*% solve(Sxy)
-
+#
+S <- sqrt(diag(diag(SigmaVAR)))
+ResidCorrMx <- solve(S) %*% SigmaVAR %*% solve(S)
 
 
 ############################################################################################################
@@ -191,6 +193,7 @@ final <- list(eigenvalueDrift = -Eigen_ParamCTM,
               StableProcess = StableProcess,
               Phi = ParamVAR,
               SigmaVAR = Sigma_VAR,
+              ResidCorrMx = ResidCorrMx,
               Gamma = Gamma,
               standPhi = ParamVAR_s,
               standSigmaVAR = Sigma_VAR_s,

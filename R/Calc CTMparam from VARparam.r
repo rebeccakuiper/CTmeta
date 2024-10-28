@@ -198,6 +198,9 @@ if(is.null(SigmaVAR) & is.null(Gamma)){
   Gamma_s <- solve(Sxy) %*% Gamma %*% solve(Sxy)
   Drift_s <- solve(Sxy) %*% (-B) %*% Sxy
   Sigma_s <- solve(Sxy) %*% Sigma %*% solve(Sxy)
+  #
+  S <- sqrt(diag(diag(Sigma)))
+  ResidCorrMx <- solve(S) %*% Sigma %*% solve(S)
 
 } # end 'else' belonging to Svar not NULL
 
@@ -244,6 +247,7 @@ if(all(Im(Eigen_ParamCTM) == 0)){
 
 final <- list(Drift = -B,
               Sigma = Sigma,
+              ResidCorrMx = ResidCorrMx,
               Gamma = Gamma,
               standDrift = Drift_s,
               standSigma = Sigma_s,
