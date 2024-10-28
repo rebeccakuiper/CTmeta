@@ -457,7 +457,7 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
     MaxD <- MaxDeltaT(Phi = Phi)
     #MaxD <- MaxDeltaT(DeltaT, Phi = Phi)
     #MaxD <- MaxDeltaT(DeltaT, Drift = Drift)
-   if(is.null(MaxD$ErrorMessage)){
+   if(is.null(MaxD$ErrorMessage)){ # TO DO werkt dit?
      Max_DeltaT <- t(MaxD$DeltaT_MinOrMaxPhi)[t(WhichTF)]
      Phi_MinMax <- t(MaxD$MinOrMaxPhi)[t(WhichTF)]
      # Select the one in plot range

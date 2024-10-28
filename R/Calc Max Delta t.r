@@ -69,6 +69,8 @@ MaxDeltaT <- function(DeltaT = 1, Phi = NULL, Drift = NULL) {
   #                   -11.68, 9.44,-6.64), 3,3, byrow=TRUE)
 
   # Checks:
+  ErrorMessage <- NULL
+  #
   if(length(DeltaT) != 1){
     ErrorMessage <- (paste0("The argument DeltaT should be a scalar, that is, one number, that is, a vector with one element. Currently, DeltaT = ", DeltaT))
     return(ErrorMessage)
@@ -331,17 +333,25 @@ MaxDeltaT <- function(DeltaT = 1, Phi = NULL, Drift = NULL) {
 
   ############################################################################################################
 
-  final <- list(DeltaT_MinOrMaxPhi = MaxDeltaT_mx,
-                MinOrMaxPhi = Phi_MaxDeltaT_mx,
-                DeltaT_MinOrMaxPhi_2 = MaxDeltaT_mx_2,
-                MinOrMaxPhi_2 = Phi_MaxDeltaT_mx_2,
-                DeltaT_MinOrMaxPhi_3 = MaxDeltaT_mx_3,
-                MinOrMaxPhi_3 = Phi_MaxDeltaT_mx_3
-                )
+  if (is.null(ErrorMessage)){
 
-  return(final)
+    invisible(ErrorMessage)
 
-  # Now, only returm ErrorMessage if error,
+    final <- list(DeltaT_MinOrMaxPhi = MaxDeltaT_mx,
+                  MinOrMaxPhi = Phi_MaxDeltaT_mx,
+                  DeltaT_MinOrMaxPhi_2 = MaxDeltaT_mx_2,
+                  MinOrMaxPhi_2 = Phi_MaxDeltaT_mx_2,
+                  DeltaT_MinOrMaxPhi_3 = MaxDeltaT_mx_3,
+                  MinOrMaxPhi_3 = Phi_MaxDeltaT_mx_3
+    )
+    return(final)
+
+  }else{
+    return(ErrorMessage)
+  }
+
+
+  # Now, only return ErrorMessage if error,
   # then if no error, then hopefully object$ErrorMessage = NULL.
   # If not, then look into:
   # if (is.null(ErrorMessage)) invisible(ErrorMessage) else ErrorMessage

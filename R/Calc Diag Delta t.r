@@ -91,6 +91,8 @@ DiagDeltaT <- function(Phi = NULL, SigmaVAR = NULL, Drift = NULL, Sigma = NULL, 
 
   # Needed: check on CTM param, Phi, and Gamma
 
+  ErrorMessage <- NULL
+  #
   # Check on Phi
   if(any(class(Phi) == "varest")){
     SigmaVAR <- cov(resid(Phi))
@@ -196,11 +198,12 @@ DiagDeltaT <- function(Phi = NULL, SigmaVAR = NULL, Drift = NULL, Sigma = NULL, 
 
         # Calculate Gamma
         Gamma <- Gamma.fromVAR(Phi, SigmaVAR)
-        if (!is.null(Gamma$ErrorMessage)){ # In that case, there does not exist a solution
-          final <- list(ErrorMessage = Gamma$ErrorMessage)
-          return(final)
-          stop(Gamma$ErrorMessage)
-        }
+        # TO DO
+        #if (!is.null(Gamma$ErrorMessage)){ # In that case, there does not exist a solution
+        #  final <- list(ErrorMessage = Gamma$ErrorMessage)
+        #  return(final)
+        #  stop(Gamma$ErrorMessage)
+        #}
 
       }else if(!is.null(Sigma)){ # Sigma known
 
@@ -238,7 +241,6 @@ DiagDeltaT <- function(Phi = NULL, SigmaVAR = NULL, Drift = NULL, Sigma = NULL, 
   #Gamma <- outcome.GammaAndChecks$Gamma
   ChecksAreFine <- outcome.GammaAndChecks$ChecksAreFine
   errorMatrices <- outcome.GammaAndChecks$error
-
 
   message_start <- "No message / warning / error. Hence, there is positive DeltaT for which the diagonals/variances in SigmaVAR are positive (and off-diagonals 0)."
   message <- message_start
@@ -472,9 +474,15 @@ DiagDeltaT <- function(Phi = NULL, SigmaVAR = NULL, Drift = NULL, Sigma = NULL, 
       # Notably, using other subsets or other starting values can help as well.
     }
 
-  }else{
 
-    #Only one of them has a solultion, obtain that one:
+  }else if(sol_All_first == 0 & sol_All_last == 0){ # Then, both have no solution
+
+    message_DiagAndDelta <- "There are no solutions (in agreement with all the equations)."
+    message <- "There is no non-negative DeltaT such that SigmaVAR is a 'positive diagonal' matrix. \n Only for DeltaT approximately 0, it is (approximately) a 0-matrix."
+
+  }else{ #Only one of them has a solution
+
+    #Only one of them has a solution, obtain that one:
     if(sol_All_first == 1){DiagAndDelta <- DiagAndDelta_first}
     if(sol_All_last == 1){DiagAndDelta <- DiagAndDelta_last}
 
@@ -549,4 +557,12 @@ DiagDeltaT <- function(Phi = NULL, SigmaVAR = NULL, Drift = NULL, Sigma = NULL, 
   }
 
   return(final)
+
+  # if (is.null(ErrorMessage)){
+  #   invisible(ErrorMessage)
+  #   return(final)
+  # }else{
+  #   return(ErrorMessage)
+  # }
+
 }

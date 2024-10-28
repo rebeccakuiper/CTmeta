@@ -81,20 +81,35 @@ if(q > 1){
   Decomp <- eigen(IdmxMinPhiKronPhi, symmetric=F)
   Eigen <- Decomp$val
   #
-  #if (any(is.na(logm(Phi)) == TRUE)){ # In that case, there does not exist a solution
+  ErrorMessage <- NULL
   if (any(is.na(log(Eigen)))){ # In that case, there does not exist a solution
     ErrorMessage <- "The stationar covariance matrix 'Gamma' cannot be calculated. You may want to check whether Phi and SigmaVAR are specified correctly."
-    final <- list(ErrorMessage = ErrorMessage)
-    return(final)
-    stop(ErrorMessage)
+    ##final <- list(ErrorMessage = ErrorMessage)
+    ##return(final)
+    #return(ErrorMessage)
+    #stop(ErrorMessage)
   }
   #
   vecGamma <- solve(IdmxMinPhiKronPhi) %*% vecS
 
   Gamma_fromVAR <- matrix(vecGamma, nrow=q)
 } else{
-  Gamma_fromVAR <- SigmaVAR / (1 - Phi^2)
+  ErrorMessage <- NULL
+  if(Phi^2 == 1){
+    ErrorMessage <- "The stationar variance 'Gamma' cannot be calculated because Phi = 1."
+  }else{
+    Gamma_fromVAR <- SigmaVAR / (1 - Phi^2)
+  }
 }
 
-return(Gamma_fromVAR)
+
+  ############################################################################################################
+
+  if (is.null(ErrorMessage)){
+    invisible(ErrorMessage)
+    return(Gamma_fromVAR)
+  }else{
+    return(ErrorMessage)
+  }
+
 }

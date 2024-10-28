@@ -538,13 +538,15 @@ ResidCorrMxPlot <- function(DeltaT = 1, Phi = NULL, SigmaVAR = NULL, Drift = NUL
     }
     DiagDt <- DiagDeltaT(Phi = Phi, SigmaVAR = SigmaVAR)
     #DiagDt <- DiagDeltaT(Drift = Drift, Sigma = Sigma)
-    if(is.null(DiagDt$ErrorMessage)){
-      DeltaT_DiagDt <- round(DiagDt$DeltaT_diag, 2)
-      if(DeltaT_DiagDt >= Min & DeltaT_DiagDt <= Max){
-        abline(v=DeltaT_DiagDt,
-               col="gray", lwd=LWD_0)
-        axis(side = 1, pos = (offset = YLIM[1]), DeltaT_DiagDt, cex.axis = .7, col.axis = "darkgray", col = "darkgray", lwd=LWD_0) # 3 = Add axis on top
-      }
+    if(is.null(DiagDt$ErrorMessage)){ # TO DO werkt dit?
+      #if(is.null(DiagDt$DeltaT_diag != 0)){ # Do not use if 0, that means that there is no solution
+        DeltaT_DiagDt <- round(DiagDt$DeltaT_diag, 2)
+        if(DeltaT_DiagDt >= Min & DeltaT_DiagDt <= Max){
+          abline(v=DeltaT_DiagDt,
+                 col="gray", lwd=LWD_0)
+          axis(side = 1, pos = (offset = YLIM[1]), DeltaT_DiagDt, cex.axis = .7, col.axis = "darkgray", col = "darkgray", lwd=LWD_0) # 3 = Add axis on top
+        }
+      #}
     }else{
       ErrorMessage <- DiagDt$ErrorMessage
       return(ErrorMessage)

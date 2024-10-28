@@ -470,7 +470,7 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
     MaxD <- MaxDeltaT(Phi = Phi)
     #MaxD <- MaxDeltaT(DeltaT, Phi = Phi)
     #MaxD <- MaxDeltaT(DeltaT, Drift = Drift)
-    if(is.null(MaxD$ErrorMessage)){
+    if(is.null(MaxD$ErrorMessage)){ # TO DO werkt dit?
       Max_DeltaT <- MaxD$DeltaT_MinOrMaxPhi
       Phi_MinMax <- MaxD$MinOrMaxPhi
       #

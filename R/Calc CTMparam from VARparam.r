@@ -178,7 +178,7 @@ if(is.null(B)){
 #if(all(abs(Im(B)) < 0.0001) == TRUE){B <- Re(B)}
 
 if(is.null(SigmaVAR) & is.null(Gamma)){
-  Sigma = "Input for SigmaVAR(DeltaT) or Gamma is required to calculate the corresponding Sigma."
+  Sigma <- "Input for SigmaVAR(DeltaT) or Gamma is required to calculate the corresponding Sigma."
   Gamma <- "Input for SigmaVAR(DeltaT) or Gamma is required to calculate the corresponding Gamma."
   Gamma_s <- "Input for SigmaVAR(DeltaT) or Gamma is required to calculate the corresponding standGamma."
   Drift_s <- "Input for SigmaVAR(DeltaT) or Gamma is required to calculate the corresponding standDrift."
