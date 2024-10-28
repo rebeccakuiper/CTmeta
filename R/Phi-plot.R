@@ -92,6 +92,7 @@
 PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = NULL, Sigma = NULL, Gamma = NULL, Min = 0, Max = 10, Step = 0.05, WhichElements = NULL, Labels = NULL, Col = NULL, Lty = NULL, Title = NULL, MaxMinPhi = FALSE) {
   #Min = 0; Max = 10; Step = 0.05; WhichElements = NULL; Labels = NULL; Col = NULL; Lty = NULL; Title = NULL; MaxMinPhi = FALSE
   #DeltaT = 1; Drift = NULL; Stand = 0; SigmaVAR = NULL; Sigma = NULL; Gamma = NULL; Min = 0; Max = 10; Step = 0.05; WhichElements = NULL; Labels = NULL; Col = NULL; Lty = NULL; Title = NULL; MaxMinPhi = FALSE
+  #DeltaT = 1; Drift = NULL; Stand = 0; SigmaVAR = NULL; Sigma = NULL; Gamma = NULL; Min = 0; Max = 10; Step = 0.05; Labels = NULL; Col = NULL; Lty = NULL; Title = NULL; MaxMinPhi = FALSE
   #MaxMinPhi = TRUE
 
   #  #######################################################################################################################
@@ -416,7 +417,7 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
 
 
   DeltaTs<-seq(Min,Max,by=Step)
-
+  #
   PhiDeltaTs<-array(data=NA,dim=c(q,q,length(DeltaTs)))
   if(length(Drift) == 1){
     for(i in 1:length(DeltaTs)){
@@ -434,7 +435,7 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
   # Determine YLIM based on what to be plotted (and making sure 0 is in it)
   #YLIM=c(min(PhiDeltaTs), max(PhiDeltaTs))
   WhichTF_array <- array(WhichTF, dim = dim(PhiDeltaTs))
-  EltsInPlot <- PhiDeltaTs[WhichTF_array]
+  EltsInPlot <- PhiDeltaTs[WhichTF_array] # Note: this goes by column, not row; but does not matter for determining min and max.
   YLIM=c(min(EltsInPlot, 0), max(EltsInPlot, 0))
   #
   #wd <- getwd()
@@ -492,8 +493,14 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
         }
       }
       # If turned text, then: las = 2
-      axis(side = 1, pos = (offset = YLIM[1]+0.02), axis_x, cex.axis = .7, col.axis = "darkgray", col = "darkgray", lwd=0) # 3 = Add axis on top
-      axis(side = 2, pos = (offset = 0.07), las = 2, axis_y, cex.axis = .7, col.axis = "darkgray", col = "darkgray", lwd=0) # 4 = Add axis on right side
+      # TO DO make placing of extra values better, always outside of box also
+      #axis(side = 1, pos = (offset = YLIM[1]+0.02), axis_x, cex.axis = .7, col.axis = "darkgray", col = "darkgray", lwd=0) # 3 = Add axis on top
+      #axis(side = 2, pos = (offset = Min+0.07), las = 2, axis_y, cex.axis = .7, col.axis = "darkgray", col = "darkgray", lwd=0) # 4 = Add axis on right side
+      # outer = TRUE
+      # pos = Min*1.1; pos = Min+0.07
+      axis(side = 1, pos = YLIM[1]+0.02, outer = TRUE, axis_x, cex.axis = .7, col.axis = "darkgray", col = "darkgray", lwd=0) # 3 = Add axis on top
+      axis(side = 2, pos = Min+0.07, las = 2, axis_y, cex.axis = .7, col.axis = "darkgray", col = "darkgray", lwd=0) # 4 = Add axis on right side
+      #axis(side = 2, las = 2, axis_y, cex.axis = .7, col.axis = "darkgray", col = "darkgray", lwd=0) # 4 = Add axis on right side
     }else{
       ErrorMessage <- MaxD$ErrorMessage
       return(ErrorMessage)

@@ -98,6 +98,8 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
 # DeltaT = 1; Drift = NULL; Stand = 0; SigmaVAR = NULL; Sigma = NULL; Gamma = NULL; Min = 0; Max = 10; Step = 0.05; WhichElements = NULL; Labels = NULL; Col = NULL; Lty = NULL; Title = NULL; MaxMinPhi = FALSE
 # library(expm); library(purrr); library(ggplot2); library(dplyr); library(ggpubr) # library(tidyverse)
 # library(CTmeta); Phi <- myPhi[1:2,1:2]
+#DeltaT = 1; Drift = NULL; Stand = 0; Sigma = NULL; Gamma = NULL; Min = 0; Max = 10; Step = 0.05; WhichElements = NULL; Labels = NULL; Col = NULL; Lty = NULL; Title = NULL; MaxMinPhi = FALSE
+#DeltaT = 1; Drift = NULL; Stand = 0; Sigma = NULL; Gamma = NULL; Min = 0; Max = 10; Step = 0.05; Labels = NULL; Col = NULL; Lty = NULL; Title = NULL; MaxMinPhi = FALSE
 #MaxMinPhi = TRUE
 
   # Note needed:
@@ -456,8 +458,8 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
     #MaxD <- MaxDeltaT(DeltaT, Phi = Phi)
     #MaxD <- MaxDeltaT(DeltaT, Drift = Drift)
    if(is.null(MaxD$ErrorMessage)){
-     Max_DeltaT <- as.vector(MaxD$DeltaT_MinOrMaxPhi[WhichTF])
-     Phi_MinMax <- as.vector(MaxD$MinOrMaxPhi[WhichTF])
+     Max_DeltaT <- t(MaxD$DeltaT_MinOrMaxPhi)[t(WhichTF)]
+     Phi_MinMax <- t(MaxD$MinOrMaxPhi)[t(WhichTF)]
      # Select the one in plot range
      Max_DeltaT_range <- Max_DeltaT[Max_DeltaT > Min & Max_DeltaT <= Max]
      Phi_MinMax_range <- Phi_MinMax[Max_DeltaT > Min & Max_DeltaT <= Max]
@@ -473,7 +475,6 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
      WhichNonZero <- (segment_data$yend-segment_data$y != 0)
      segment_data_NonZero <- segment_data[segment_data$yend-segment_data$y != 0,]
      segment_data_NonZero$yend[(segment_data_NonZero$yend > max_y)] <- max_y
-     # TO DO voeg die data combi aan plot data toe (hiervoor dus al), dan geen probleem hier!
      Lty_segment <- Lty_range[WhichNonZero]
      Col_segment <- Col_range[WhichNonZero]
      #
@@ -483,21 +484,26 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
      #
      extra_x <- round(segment_data_NonZero$x, 2)
      extra_y <- round(segment_data_NonZero$yend, 2)
-     phi_plot <- phi_plot +
-       scale_y_continuous(sec.axis = sec_axis(~., breaks = extra_y)) +
-       scale_x_continuous(sec.axis = sec_axis(~., breaks = extra_x)) +
-       theme(axis.text.y.right = element_text(face = 1, color = "darkgray", size = 7),
-             axis.text.x.top = element_text(angle = 90, color = "darkgray", size = 7))
-
-     #
-     #xbreaks <- ggplot_build(phi_plot)$layout$panel_params[[1]]$x$breaks
-     #ybreaks <- ggplot_build(phi_plot)$layout$panel_params[[1]]$y$breaks
-     #breaks_x = c(xbreaks, extra_x)
-     #breaks_y = c(ybreaks, extra_y)
      #phi_plot <- phi_plot +
-     # scale_x_continuous(breaks = breaks_x) +
-     # scale_y_continuous(breaks = breaks_y) +
-     # theme(axis.text.x = element_text(angle = 90))
+    #   scale_y_continuous(sec.axis = sec_axis(~., breaks = extra_y)) +
+    #   scale_x_continuous(sec.axis = sec_axis(~., breaks = extra_x)) +
+    #   theme(axis.text.y.right = element_text(face = 1, color = "darkgray", size = 7),
+    #         axis.text.x.top = element_text(color = "darkgray", size = 7)) # angle = 90
+     #
+     xbreaks <- ggplot_build(phi_plot)$layout$panel_params[[1]]$x$breaks
+     ybreaks <- ggplot_build(phi_plot)$layout$panel_params[[1]]$y$breaks
+     breaks_x = c(xbreaks, extra_x)
+     breaks_y = c(ybreaks, extra_y)
+     col_extra_x <- c(rep("black", length(xbreaks)), rep("darkgray", length(extra_x)))
+     size_extra_x <- c(rep(10, length(xbreaks)), rep(7, length(extra_x)))
+     col_extra_y <- c(rep("black", length(ybreaks)), rep("darkgray", length(extra_y)))
+     size_extra_y <- c(rep(10, length(ybreaks)), rep(7, length(extra_y)))
+     phi_plot <- phi_plot +
+      scale_x_continuous(breaks = breaks_x) +
+      scale_y_continuous(breaks = breaks_y) +
+      #theme(axis.text.x = element_text(angle = 90))
+      theme(axis.text.x = element_text(angle = 90, colour = col_extra_x, size = size_extra_x),
+            axis.text.y = element_text(angle = 0, colour = col_extra_y, size = size_extra_y))
    }else{
      ErrorMessage <- MaxD$ErrorMessage
      return(ErrorMessage)

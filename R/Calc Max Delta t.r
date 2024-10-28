@@ -341,4 +341,12 @@ MaxDeltaT <- function(DeltaT = 1, Phi = NULL, Drift = NULL) {
 
   return(final)
 
+  # Now, only returm ErrorMessage if error,
+  # then if no error, then hopefully object$ErrorMessage = NULL.
+  # If not, then look into:
+  # if (is.null(ErrorMessage)) invisible(ErrorMessage) else ErrorMessage
+  # of:
+  # Use get("z", inherits = FALSE) to look for z only in the current environment or check whether it exists exists("z", inherits = FALSE) in the current environment only.
+  # Another possibility is to always give z a value:
+
 }
