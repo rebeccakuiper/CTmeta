@@ -168,10 +168,10 @@ if(q == 1){
 Decomp_ParamVAR <- eigen(Phi, symmetric=F)
 Eigen_ParamVAR <- Decomp_ParamVAR$val
 Eigen_ParamCTM <- diag(eigen(B)$val) # = -log(Eigen_ParamVAR) / DeltaT
-StableProcess = FALSE
+StableProcess <- FALSE
 if(all(Re(Eigen_ParamCTM) > 0)){
   if(all(abs(Eigen_ParamVAR) < 1)){
-    StableProcess = TRUE
+    StableProcess <- TRUE
   }
 }
 
@@ -181,8 +181,13 @@ Gamma_s <- solve(Sxy) %*% Gamma %*% solve(Sxy)
 ParamVAR_s <- solve(Sxy) %*% ParamVAR %*% Sxy
 Sigma_VAR_s <- solve(Sxy) %*% Sigma_VAR %*% solve(Sxy)
 #
-S <- sqrt(diag(diag(SigmaVAR)))
-ResidCorrMx <- solve(S) %*% SigmaVAR %*% solve(S)
+diagS <- diag(Sigma_VAR)
+if(any(diagS < 0)){
+  ResidCorrMx <- "Since the DT residual covariance matrix SigmaVAR(DeltaT) has at least one negative diagonal element (i.e., negative residual variance), the corresponding DT residual correlation matrix 'ResidCorrMx' cannot be calculated."
+}else{
+  S <- sqrt(diag(diagS))
+  ResidCorrMx <- solve(S) %*% Sigma_VAR %*% solve(S)
+}
 
 
 ############################################################################################################

@@ -299,19 +299,19 @@ SigmaVARPlot <- function(DeltaT = 1, Phi = NULL, SigmaVAR = NULL, Drift = NULL, 
     #}
   }
   if(!is.null(Col)){
-    if(AddGamma == 1){
-      if(length(Col) != 2*nrLines){
-        ErrorMessage <- (paste0("The argument Col should contain ", 2*nrLines, " elements, that is, q*(q+1) or twice the number of 1s in WhichElements (or WhichElements is incorrectly specified); not ", length(Col), ". Note that values (integers) are needed for both SigmaVAR and Gamma."))
-        return(ErrorMessage)
-        stop(ErrorMessage)
-      }
-    }else{
+    #if(AddGamma == 1){
+    #  if(length(Col) != 2*nrLines){
+    #    ErrorMessage <- (paste0("The argument Col should contain ", 2*nrLines, " elements, that is, q*(q+1) or twice the number of 1s in WhichElements (or WhichElements is incorrectly specified); not ", length(Col), ". Note that values (integers) are needed for both SigmaVAR and Gamma."))
+    #    return(ErrorMessage)
+    #    stop(ErrorMessage)
+    #  }
+    #}else{
       if(length(Col) != nrLines){
         ErrorMessage <- (paste0("The argument Col should contain ", nrLines, " elements, that is, q*(q+1)/2 or the number of 1s in WhichElements (or WhichElements is incorrectly specified); not ", length(Col)))
         return(ErrorMessage)
         stop(ErrorMessage)
       }
-    }
+    #}
     if(any(Col %% 1 != 0)){
       ErrorMessage <- (paste0("The argument Col should consist of solely integers."))
       return(ErrorMessage)
@@ -319,19 +319,19 @@ SigmaVARPlot <- function(DeltaT = 1, Phi = NULL, SigmaVAR = NULL, Drift = NULL, 
     }
   }
   if(!is.null(Lty)){
-    if(AddGamma == 1){
-      if(length(Lty) != 2*nrLines){
-        ErrorMessage <- (paste0("The argument Lty should contain ", 2*nrLines, " elements, that is, q*(q+1) or twice the number of 1s in WhichElements (or WhichElements is incorrectly specified); not ", length(Lty), ". Note that values (integers) are needed for both SigmaVAR and Gamma."))
-        return(ErrorMessage)
-        stop(ErrorMessage)
-      }
-    }else{
+    #if(AddGamma == 1){
+    #  if(length(Lty) != 2*nrLines){
+    #    ErrorMessage <- (paste0("The argument Lty should contain ", 2*nrLines, " elements, that is, q*(q+1) or twice the number of 1s in WhichElements (or WhichElements is incorrectly specified); not ", length(Lty), ". Note that values (integers) are needed for both SigmaVAR and Gamma."))
+    #    return(ErrorMessage)
+    #    stop(ErrorMessage)
+    #  }
+    #}else{
       if(length(Lty) != nrLines){
         ErrorMessage <- (paste0("The argument Lty should contain ", nrLines, " elements, that is, q*(q+1)/2 or the number of 1s in WhichElements (or WhichElements is incorrectly specified); not ", length(Lty)))
         return(ErrorMessage)
         stop(ErrorMessage)
       }
-    }
+    #}
     if(any(Lty %% 1 != 0)){
       ErrorMessage <- (paste0("The argument Lty should consist of solely integers."))
       return(ErrorMessage)
@@ -413,15 +413,35 @@ SigmaVARPlot <- function(DeltaT = 1, Phi = NULL, SigmaVAR = NULL, Drift = NULL, 
     }
     Col <- t(Col_mx)[t(WhichTF)]
     #Col <- as.vector(t(Col_mx))
+    #
+    #if(AddGamma == 1){
+    #  Col <- c(Col, Col)
+    #}
   }
   #
   if(is.null(Lty)){
+    #There exist 5 'integer valued' line styles  besides the "solid" one.
+    #Hence, if there are more than 5 off-diagonals (i.e., q > 3), then use other way of specifying line styles.
     Lty_mx <- matrix(NA, ncol = q, nrow = q)
-    diag(Lty_mx) <- 1
-    Lty_mx[upper.tri(Lty_mx, diag = FALSE)] <- 2:(1+length(Lty_mx[upper.tri(Lty_mx, diag = FALSE)]))
-    Lty_mx[lower.tri(Lty_mx, diag = FALSE)] <- Lty_mx[upper.tri(Lty_mx, diag = FALSE)]
+    if(q <= 3){
+      diag(Lty_mx) <- 1
+      Lty_mx[upper.tri(Lty_mx, diag = FALSE)] <- 2:(1+length(Lty_mx[upper.tri(Lty_mx, diag = FALSE)]))
+      Lty_mx[lower.tri(Lty_mx, diag = FALSE)] <- Lty_mx[upper.tri(Lty_mx, diag = FALSE)]
+    }else{
+      diag(Lty_mx) <- "solid"
+      for(i in 1:(q-1)){
+        for(j in (i+1):q){
+          Lty_mx[i,j] <- paste0(i,j)
+        }
+      }
+      Lty_mx[lower.tri(Lty_mx, diag = FALSE)] <- Lty_mx[upper.tri(Lty_mx, diag = FALSE)]
+    }
     Lty <- t(Lty_mx)[t(WhichTF)]
     #Lty <- as.vector(t(Lty_mx))
+    #
+    #if(AddGamma == 1){
+    #  Lty <- c(Lty, Lty)
+    #}
   }
   #
   LWD_S <- 2.5
@@ -516,7 +536,7 @@ SigmaVARPlot <- function(DeltaT = 1, Phi = NULL, SigmaVAR = NULL, Drift = NULL, 
         teller <- teller + 1
         lines(y=SigmaVARDeltaTs[j,i,], x=DeltaTs, col=Col[teller], lwd=LWD_S, lty=Lty[teller])
         if(AddGamma == 1){
-          lines(y=rep(Gamma[j,i], length(DeltaTs)), x = DeltaTs, col=Col[teller], lwd=LWD_G, lty=Lty[1])
+          lines(y=rep(Gamma[j,i], length(DeltaTs)), x = DeltaTs, col=Col[teller], lwd=LWD_G, lty=Lty[teller])
         }
       }
     }

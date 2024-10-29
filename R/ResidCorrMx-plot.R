@@ -127,6 +127,16 @@ ResidCorrMxPlot <- function(DeltaT = 1, Phi = NULL, SigmaVAR = NULL, Drift = NUL
   # Check on Phi
   if(any(class(Phi) == "varest")){
     SigmaVAR_VARest <- cov(resid(Phi))
+    #
+    diagS <- diag(SigmaVAR_VARest)
+    ResidCorrMx <- NULL
+    if(any(diagS < 0)){
+      ResidCorrMx <- "Since the DT residual covariance matrix SigmaVAR(DeltaT) has at least one negative diagonal element (i.e., negative residual variance), the corresponding DT residual correlation matrix 'ResidCorrMx' can possibly not be calculated."
+      ErrorMessage <- ResidCorrMx
+      cat(ErrorMessage)
+      cat("\n")
+    }
+    #
     Phi <- Acoef(Phi)[[1]]
     CTMp <- CTMparam(DeltaT, Phi)
     if(is.null(CTMp$ErrorMessage)){
@@ -140,6 +150,15 @@ ResidCorrMxPlot <- function(DeltaT = 1, Phi = NULL, SigmaVAR = NULL, Drift = NUL
   } else if(any(class(Phi) == "ctsemFit")){
     Drift <- summary(Phi)$DRIFT
     Sigma_ctsem <- summary(Phi)$DIFFUSION
+    #
+    diagS <- diag(Sigma_ctsem)
+    if(any(diagS < 0)){
+      ErrorMessage <- "Since the CT residual covariance matrix has at least one negative diagonal element (i.e., negative residual variance), the corresponding DT residual correlation matrix 'ResidCorrMx' may have as well (for some time intervals)."
+      cat(ErrorMessage)
+      cat("\n")
+      #return(ErrorMessage)
+    }
+    #
     Gamma <- Gamma.fromCTM(Drift, Sigma_ctsem)
   } else{
 
@@ -181,7 +200,7 @@ ResidCorrMxPlot <- function(DeltaT = 1, Phi = NULL, SigmaVAR = NULL, Drift = NUL
   if(length(Drift) == 1){
     #q <- 1
     ErrorMessage <- ("The dimension of Drift/Phi and Sigma/SigmaVAR is 1x1 (i.e., q = 1).
-                     In that case, there is only one correlation which is always 1.
+                     In that case, there is only one correlation (corresponding to a variance) which is always 1.
                      Hence, it is not meaningfull to plot the VAR(1) residual correlation.")
     #("Note that Phi(DeltaT) = expm(Drift*DeltaT).")
     return(ErrorMessage)
@@ -191,6 +210,16 @@ ResidCorrMxPlot <- function(DeltaT = 1, Phi = NULL, SigmaVAR = NULL, Drift = NUL
   }
   #
   #
+  if(!is.null(SigmaVAR)){
+    diagS <- diag(SigmaVAR)
+    ResidCorrMx <- NULL
+    if(any(diagS < 0)){
+      ResidCorrMx <- "Since the DT residual covariance matrix SigmaVAR(DeltaT) has at least one negative diagonal element (i.e., negative residual variance), the corresponding DT residual correlation matrix 'ResidCorrMx' can possibly not be calculated."
+      ErrorMessage <- ResidCorrMx
+      cat(ErrorMessage)
+      cat("\n")
+    }
+  }
   # Check on SigmaVAR, Sigma, and Gamma
   if(is.null(SigmaVAR) & is.null(Gamma) & is.null(Sigma)){ # All three unknown
     ErrorMessage <- (paste0("The arguments SigmaVAR, Sigma, or Gamma are not found: one should be part of the input. Notably, in case of the first matrix, specify 'SigmaVAR = SigmaVAR'."))
@@ -231,12 +260,36 @@ ResidCorrMxPlot <- function(DeltaT = 1, Phi = NULL, SigmaVAR = NULL, Drift = NUL
       }
       Gamma <- Gamma.fromCTM(Drift, Sigma)
 
+      if(is.null(SigmaVAR)){
+        SigmaVAR <- VARparam(DeltaT, Drift, Gamma = Gamma)$SigmaVAR
+      }
+      diagS <- diag(SigmaVAR)
+      ResidCorrMx <- NULL
+      if(any(diagS < 0)){
+        ResidCorrMx <- "Since the DT residual covariance matrix SigmaVAR(DeltaT) has at least one negative diagonal element (i.e., negative residual variance), the corresponding DT residual correlation matrix 'ResidCorrMx' can possibly not be calculated."
+        ErrorMessage <- ResidCorrMx
+        cat(ErrorMessage)
+        cat("\n")
+      }
+
     }
 
   }else if(!is.null(Gamma)){ # Gamma known, only check on Gamma needed
 
     # Checks on Gamma
     Check_Gamma(Gamma, q)
+
+    if(is.null(SigmaVAR)){
+      SigmaVAR <- VARparam(DeltaT, Drift, Gamma = Gamma)$SigmaVAR
+    }
+    diagS <- diag(SigmaVAR)
+    ResidCorrMx <- NULL
+    if(any(diagS < 0)){
+      ResidCorrMx <- "Since the DT residual covariance matrix SigmaVAR(DeltaT) has at least one negative diagonal element (i.e., negative residual variance), the corresponding DT residual correlation matrix 'ResidCorrMx' can possibly not be calculated."
+      ErrorMessage <- ResidCorrMx
+      cat(ErrorMessage)
+      cat("\n")
+    }
 
   }
   #
@@ -285,19 +338,19 @@ ResidCorrMxPlot <- function(DeltaT = 1, Phi = NULL, SigmaVAR = NULL, Drift = NUL
     #}
   }
   if(!is.null(Col)){
-    if(AddGamma == 1){
-      if(length(Col) != 2*nrLines){
-        ErrorMessage <- (paste0("The argument Col should contain ", 2*nrLines, " elements, that is, q*(q+1) or twice the number of 1s in WhichElements (or WhichElements is incorrectly specified); not ", length(Col), ". Note that values (integers) are needed for both the residual and stationary correlation matrix (since AddGamma = 1)."))
-        return(ErrorMessage)
-        stop(ErrorMessage)
-      }
-    }else{
+    #if(AddGamma == 1){
+    #  if(length(Col) != 2*nrLines){
+    #    ErrorMessage <- (paste0("The argument Col should contain ", 2*nrLines, " elements, that is, q*(q+1) or twice the number of 1s in WhichElements (or WhichElements is incorrectly specified); not ", length(Col), ". Note that values (integers) are needed for both the residual and stationary correlation matrix (since AddGamma = 1)."))
+    #    return(ErrorMessage)
+    #    stop(ErrorMessage)
+    #  }
+    #}else{
       if(length(Col) != nrLines){
         ErrorMessage <- (paste0("The argument Col should contain ", nrLines, " elements, that is, q*(q+1)/2 or the number of 1s in WhichElements (or WhichElements is incorrectly specified); not ", length(Col)))
         return(ErrorMessage)
         stop(ErrorMessage)
       }
-    }
+    #}
     if(any(Col %% 1 != 0)){
       ErrorMessage <- (paste0("The argument Col should consist of solely integers."))
       return(ErrorMessage)
@@ -305,19 +358,19 @@ ResidCorrMxPlot <- function(DeltaT = 1, Phi = NULL, SigmaVAR = NULL, Drift = NUL
     }
   }
   if(!is.null(Lty)){
-    if(AddGamma == 1){
-      if(length(Lty) != 2*nrLines){
-        ErrorMessage <- (paste0("The argument Lty should contain ", 2*nrLines, " elements, that is, q*(q+1) or twice the number of 1s in WhichElements (or WhichElements is incorrectly specified); not ", length(Lty), ". Note that values (integers) are needed for both the residual and stationary correlation matrix (since AddGamma = 1)."))
-        return(ErrorMessage)
-        stop(ErrorMessage)
-      }
-    }else{
+    #if(AddGamma == 1){
+    #  if(length(Lty) != 2*nrLines){
+    #    ErrorMessage <- (paste0("The argument Lty should contain ", 2*nrLines, " elements, that is, q*(q+1) or twice the number of 1s in WhichElements (or WhichElements is incorrectly specified); not ", length(Lty), ". Note that values (integers) are needed for both the residual and stationary correlation matrix (since AddGamma = 1)."))
+    #    return(ErrorMessage)
+    #    stop(ErrorMessage)
+    #  }
+    #}else{
       if(length(Lty) != nrLines){
         ErrorMessage <- (paste0("The argument Lty should contain ", nrLines, " elements, that is, q*(q+1)/2 or the number of 1s in WhichElements (or WhichElements is incorrectly specified); not ", length(Lty)))
         return(ErrorMessage)
         stop(ErrorMessage)
       }
-    }
+    #}
     if(any(Lty %% 1 != 0)){
       ErrorMessage <- (paste0("The argument Lty should consist of solely integers."))
       return(ErrorMessage)
@@ -399,15 +452,35 @@ ResidCorrMxPlot <- function(DeltaT = 1, Phi = NULL, SigmaVAR = NULL, Drift = NUL
     }
     Col <- t(Col_mx)[t(WhichTF)]
     #Col <- as.vector(t(Col_mx))
+    #
+    #if(AddGamma == 1){
+    #  Col <- c(Col, Col)
+    #}
   }
   #
   if(is.null(Lty)){
+    #There exist 5 'integer valued' line styles  besides the "solid" one.
+    #Hence, if there are more than 5 off-diagonals (i.e., q > 3), then use other way of specifying line styles.
     Lty_mx <- matrix(NA, ncol = q, nrow = q)
-    diag(Lty_mx) <- 1
-    Lty_mx[upper.tri(Lty_mx, diag = FALSE)] <- 2:(1+length(Lty_mx[upper.tri(Lty_mx, diag = FALSE)]))
-    Lty_mx[lower.tri(Lty_mx, diag = FALSE)] <- Lty_mx[upper.tri(Lty_mx, diag = FALSE)]
+    if(q <= 3){
+      diag(Lty_mx) <- 1
+      Lty_mx[upper.tri(Lty_mx, diag = FALSE)] <- 2:(1+length(Lty_mx[upper.tri(Lty_mx, diag = FALSE)]))
+      Lty_mx[lower.tri(Lty_mx, diag = FALSE)] <- Lty_mx[upper.tri(Lty_mx, diag = FALSE)]
+    }else{
+      diag(Lty_mx) <- "solid"
+      for(i in 1:(q-1)){
+        for(j in (i+1):q){
+          Lty_mx[i,j] <- paste0(i,j)
+        }
+      }
+      Lty_mx[lower.tri(Lty_mx, diag = FALSE)] <- Lty_mx[upper.tri(Lty_mx, diag = FALSE)]
+    }
     Lty <- t(Lty_mx)[t(WhichTF)]
     #Lty <- as.vector(t(Lty_mx))
+    #
+    #if(AddGamma == 1){
+    #  Lty <- c(Lty, Lty)
+    #}
   }
   #
   LWD_S <- 2.5
@@ -477,8 +550,23 @@ ResidCorrMxPlot <- function(DeltaT = 1, Phi = NULL, SigmaVAR = NULL, Drift = NUL
         ResidCorrMxDeltaTs[,,i] <- SigmaVARDeltaTs # 0 matrix, looks weird in plot
         #ResidCorrMxDeltaTs[,,i] <- diag(q) # Identity mx
       }else{
-        S <- sqrt(diag(diag(SigmaVARDeltaTs)))
-        ResidCorrMxDeltaTs[,,i] <- solve(S) %*% SigmaVARDeltaTs %*% solve(S)
+        diagS <- diag(SigmaVARDeltaTs)
+        ResidCorrMx <- NULL
+        if(any(diagS < 0)){
+          ResidCorrMx <- "Since the DT residual covariance matrix has at least one negative diagonal element (i.e., negative residual variance) for at least one time interval, the corresponding DT residual correlation matrix 'ResidCorrMx' cannot be calculated nor plotted."
+          #print(ResidCorrMx)
+          # Btw possibly Sigma has at least one negative diagonal (as well), but Sigma is not per se determined here;
+          #     and I do not know whether there is one-to-one relationship for other DeltaT; therefore, I did not use this as first check (as well).
+          ErrorMessage <- ResidCorrMx
+          #cat(ErrorMessage)
+          #cat("\n")
+          return(list(ErrorMessage = ErrorMessage))
+          #stop(ErrorMessage)
+          stop()
+        }else{
+          S <- sqrt(diag(diagS))
+          ResidCorrMxDeltaTs[,,i] <- solve(S) %*% SigmaVARDeltaTs %*% solve(S)
+        }
       }
     }
     # Gamma as correlation matrix = standardized Gamma:
@@ -500,9 +588,9 @@ ResidCorrMxPlot <- function(DeltaT = 1, Phi = NULL, SigmaVAR = NULL, Drift = NUL
   EltsInPlot <- ResidCorrMxDeltaTs[WhichTF_array]
   if(AddGamma == 1){
     EltsGammaInPlot <- Gamma_s[WhichTF]
-    YLIM=c(min(EltsInPlot, EltsGammaInPlot, 0), max(EltsInPlot, EltsGammaInPlot, 0))
+    YLIM <- c(min(EltsInPlot, EltsGammaInPlot, 0), max(EltsInPlot, EltsGammaInPlot, 0))
   }else{
-    YLIM=c(min(EltsInPlot, 0), max(EltsInPlot, 0))
+    YLIM <- c(min(EltsInPlot, 0), max(EltsInPlot, 0))
   }
   #YLIM=c(min(ResidCorrMxDeltaTs, Gamma_s), max(ResidCorrMxDeltaTs, Gamma_s))
   plot(y=rep(0, length(DeltaTs)), x=DeltaTs, type="l", ylim=YLIM,
@@ -521,7 +609,7 @@ ResidCorrMxPlot <- function(DeltaT = 1, Phi = NULL, SigmaVAR = NULL, Drift = NUL
         teller <- teller + 1
         lines(y=ResidCorrMxDeltaTs[j,i,], x=DeltaTs, col=Col[teller], lwd=LWD_S, lty=Lty[teller])
         if(AddGamma == 1){
-          lines(y=rep(Gamma_s[j,i], length(DeltaTs)), x = DeltaTs, col=Col[teller], lwd=LWD_G, lty=Lty[1])
+          lines(y=rep(Gamma_s[j,i], length(DeltaTs)), x = DeltaTs, col=Col[teller], lwd=LWD_G, lty=Lty[teller])
         }
       }
     }

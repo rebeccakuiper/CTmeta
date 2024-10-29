@@ -371,10 +371,22 @@ PhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR = 
   }
   #
   if(is.null(Lty)){
+    #There exist 5 'integer valued' line styles  besides the "solid" one.
+    #Hence, if there are more than 5 off-diagonals (i.e., q > 3), then use other way of specifying line styles.
     Lty_mx <- matrix(NA, ncol = q, nrow = q)
-    diag(Lty_mx) <- 1
-    Lty_mx[upper.tri(Lty_mx, diag = FALSE)] <- 2:(1+length(Lty_mx[upper.tri(Lty_mx, diag = FALSE)]))
-    Lty_mx[lower.tri(Lty_mx, diag = FALSE)] <- Lty_mx[upper.tri(Lty_mx, diag = FALSE)]
+    if(q <= 3){
+      diag(Lty_mx) <- 1
+      Lty_mx[upper.tri(Lty_mx, diag = FALSE)] <- 2:(1+length(Lty_mx[upper.tri(Lty_mx, diag = FALSE)]))
+      Lty_mx[lower.tri(Lty_mx, diag = FALSE)] <- Lty_mx[upper.tri(Lty_mx, diag = FALSE)]
+    }else{
+      diag(Lty_mx) <- "solid"
+      for(i in 1:(q-1)){
+        for(j in (i+1):q){
+          Lty_mx[i,j] <- paste0(i,j)
+        }
+      }
+      Lty_mx[lower.tri(Lty_mx, diag = FALSE)] <- Lty_mx[upper.tri(Lty_mx, diag = FALSE)]
+    }
     Lty <- t(Lty_mx)[t(WhichTF)]
     #Lty <- as.vector(t(Lty_mx))
   }

@@ -537,14 +537,16 @@ DiagDeltaT <- function(Phi = NULL, SigmaVAR = NULL, Drift = NULL, Sigma = NULL, 
                   message_startvalues=message_startvalues)
 
     if(q > 4){
-      final <- list(final,
-                    Warning <- "Since q > 4, some equations in calculating DeltaT_diag were not used. \n
+      Warning <- "Since q > 4, some equations in calculating DeltaT_diag were not used. \n
                     When from the Psi-plot/SigmaVAR-plot it is clear that there exist a positive (non-zero) 'DeltaT_diag' solution and \n
                     adjusting the starting value accordingly does not help, please contact me (r.m.kuiper@uu.nl). \n
                     Then, I will add a part to the code where the currently un-used equations are inspected."
-                    # Note that in theory the starting values for the q variances can be a problem as well:
-                    # I may want to adjust that first 9depending on the solution and message obtained).
-      )
+      # Note that in theory the starting values for the q variances can be a problem as well:
+      # I may want to adjust that first 9depending on the solution and message obtained).
+      print(Warning)
+
+      final <- append(final, list(Warning=Warning))
+
     }
 
   }else{

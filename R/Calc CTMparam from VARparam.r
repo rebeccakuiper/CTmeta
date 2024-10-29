@@ -200,8 +200,13 @@ if(is.null(SigmaVAR) & is.null(Gamma)){
   Drift_s <- solve(Sxy) %*% (-B) %*% Sxy
   Sigma_s <- solve(Sxy) %*% Sigma %*% solve(Sxy)
   #
-  S <- sqrt(diag(diag(Sigma)))
-  ResidCorrMx <- solve(S) %*% Sigma %*% solve(S)
+  diagS <- diag(Sigma)
+  if(any(diagS < 0)){
+    ResidCorrMx <- "Since the CT residual covariance matrix Sigma has at least one negative diagonal element (i.e., negative residual variance), the corresponding CT residual correlation matrix 'ResidCorrMx' cannot be calculated."
+  }else{
+    S <- sqrt(diag(diagS))
+    ResidCorrMx <- solve(S) %*% Sigma %*% solve(S)
+  }
 
 } # end 'else' belonging to Svar not NULL
 
