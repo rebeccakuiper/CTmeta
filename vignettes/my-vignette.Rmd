@@ -23,7 +23,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r setup, message=FALSE}
+```{r setup, message=FALSE, warning=FALSE}
 library(CTmeta)
 ```
 
@@ -339,7 +339,7 @@ if (!require("restriktor")) install.packages("restriktor")
 library(restriktor)
 #goric(est, VCOV = VCOV, H1, H2, type = "gorica", comparison = "none") 
 # or equivalently:
-goric(est, VCOV = VCOV, H1, type = "gorica", comparison = "complement")
+goric(est, VCOV = VCOV, hypotheses = list(H1), type = "gorica", comparison = "complement")
 ```
 
 From this, one concludes that H1: overallPhi12 < overallPhi21 is approximately 15 times more supported /more likely than its complement (here, overallPhi12 > overallPhi21). Hence, there is quite some support in favor of our theory w.r.t. predictive strength / the ordering of the size of the cross-lagged relationships.

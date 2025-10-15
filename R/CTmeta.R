@@ -1242,7 +1242,8 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
       # Multivar and Trans
       if(Multivar == 1 & Trans == 1){
         if(FEorRE == 1){ # FE
-          final <- list(DeltaTStar = dT_star,
+          final <- list(NrStudies = S, N = N, DeltaT = DeltaT, Phi = Phi, SigmaVAR = SigmaVAR, Gamma = Gamma, Moderators = Moderators, Mod = Mod, FEorRE = FEorRE,
+                        DeltaTStar = dT_star,
                         Overall_standPhi_DeltaTStar = matrix(Phi_metaan_MV, byrow = T, ncol = q),
                         Overall_vecStandPhi_DeltaTStar = Phi_metaan_MV,
                         #elliptical_CI = multiCI,
@@ -1256,7 +1257,8 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
                         messagePhi = messagePhi,
                         summaryMetaAnalysis = summary(metaan))
         } else{ # RE
-          final <- list(DeltaTStar = dT_star,
+          final <- list(NrStudies = S, N = N, DeltaT = DeltaT, Phi = Phi, SigmaVAR = SigmaVAR, Gamma = Gamma, Moderators = Moderators, Mod = Mod, FEorRE = FEorRE,
+                        DeltaTStar = dT_star,
                         Overall_standPhi_DeltaTStar = matrix(Phi_metaan_MV, byrow = T, ncol = q),
                         Overall_vecStandPhi_DeltaTStar = Phi_metaan_MV,
                         #elliptical_CI = multiCI,
@@ -1274,7 +1276,8 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
       # Multivar and Dummies
       }else if(Multivar == 1 & Trans == 0){
         if(FEorRE == 1){ # FE
-          final <- list(UniqueTimeIntervals = dT,
+          final <- list(NrStudies = S, N = N, DeltaT = DeltaT, DeltaTStar = DeltaTStar, Phi = Phi, SigmaVAR = SigmaVAR, Gamma = Gamma, Moderators = Moderators, Mod = Mod, FEorRE = FEorRE,
+                        UniqueTimeIntervals = dT,
                         Overall_standPhi_PerUniqueTimeInterval = matrix(Phi_metaan_MV, byrow = T, ncol = q),
                         Overall_vecStandPhi_PerUniqueTimeInterval = Phi_metaan_MV,
                         LB_elliptical_CI = minPhi,
@@ -1286,7 +1289,8 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
                         ratioDeltaT = ratioDeltaT,
                         summaryMetaAnalysis = summary(metaan))
         } else{ # RE
-          final <- list(UniqueTimeIntervals = dT,
+          final <- list(NrStudies = S, N = N, DeltaT = DeltaT, DeltaTStar = DeltaTStar, Phi = Phi, SigmaVAR = SigmaVAR, Gamma = Gamma, Moderators = Moderators, Mod = Mod, FEorRE = FEorRE,
+                        UniqueTimeIntervals = dT,
                         Overall_standPhi_PerUniqueTimeInterval = matrix(Phi_metaan_MV, byrow = T, ncol = q),
                         Overall_vecStandPhi_PerUniqueTimeInterval = Phi_metaan_MV,
                         LB_elliptical_CI = minPhi,
@@ -1302,7 +1306,8 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
       # Univar and Trans
       }else if(Multivar == 0 & Trans == 1){
         if(FEorRE == 1){ # FE
-          final <- list(DeltaTStar = dT_star,
+          final <- list(NrStudies = S, N = N, DeltaT = DeltaT, Phi = Phi, SigmaVAR = SigmaVAR, Gamma = Gamma, Moderators = Moderators, Mod = Mod, FEorRE = FEorRE,
+                        DeltaTStar = dT_star,
                         Overall_standPhi_DeltaTStar = matrix(Phi_metaan, byrow = T, ncol = q),
                         Overall_vecStandPhi_DeltaTStar = Phi_metaan,
                         LB_CI = minPhi,
@@ -1316,7 +1321,8 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
                         ratioDeltaT = ratioDeltaT,
                         summaryMetaAnalysis_jk = summaryMetaAnalysis_jk)
         } else{ # RE
-          final <- list(DeltaTStar = dT_star,
+          final <- list(NrStudies = S, N = N, DeltaT = DeltaT, Phi = Phi, SigmaVAR = SigmaVAR, Gamma = Gamma, Moderators = Moderators, Mod = Mod, FEorRE = FEorRE,
+                        DeltaTStar = dT_star,
                         Overall_standPhi_DeltaTStar = matrix(Phi_metaan, byrow = T, ncol = q),
                         Overall_vecStandPhi_DeltaTStar = Phi_metaan,
                         LB_CI = minPhi,
@@ -1334,7 +1340,8 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
       # Univar and Dummies
       }else if(Multivar == 0 & Trans == 0){
         if(FEorRE == 1){ # FE
-          final <- list(UniqueTimeIntervals = dT,
+          final <- list(NrStudies = S, N = N, DeltaT = DeltaT, DeltaTStar = DeltaTStar, Phi = Phi, SigmaVAR = SigmaVAR, Gamma = Gamma, Moderators = Moderators, Mod = Mod, FEorRE = FEorRE,
+                        UniqueTimeIntervals = dT,
                         Overall_standPhi_PerUniqueTimeInterval = matrix(Phi_metaan_dum, byrow = T, ncol = q),
                         Overall_vecStandPhi_PerUniqueTimeInterval = Phi_metaan_dum,
                         LB_CI = minPhi,
@@ -1348,7 +1355,8 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
                         ratioDeltaT = ratioDeltaT,
                         summaryMetaAnalysis_jk = summaryMetaAnalysis_jk)
         } else{ # RE
-          final <- list(UniqueTimeIntervals = dT,
+          final <- list(NrStudies = S, N = N, DeltaT = DeltaT, DeltaTStar = DeltaTStar, Phi = Phi, SigmaVAR = SigmaVAR, Gamma = Gamma, Moderators = Moderators, Mod = Mod, FEorRE = FEorRE,
+                        UniqueTimeIntervals = dT,
                         Overall_standPhi_PerUniqueTimeInterval = matrix(Phi_metaan_dum, byrow = T, ncol = q),
                         Overall_vecStandPhi_PerUniqueTimeInterval = Phi_metaan_dum,
                         LB_CI = minPhi,
