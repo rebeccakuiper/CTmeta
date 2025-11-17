@@ -165,7 +165,7 @@ if(q == 1){
 
 
 # Stable process info
-Decomp_ParamVAR <- eigen(Phi, symmetric=F)
+Decomp_ParamVAR <- eigen(ParamVAR, symmetric=F)
 Eigen_ParamVAR <- Decomp_ParamVAR$val
 Eigen_ParamCTM <- diag(eigen(B)$val) # = -log(Eigen_ParamVAR) / DeltaT
 StableProcess <- FALSE
