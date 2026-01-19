@@ -143,16 +143,15 @@ TransPhi_Corr <- function(DeltaTStar, DeltaT = 1, N = NULL, corr_YXYX, alpha = 0
           TransPhi <- Re(TransPhi)
         }
       }
+      #
+      RXY <- RXX %*% t(TransPhi)
+      RYX <- t(RXY)
+      # RYY and RXX remain the same!
     } else{
       TransPhi <- Phi
       #
       warning <- "No warnings (since there are no complex eigenvalues)"
     }
-
-    RXY <- RXX %*% t(TransPhi)
-    RYX <- t(RXY)
-    # RYY and RXX remain the same!
-
 
     vecPhi <- as.vector(t(TransPhi))
 
@@ -169,6 +168,16 @@ TransPhi_Corr <- function(DeltaTStar, DeltaT = 1, N = NULL, corr_YXYX, alpha = 0
       CovMx_Phi <- CovMx
       eigenCovMx <- eigen(CovMx_Phi)
       lambda <- eigenCovMx$val
+      if(any(lambda < 0)){
+        if(warning == "No warnings (since there are no complex eigenvalues)"){
+          warning <- NULL
+        }
+        warning <- c(warning,
+                     paste("Some of the eigenvalues of the covariance matrix of Phi are negative.",
+                     "The function will proceed, but there will be no corresponding confidence intervals (in $multiCI_vecStandPhi_DeltaT).")
+                    )
+        lambda(which(eigenCovMx$val < 0)) <- 0
+      }
       E <- eigenCovMx$vec
       #df1F <- q*q*qf(p=alpha, df1=q*q, df2=(N-q*q), lower.tail=FALSE)
       Chi2 <- qchisq(p=alpha, df=(q*q), lower.tail=FALSE) # for large N, df1F goes to Chi2
@@ -202,12 +211,13 @@ TransPhi_Corr <- function(DeltaTStar, DeltaT = 1, N = NULL, corr_YXYX, alpha = 0
     ############################################################################################################
 
     if(!is.null(N)){
-      final <- list(standPhi_DeltaTStar = TransPhi,
-                    vecStandPhi_DeltaTStar = vecPhi, CovMx_vecStandPhi_DeltaTStar = CovMx, multiCI_vecStandPhi_DeltaT = multiCI,
+      final <- list(standPhi_DeltaTStar = TransPhi, vecStandPhi_DeltaTStar = vecPhi,
+                    CovMx_vecStandPhi_DeltaTStar = CovMx,
+                    multiCI_vecStandPhi_DeltaTStar = multiCI,
                     standSigmaVAR_DeltaTStar = SigmaVAR, standGamma = Gamma,
                     warning = warning)
     }else{
-      final <- list(standPhi_DeltaTStar = TransPhi,
+      final <- list(standPhi_DeltaTStar = TransPhi, vecStandPhi_DeltaTStar = vecPhi,
                     standSigmaVAR_DeltaTStar = SigmaVAR, standGamma = Gamma,
                     warning = warning)
     }

@@ -163,6 +163,13 @@ if(!is.null(N)){
   CovMx_Phi <- CovMx
   eigenCovMx <- eigen(CovMx_Phi)
   lambda <- eigenCovMx$val
+  if(any(lambda < 0)){
+    message("Some of the eigenvalues of the covariance matrix of Phi are negative. \n",
+            "The function will proceed, but there will be no corresponding confidence intervals \n",
+            "(in $LB_elliptical_CI and $UB_elliptical_CI)."
+    )
+    lambda(which(eigenCovMx$val < 0)) <- 0
+  }
   E <- eigenCovMx$vec
   #df1F <- q*q*qf(p=alpha, df1=q*q, df2=(N-q*q), lower.tail=FALSE)
   Chi2 <- qchisq(p=alpha, df=(q*q), lower.tail=FALSE) # for large N, df1F goes to Chi2

@@ -905,6 +905,13 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
           #tellerCovMx <- tellerCovMx + 4
           eigenCovMx <- eigen(CovMx_metaan)
           lambda <- eigenCovMx$val
+          if(any(lambda < 0)){
+            message("Some of the eigenvalues of the covariance matrix of the overall Phi are negative. \n",
+                    "The function will proceed, but there will be no corresponding confidence intervals \n",
+                    "(in $LB_elliptical_CI and $UB_elliptical_CI)."
+            )
+            lambda(which(eigenCovMx$val < 0)) <- 0
+          }
           E <- eigenCovMx$vec
           Chi2 <- qchisq(p=alpha, df=(q*q), lower.tail=FALSE)
           LB_vecPhi <- matrix(NA, nrow=q*q, ncol =q*q)
@@ -1039,6 +1046,13 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
           tellerCovMx <- tellerCovMx + 4
           eigenCovMx <- eigen(CovMx_metaan)
           lambda <- eigenCovMx$val
+          if(any(lambda < 0)){
+            message("Some of the eigenvalues of the covariance matrix of the overall Phi are negative. \n",
+                    "The function will proceed, but there will be no corresponding confidence intervals \n",
+                    "(in $LB_elliptical_CI and $UB_elliptical_CI)."
+            )
+            lambda(which(eigenCovMx$val < 0)) <- 0
+          }
           E <- eigenCovMx$vec
           Chi2 <- qchisq(p=alpha, df=(q*q), lower.tail=FALSE)
           LB_vecPhi <- matrix(NA, nrow=q*q, ncol =q*q)
