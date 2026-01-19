@@ -6,7 +6,7 @@
 #' @param DeltaTStar The time interval to which the standardized lagged effects matrix (Phi) should be transformed to.
 #' @param DeltaT Optional. The time interval used. Hence, Phi(DeltaT) will be transformed to Phi(DeltaTStar) and standardized. By default, DeltaT = 1.
 #' @param N Optional. Number of persons (panel data) or number of measurement occasions - 1 (time series data). This is used in determining the covariance matrix of the vectorized standardized lagged effects. By default, N = NULL.
-#' @param corr_YXYX The correlation matrix of the variables and the lagged variables (of size 2q x 2q). The upper q x q matrix is the correlation matrix between the (q) variables and the lower q x q matrix is the correlation matrix between the (q) lagged variables.
+#' @param corr_YXYX The correlation matrix of the variables and the lagged variables (of size 2q x 2q). The upper left q x q matrix is the correlation matrix between the (q) variables and the lower left q x q matrix is the correlation matrix between the (q) lagged variables.
 #' @param alpha Optional. The alpha level in determining the (1-alpha)*100\% CI. By default, alpha = 0.05; resulting in a 95\% CI.
 #'
 #' @return This function returns the vectorized transformed standardized lagged effects (i.e., for DeltaTStar) and - if N is part of input - their covariance matrix and the corresponding elliptical/multivariate 95\% CI; SigmaVAR: residual covariance matrix for DeltaTStar; and Gamma: stationary covariance matrix.
@@ -126,23 +126,28 @@ TransPhi_Corr <- function(DeltaTStar, DeltaT = 1, N = NULL, corr_YXYX, alpha = 0
 
     Phi <- t(solve(RXX) %*% RXY)
 
-    eigenPhi <- eigen(Phi)
-    V <- eigenPhi$vectors
-    D <- diag(eigenPhi$values)
-    TransPhi <- V %*% D^ratioDeltaT %*% solve(V)
-
-    warning = "No warnings (since there are no complex eigenvalues)"
-    if(any(is.complex(eigenPhi$values))){
-      if(DeltaTStar%%DeltaT == 0){
-        warning <- "There is at least one pair of complex eigenvalues and the ratio of DeltaTs (i.e., DeltaT*/DeltaT) is not an integer, so the solution for Phi(DeltaT*) is NOT unique."
-      }else{
-        warning <- "There is at least one pair of complex eigenvalues, but the ratio of DeltaTs (i.e., DeltaT*/DeltaT) is an integer, so the solution for Phi(DeltaT*) is unique."
+    if(ratioDeltaT != 1){
+      eigenPhi <- eigen(Phi)
+      V <- eigenPhi$vectors
+      D <- diag(eigenPhi$values)
+      TransPhi <- V %*% D^ratioDeltaT %*% solve(V)
+      #
+      warning <- "No warnings (since there are no complex eigenvalues)"
+      if(any(is.complex(eigenPhi$values))){
+        if(DeltaTStar%%DeltaT == 0){
+          warning <- "There is at least one pair of complex eigenvalues and the ratio of DeltaTs (i.e., DeltaT*/DeltaT) is not an integer, so the solution for Phi(DeltaT*) is NOT unique."
+        }else{
+          warning <- "There is at least one pair of complex eigenvalues, but the ratio of DeltaTs (i.e., DeltaT*/DeltaT) is an integer, so the solution for Phi(DeltaT*) is unique."
+        }
+        if(all(Im(TransPhi) == 0)){
+          TransPhi <- Re(TransPhi)
+        }
       }
-      if(all(Im(TransPhi) == 0)){
-        TransPhi <- Re(TransPhi)
-      }
+    } else{
+      TransPhi <- Phi
+      #
+      warning <- "No warnings (since there are no complex eigenvalues)"
     }
-
 
     RXY <- RXX %*% t(TransPhi)
     RYX <- t(RXY)
@@ -170,10 +175,10 @@ TransPhi_Corr <- function(DeltaTStar, DeltaT = 1, N = NULL, corr_YXYX, alpha = 0
       LB_vecPhi <- matrix(NA, nrow=q*q, ncol =q*q)
       UB_vecPhi <- matrix(NA, nrow=q*q, ncol =q*q)
       LL <- matrix(NA, nrow=q*q, ncol=2)
-      teller = 0
+      teller <- 0
       for(row in 1:q){
         for(column in 1:q){
-          teller = teller + 1
+          teller <- teller + 1
           #LB_vecPhi[teller,] <- matrix(mu_Phi - sqrt(df1F * lambda[teller]) * E[,teller], nrow = 1)
           #UB_vecPhi[teller,] <- matrix(mu_Phi + sqrt(df1F * lambda[teller]) * E[,teller], nrow = 1)
           LB_vecPhi[teller,] <- matrix(mu_Phi - sqrt(Chi2 * lambda[teller]) * E[,teller], nrow = 1)

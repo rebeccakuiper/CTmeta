@@ -14,7 +14,7 @@ TransPhi_Corr(DeltaTStar, DeltaT = 1, N = NULL, corr_YXYX, alpha = 0.05)
 
 \item{N}{Optional. Number of persons (panel data) or number of measurement occasions - 1 (time series data). This is used in determining the covariance matrix of the vectorized standardized lagged effects. By default, N = NULL.}
 
-\item{corr_YXYX}{The correlation matrix of the variables and the lagged variables (of size 2q x 2q). The upper q x q matrix is the correlation matrix between the (q) variables and the lower q x q matrix is the correlation matrix between the (q) lagged variables.}
+\item{corr_YXYX}{The correlation matrix of the variables and the lagged variables (of size 2q x 2q). The upper left q x q matrix is the correlation matrix between the (q) variables and the lower left q x q matrix is the correlation matrix between the (q) lagged variables.}
 
 \item{alpha}{Optional. The alpha level in determining the (1-alpha)*100\% CI. By default, alpha = 0.05; resulting in a 95\% CI.}
 }
