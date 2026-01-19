@@ -1,4 +1,4 @@
-#' @S3method print CTmeta
+#' @exportS3Method print CTmeta
 #' @export print.CTmeta
 #' @export
 

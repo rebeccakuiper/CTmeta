@@ -1,5 +1,5 @@
 #' @importFrom jtools md_table
-#' @S3method summary CTmeta
+#' @exportS3Method summary CTmeta
 #' @export summary.CTmeta
 #' @export
 

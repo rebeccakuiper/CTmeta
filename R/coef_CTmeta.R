@@ -1,4 +1,4 @@
-#' @S3method coef CTmeta
+#' @exportS3Method coef CTmeta
 #' @export coef.CTmeta
 #' @export
 

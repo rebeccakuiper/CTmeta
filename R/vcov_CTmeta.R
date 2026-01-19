@@ -1,4 +1,4 @@
-#' @S3method vcov CTmeta
+#' @exportS3Method vcov CTmeta
 #' @export vcov.CTmeta
 #' @export
 
