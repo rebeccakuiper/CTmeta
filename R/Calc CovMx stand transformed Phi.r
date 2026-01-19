@@ -159,27 +159,31 @@ StandTransPhi <- function(DeltaTStar, DeltaT = 1, N = NULL, Phi, SigmaVAR = NULL
 
 ratioDeltaT <- DeltaTStar / DeltaT
 
-if(q > 1){
-  eigenPhi <- eigen(Phi)
-  V <- eigenPhi$vectors
-  D <- diag(eigenPhi$values)
-  Phi_DeltaT <- V %*% D^ratioDeltaT %*% solve(V)
+if(ratioDeltaT != 1){
+  if(q > 1){
+    eigenPhi <- eigen(Phi)
+    V <- eigenPhi$vectors
+    D <- diag(eigenPhi$values)
+    Phi_DeltaT <- V %*% D^ratioDeltaT %*% solve(V)
+  } else{
+    Phi_DeltaT <- Phi^ratioDeltaT
+  }
+  if(any(is.complex(eigenPhi$values))){
+    if(DeltaTStar%%DeltaT == 0){
+      warning <- "There is at least one pair of complex eigenvalues and the ratio of DeltaTs (i.e., DeltaT*/DeltaT) is not an integer, so the solution for Phi(DeltaT*) is NOT unique."
+      Warning <- 1
+    }else{
+      warning <- "There is at least one pair of complex eigenvalues, but the ratio of DeltaTs (i.e., DeltaT*/DeltaT) is an integer, so the solution for Phi(DeltaT*) is unique."
+    }
+    if(all(Im(Phi_DeltaT) == 0)){
+      Phi_DeltaT <- Re(Phi_DeltaT)
+    }
+  }
 } else{
-  Phi_DeltaT <- Phi^ratioDeltaT
-}
-
-warning <- "No warnings (since there are no complex eigenvalues)"
-Warning <- 0
-if(any(is.complex(eigenPhi$values))){
-  if(DeltaTStar%%DeltaT == 0){
-    warning <- "There is at least one pair of complex eigenvalues and the ratio of DeltaTs (i.e., DeltaT*/DeltaT) is not an integer, so the solution for Phi(DeltaT*) is NOT unique."
-    Warning <- 1
-  }else{
-    warning <- "There is at least one pair of complex eigenvalues, but the ratio of DeltaTs (i.e., DeltaT*/DeltaT) is an integer, so the solution for Phi(DeltaT*) is unique."
-  }
-  if(all(Im(Phi_DeltaT) == 0)){
-    Phi_DeltaT <- Re(Phi_DeltaT)
-  }
+  Phi_DeltaT <- Phi
+  #
+  warning <- "No warnings (since there are no complex eigenvalues)"
+  Warning <- 0
 }
 
 
@@ -211,6 +215,7 @@ if(!(is.null(SigmaVAR) & is.null(Gamma))){
     vecPhi <- Phi_DeltaT_s
   }
 
+
   if(!is.null(N)){
 
     CovMx = kronecker(SigmaVAR_DeltaT_s, solve(Gamma_s)) / (N-q)
@@ -220,10 +225,14 @@ if(!(is.null(SigmaVAR) & is.null(Gamma))){
     CovMx_Phi <- CovMx
     eigenCovMx <- eigen(CovMx_Phi)
     lambda <- eigenCovMx$val
+    lambda <- eigenCovMx$val
     if(any(lambda < 0)){
-      message("Some of the eigenvalues of the covariance matrix of the overall Phi are negative. \n",
-              "The function will proceed, but there will be no corresponding confidence intervals \n",
-              "(in $LB_elliptical_CI and $UB_elliptical_CI)."
+      if(warning == "No warnings (since there are no complex eigenvalues)"){
+        warning <- NULL
+      }
+      warning <- c(warning,
+                   paste("Some of the eigenvalues of the covariance matrix of Phi are negative.",
+                         "The function will proceed, but there will be no corresponding confidence intervals (in $multiCI_vecStandPhi_DeltaTStar).")
       )
       lambda(which(eigenCovMx$val < 0)) <- 0
     }
@@ -263,6 +272,7 @@ if(!(is.null(SigmaVAR) & is.null(Gamma))){
 
 if(is.null(SigmaVAR) & is.null(Gamma)){
   final <- list(Phi_DeltaTStar = Phi_DeltaT,
+                #DeltaTStar = DeltaTStar, DeltaT = DeltaT, Phi = Phi,
                 Warning = Warning, warning = warning)
 }else if(!is.null(N)){
   final <- list(Phi_DeltaTStar = Phi_DeltaT,
@@ -270,9 +280,11 @@ if(is.null(SigmaVAR) & is.null(Gamma)){
                 ResidCorrMx_DeltaTStar = ResidCorrMx,
                 Gamma = Gamma,
                 standPhi_DeltaTStar = Phi_DeltaT_s,
-                vecStandPhi_DeltaTStar = vecPhi, CovMx_vecStandPhi_DeltaTStar = CovMx, multiCI_vecStandPhi_DeltaTStar = multiCI,
+                vecStandPhi_DeltaTStar = vecPhi, CovMx_vecStandPhi_DeltaTStar = CovMx,
+                multiCI_vecStandPhi_DeltaTStar = multiCI,
                 standSigmaVAR_DeltaTStar = SigmaVAR_DeltaT_s,
                 standGamma = Gamma_s,
+                #DeltaTStar = DeltaTStar, DeltaT = DeltaT, N = N, Phi = Phi, SigmaVAR = SigmaVAR, alpha = alpha,
                 Warning = Warning, warning = warning)
 } else{
   final <- list(Phi_DeltaTStar = Phi_DeltaT,
@@ -281,6 +293,7 @@ if(is.null(SigmaVAR) & is.null(Gamma)){
                 Gamma = Gamma,
                 standPhi_DeltaTStar = Phi_DeltaT_s,
                 standSigmaVAR_DeltaTStar = SigmaVAR_DeltaT_s, standGamma = Gamma_s,
+                # DeltaTStar = DeltaTStar, DeltaT = DeltaT, Phi = Phi, SigmaVAR = SigmaVAR,
                 Warning = Warning, warning = warning)
 }
 

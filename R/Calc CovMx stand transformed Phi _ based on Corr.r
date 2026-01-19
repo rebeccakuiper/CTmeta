@@ -215,10 +215,12 @@ TransPhi_Corr <- function(DeltaTStar, DeltaT = 1, N = NULL, corr_YXYX, alpha = 0
                     CovMx_vecStandPhi_DeltaTStar = CovMx,
                     multiCI_vecStandPhi_DeltaTStar = multiCI,
                     standSigmaVAR_DeltaTStar = SigmaVAR, standGamma = Gamma,
+                    #DeltaTStar = DeltaTStar, DeltaT = DeltaT, corr_YXYX = corr_YXYX, N = N, alpha = alpha,
                     warning = warning)
     }else{
       final <- list(standPhi_DeltaTStar = TransPhi, vecStandPhi_DeltaTStar = vecPhi,
                     standSigmaVAR_DeltaTStar = SigmaVAR, standGamma = Gamma,
+                    #DeltaTStar = DeltaTStar, DeltaT = DeltaT, corr_YXYX = corr_YXYX,
                     warning = warning)
     }
 

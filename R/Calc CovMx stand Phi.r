@@ -166,7 +166,7 @@ if(!is.null(N)){
   if(any(lambda < 0)){
     message("Some of the eigenvalues of the covariance matrix of Phi are negative. \n",
             "The function will proceed, but there will be no corresponding confidence intervals \n",
-            "(in $LB_elliptical_CI and $UB_elliptical_CI)."
+            "(in $multiCI_vecStandPhi_DeltaT)."
     )
     lambda(which(eigenCovMx$val < 0)) <- 0
   }
@@ -204,15 +204,18 @@ if(!is.null(N)){
 
 if(!is.null(N)){
   final <- list(Phi_DeltaT = Phi, StandPhi_DeltaT = Phi_s,
-                vecStandPhi_DeltaT = vecPhi, CovMx_vecStandPhi_DeltaT = CovMx, multiCI_vecStandPhi_DeltaT = multiCI,
+                vecStandPhi_DeltaT = vecPhi, CovMx_vecStandPhi_DeltaT = CovMx,
+                multiCI_vecStandPhi_DeltaT = multiCI,
                 SigmaVAR_DeltaT = SigmaVAR, standSigmaVAR_DeltaT = SigmaVAR_s,
                 ResidCorrMx = ResidCorrMx,
                 Gamma = Gamma, standGamma = Gamma_s)
+  #N = N, alpha = alpha
 }else{
   final <- list(Phi_DeltaT = Phi, StandPhi_DeltaT = Phi_s,
                 SigmaVAR_DeltaT = SigmaVAR, standSigmaVAR_DeltaT = SigmaVAR_s,
                 ResidCorrMx = ResidCorrMx,
                 Gamma = Gamma, standGamma = Gamma_s)
+  #N = N
 }
 
 return(final)
