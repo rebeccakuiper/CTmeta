@@ -907,10 +907,10 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
           lambda <- eigenCovMx$val
           if(any(lambda < 0)){
             message("Some of the eigenvalues of the covariance matrix of the overall Phi are negative. \n",
-                    "The function will proceed, but there will be no corresponding confidence intervals \n",
-                    "(in $LB_elliptical_CI and $UB_elliptical_CI)."
+                    "The corresponding confidence interval(s), in $LB_elliptical_CI and $UB_elliptical_CI, are NA."
             )
-            lambda(which(eigenCovMx$val < 0)) <- 0
+            which_lambda <- which(eigenCovMx$val < 0)
+            lambda[which_lambda] <- 0
           }
           E <- eigenCovMx$vec
           Chi2 <- qchisq(p=alpha, df=(q*q), lower.tail=FALSE)
@@ -935,6 +935,10 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
           #maxPhi_Trans[i,] <- apply(rbind(LB_vecPhi, UB_vecPhi), 2, max)
           minPhi <- apply(rbind(LB_vecPhi, UB_vecPhi), 2, min)
           maxPhi <- apply(rbind(LB_vecPhi, UB_vecPhi), 2, max)
+          if(any(lambda <= 0)){
+            minPhi[which_lambda] <- NA
+            maxPhi[which_lambda] <- NA
+          }
           multiCI <- rbind(minPhi, maxPhi)
           rownames(multiCI) <- c("LB", "UB")
           sub = NULL
@@ -1047,21 +1051,21 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
           eigenCovMx <- eigen(CovMx_metaan)
           lambda <- eigenCovMx$val
           if(any(lambda < 0)){
-            message("Some of the eigenvalues of the covariance matrix of the overall Phi are negative. \n",
-                    "The function will proceed, but there will be no corresponding confidence intervals \n",
-                    "(in $LB_elliptical_CI and $UB_elliptical_CI)."
-            )
-            lambda(which(eigenCovMx$val < 0)) <- 0
+            #message("Some of the eigenvalues of the covariance matrix of the overall Phi are negative. \n",
+            #        "The corresponding confidence interval(s), in $LB_elliptical_CI and $UB_elliptical_CI, are NA."
+            #)
+            which_lambda <- which(eigenCovMx$val < 0)
+            lambda[which_lambda] <- 0
           }
           E <- eigenCovMx$vec
           Chi2 <- qchisq(p=alpha, df=(q*q), lower.tail=FALSE)
           LB_vecPhi <- matrix(NA, nrow=q*q, ncol =q*q)
           UB_vecPhi <- matrix(NA, nrow=q*q, ncol =q*q)
           LL <- matrix(NA, nrow=q*q, ncol=2)
-          teller = 0
+          teller <- 0
           for(row in 1:q){
             for(column in 1:q){
-              teller = teller + 1
+              teller <- teller + 1
               LB_vecPhi[teller,] <- vecPhi_metaan - sqrt(Chi2 * lambda[teller]) * E[,teller]
               UB_vecPhi[teller,] <- vecPhi_metaan + sqrt(Chi2 * lambda[teller]) * E[,teller]
               LL[teller,1] <- t(LB_vecPhi[teller,]-vecPhi_metaan) %*% solve(CovMx_metaan) %*% (LB_vecPhi[teller,]-vecPhi_metaan)
@@ -1073,6 +1077,10 @@ CTmeta <- function(N, DeltaT, DeltaTStar, Phi, SigmaVAR = NULL, Gamma = NULL, Mo
           # Note that UB can be smaller than LB and LB larger than UB!
           minPhi[i,] <- apply(rbind(LB_vecPhi, UB_vecPhi), 2, min)
           maxPhi[i,] <- apply(rbind(LB_vecPhi, UB_vecPhi), 2, max)
+          if(any(lambda <= 0)){
+            minPhi[i,which_lambda] <- NA
+            maxPhi[i,which_lambda] <- NA
+          }
         }
         vecPhi <- Phi_metaan_MV
       #

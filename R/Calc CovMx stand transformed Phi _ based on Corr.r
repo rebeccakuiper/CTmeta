@@ -174,9 +174,10 @@ TransPhi_Corr <- function(DeltaTStar, DeltaT = 1, N = NULL, corr_YXYX, alpha = 0
         }
         warning <- c(warning,
                      paste("Some of the eigenvalues of the covariance matrix of Phi are negative.",
-                     "The function will proceed, but there will be no corresponding confidence intervals (in $multiCI_vecStandPhi_DeltaT).")
+                           "The corresponding confidence interval(s), in $multiCI_vecStandPhi_DeltaT, are NA.")
                     )
-        lambda(which(eigenCovMx$val < 0)) <- 0
+        which_lambda <- which(eigenCovMx$val < 0)
+        lambda[which_lambda] <- 0
       }
       E <- eigenCovMx$vec
       #df1F <- q*q*qf(p=alpha, df1=q*q, df2=(N-q*q), lower.tail=FALSE)
@@ -198,6 +199,10 @@ TransPhi_Corr <- function(DeltaTStar, DeltaT = 1, N = NULL, corr_YXYX, alpha = 0
       }
       minPhi <- apply(rbind(LB_vecPhi, UB_vecPhi), 2, min)
       maxPhi <- apply(rbind(LB_vecPhi, UB_vecPhi), 2, max)
+      if(any(lambda <= 0)){
+        minPhi[which_lambda] <- NA
+        maxPhi[which_lambda] <- NA
+      }
       multiCI <- rbind(minPhi, maxPhi)
       rownames(multiCI) <- c("LB", "UB")
       sub = NULL
