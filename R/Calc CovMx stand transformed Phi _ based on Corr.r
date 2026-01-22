@@ -167,7 +167,7 @@ TransPhi_Corr <- function(DeltaTStar, DeltaT = 1, N = NULL, corr_YXYX, alpha = 0
       mu_Phi <- vecPhi
       CovMx_Phi <- CovMx
       eigenCovMx <- eigen(CovMx_Phi)
-      lambda <- eigenCovMx$val
+      lambda <- eigenCovMx$val # elt.wise[(eigenvalSigmaVAR / eigenvalGamma)] / (N-q)
       if(any(lambda < 0)){
         if(warning == "No warnings (since there are no complex eigenvalues)"){
           warning <- NULL

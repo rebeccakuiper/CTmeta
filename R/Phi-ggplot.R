@@ -652,7 +652,7 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
                   PhiPlot_aliasing_2 = Plot_2,
                   PhiPlot_scatter = Plot_3,
                   PhiPlot_all = Plot_complex)
-    print(PhiPlot_all)
+    print(Plot_complex)
 
   }else{ # if not complex, then only one plot
     final <- list(PhiPlot = phi_plot,
