@@ -644,7 +644,7 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
     Plot <- phi_plot + theme(legend.position = "none")
     Plot_2_ <- Plot_2 + theme(legend.position = "none")
     Plot_complex <- ggarrange(plotlist = list(Plot, Plot_1, Plot_2_, Plot_3), ncol = 2, nrow = 2,
-              widths = c(3,4)) %>% show
+              widths = c(3,4)) # %>% show
 
     final <- list(PhiPlot = phi_plot,
                   complex = complex,
