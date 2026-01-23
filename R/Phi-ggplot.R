@@ -453,7 +453,7 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
     ggtitle(as.expression(Title_1), subtitle = Title_2) +
     theme_classic() +
     theme(plot.title = element_text(margin = margin(t = 20))) +
-    ylim(min_y,max_y) +
+    #ylim(min_y,max_y) +
     theme(
       legend.key.width = unit(1.5, "lines"),
       legend.box.margin = margin(0, 20, 0, 0),
@@ -461,8 +461,10 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
     ) #; phi_plot
 
   #Add lines for max or min of Phi (if MaxMinPhi == TRUE)
-  # TO DO evt kijken naar alle oplossingen! Nu alleen eerste.
-  if(MaxMinPhi == TRUE){
+
+  if(MaxMinPhi == FALSE){
+    phi_plot + ylim(min_y,max_y)
+  } else if(MaxMinPhi == TRUE){
     if(is.null(Phi)){
       Phi <- expm(Drift*DeltaT)
     }
@@ -470,6 +472,7 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
     #MaxD <- MaxDeltaT(DeltaT, Phi = Phi)
     #MaxD <- MaxDeltaT(DeltaT, Drift = Drift)
    if(is.null(MaxD$ErrorMessage)){ # TO DO werkt dit?
+     # TO DO evt kijken naar alle oplossingen! Nu alleen eerste.
      Max_DeltaT <- t(MaxD$DeltaT_MinOrMaxPhi)[t(WhichTF)]
      Phi_MinMax <- t(MaxD$MinOrMaxPhi)[t(WhichTF)]
      # Select the one in plot range
@@ -487,6 +490,7 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
      WhichNonZero <- (segment_data$yend-segment_data$y != 0)
      segment_data_NonZero <- segment_data[segment_data$yend-segment_data$y != 0,]
      segment_data_NonZero$yend[(segment_data_NonZero$yend > max_y)] <- max_y
+     segment_data_NonZero$yend[(segment_data_NonZero$yend < min_y)] <- min_y
      Lty_segment <- Lty_range[WhichNonZero]
      Col_segment <- Col_range[WhichNonZero]
      #
@@ -496,16 +500,12 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
      #
      extra_x <- round(segment_data_NonZero$x, 2)
      extra_y <- round(segment_data_NonZero$yend, 2)
-     #phi_plot <- phi_plot +
-    #   scale_y_continuous(sec.axis = sec_axis(~., breaks = extra_y)) +
-    #   scale_x_continuous(sec.axis = sec_axis(~., breaks = extra_x)) +
-    #   theme(axis.text.y.right = element_text(face = 1, color = "darkgray", size = 7),
-    #         axis.text.x.top = element_text(color = "darkgray", size = 7)) # angle = 90
-     #
      xbreaks <- ggplot_build(phi_plot)$layout$panel_params[[1]]$x$breaks
      ybreaks <- ggplot_build(phi_plot)$layout$panel_params[[1]]$y$breaks
-     breaks_x = c(xbreaks, extra_x)
-     breaks_y = c(ybreaks, extra_y)
+     xbreaks <- xbreaks[!is.na(xbreaks)]
+     ybreaks <- ybreaks[!is.na(ybreaks)]
+     breaks_x <- c(xbreaks, extra_x)
+     breaks_y <- c(ybreaks, extra_y)
      col_extra_x <- c(rep("black", length(xbreaks)), rep("darkgray", length(extra_x)))
      size_extra_x <- c(rep(10, length(xbreaks)), rep(7, length(extra_x)))
      col_extra_y <- c(rep("black", length(ybreaks)), rep("darkgray", length(extra_y)))
@@ -513,10 +513,10 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
      phi_plot <- phi_plot +
       scale_x_continuous(breaks = breaks_x) +
       scale_y_continuous(breaks = breaks_y) +
-      #theme(axis.text.x = element_text(angle = 90))
-      theme(axis.text.x = element_text(angle = 90, colour = col_extra_x, size = size_extra_x),
-            axis.text.y = element_text(angle = 0, colour = col_extra_y, size = size_extra_y))
-   }else{
+      theme(axis.text.x = ggtext::element_markdown(angle = 90, colour = col_extra_x, size = size_extra_x),
+           axis.text.y = ggtext::element_markdown(angle = 0, colour = col_extra_y, size = size_extra_y))
+    #phi_plot
+    } else{
      ErrorMessage <- MaxD$ErrorMessage
      return(ErrorMessage)
      # TO DO is dit nu informatief?
