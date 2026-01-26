@@ -5,7 +5,15 @@
 \alias{TransPhi_Corr}
 \title{TransPhi_Corr}
 \usage{
-TransPhi_Corr(DeltaTStar, DeltaT = 1, N = NULL, corr_YXYX, alpha = 0.05)
+TransPhi_Corr(
+  DeltaTStar,
+  DeltaT = 1,
+  N = NULL,
+  waves = 2,
+  corr_lagged = NULL,
+  corr_YXYX = NULL,
+  alpha = 0.05
+)
 }
 \arguments{
 \item{DeltaTStar}{The time interval to which the standardized lagged effects matrix (Phi) should be transformed to.}
@@ -14,12 +22,16 @@ TransPhi_Corr(DeltaTStar, DeltaT = 1, N = NULL, corr_YXYX, alpha = 0.05)
 
 \item{N}{Optional. Number of persons (panel data) or number of measurement occasions - 1 (time series data). This is used in determining the covariance matrix of the vectorized standardized lagged effects. By default, N = NULL.}
 
-\item{corr_YXYX}{The correlation matrix of the variables and the lagged variables (of size 2q x 2q). The upper left q x q matrix is the correlation matrix between the (q) variables and the lower left q x q matrix is the correlation matrix between the (q) lagged variables.}
+\item{waves}{Optional. Number of waves, that is, number of measurement occasions; which should be an integer of at least 2. By default, waves = 2.}
+
+\item{corr_lagged}{The (lagged) correlation matrix of the q variables of size (q x waves) times (q x waves). The upper left q x q matrix is the correlation matrix between the q variables on the first time point; the upper right q x q matrix is the lagged correlation matrix between the q variables for the first and last time point (btw this block matrix and the other ones for non-subsequent time points will not be used to determine the order-1 relationships). By default, corr_lagged = NULL.}
+
+\item{corr_YXYX}{Used if not NULL (default) & corr_lagged = NULL. Also the (lagged) correlation matrix of the q variables of size (q x waves) times (q x waves) but, in this matrix, the time points are ordered from high to low. Therefore, the upper left q x q matrix is the correlation matrix between the q variables on the last time point; the upper right q x q matrix is the lagged correlation matrix between the q variables for the last and first time point. By default, corr_YXYX = NULL.}
 
 \item{alpha}{Optional. The alpha level in determining the (1-alpha)*100\% CI. By default, alpha = 0.05; resulting in a 95\% CI.}
 }
 \value{
-This function returns the vectorized transformed standardized lagged effects (i.e., for DeltaTStar) and - if N is part of input - their covariance matrix and the corresponding elliptical/multivariate 95\% CI; SigmaVAR: residual covariance matrix for DeltaTStar; and Gamma: stationary covariance matrix.
+This function returns i) the vectorized transformed standardized order-1 lagged effects (i.e., for DeltaTStar), both a) wave-independent and b) wave-specific ones; and ii) if N is part of input, their covariance matrix and the corresponding elliptical/multivariate 95\% CI. Additionally, it renders iii) SigmaVAR, the residual covariance matrix for DeltaTStar, and iv) Gamma, the stationary covariance matrix, also both the a) wave-independent and b) wave-specific ones.
 }
 \description{
 Calculates the (vectorized) transformed standardized Phi, their covariance matrix, the corresponding elliptical 95\% confidence interval (CI) from a correlation matrix with contemporaneous and lagged correlations. There is also an interactive web application on my website: Standardizing and/or transforming lagged regression estimates (\url{https://www.uu.nl/staff/RMKuiper/Websites\%20\%2F\%20Shiny\%20apps}).
