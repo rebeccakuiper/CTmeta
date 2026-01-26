@@ -461,7 +461,6 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
     ) #; phi_plot
 
   #Add lines for max or min of Phi (if MaxMinPhi == TRUE)
-
   if(MaxMinPhi == FALSE){
     phi_plot + ylim(min_y,max_y)
   } else if(MaxMinPhi == TRUE){
