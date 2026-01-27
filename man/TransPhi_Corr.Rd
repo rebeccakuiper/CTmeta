@@ -16,17 +16,17 @@ TransPhi_Corr(
 )
 }
 \arguments{
-\item{DeltaTStar}{The time interval to which the standardized lagged effects matrix (Phi) should be transformed to.}
+\item{DeltaTStar}{The time interval to which the standardized lagged effects matrix (Phi) should be transformed to. This should be a vector with one number.}
 
-\item{DeltaT}{Optional. The time interval used. Hence, Phi(DeltaT) will be transformed to Phi(DeltaTStar) and standardized. By default, DeltaT = 1.}
+\item{DeltaT}{Optional. The time interval used. Hence, Phi(DeltaT) will be transformed to Phi(DeltaTStar) and standardized. This should be a vector with one or ('waves'-1) numbers. By default, DeltaT = 1.}
 
 \item{N}{Optional. Number of persons (panel data) or number of measurement occasions - 1 (time series data). This is used in determining the covariance matrix of the vectorized standardized lagged effects. By default, N = NULL.}
 
-\item{waves}{Optional. Number of waves, that is, number of measurement occasions; which should be an integer of at least 2. By default, waves = 2.}
+\item{waves}{Optional. Number of waves, that is, number of measurement occasions; which should be an integer of at least 2. If waves > 3, then both a) wave-independent and b) wave-specific transformed standardized order-1 lagged effects are calculated. By default, waves = 2.}
 
-\item{corr_lagged}{The (lagged) correlation matrix of the q variables of size (q x waves) times (q x waves). The upper left q x q matrix is the correlation matrix between the q variables on the first time point; the upper right q x q matrix is the lagged correlation matrix between the q variables for the first and last time point (btw this block matrix and the other ones for non-subsequent time points will not be used to determine the order-1 relationships). By default, corr_lagged = NULL.}
+\item{corr_lagged}{The (lagged) correlation matrix of the q variables of size (q x waves) times (q x waves). The upper left q x q matrix is the correlation matrix between the q variables on the first time point; the upper right q x q matrix is the lagged correlation matrix between the q variables for the first and last time point (btw this block matrix and the other ones for non-subsequent time points will not be used to determine the order-1 relationships). An example can be found below. By default, corr_lagged = NULL.}
 
-\item{corr_YXYX}{Used if not NULL (default) & corr_lagged = NULL. Also the (lagged) correlation matrix of the q variables of size (q x waves) times (q x waves) but, in this matrix, the time points are ordered from high to low. Therefore, the upper left q x q matrix is the correlation matrix between the q variables on the last time point; the upper right q x q matrix is the lagged correlation matrix between the q variables for the last and first time point. By default, corr_YXYX = NULL.}
+\item{corr_YXYX}{Used if not NULL (default) & corr_lagged = NULL. Also the (lagged) correlation matrix of the q variables of size (q x waves) times (q x waves) but, in this matrix, the time points are ordered from high to low. Therefore, the upper left q x q matrix is the correlation matrix between the q variables on the last time point; the upper right q x q matrix is the lagged correlation matrix between the q variables for the last and first time point. An example can be found below. By default, corr_YXYX = NULL.}
 
 \item{alpha}{Optional. The alpha level in determining the (1-alpha)*100\% CI. By default, alpha = 0.05; resulting in a 95\% CI.}
 }
@@ -45,22 +45,41 @@ DeltaTStar <- 12
 DeltaT <- 24
 N <- 2235
 
-# Example with full correlation matrix
+## 2 waves ##
+
+# Example with full (lagged) correlation matrix corr_lagged
+q <- 2 # number of variables, so here we assume/use a bivariate process; say, Y1 and Y2.
+waves <- 2 # number of waves, that is, number of time points; say, T0 and T1.
+corr_lagged <- matrix(c(1.00, 0.41, 0.63, 0.34,
+0.41, 1.00, 0.31, 0.63,
+0.63, 0.31, 1.00, 0.40,
+0.34, 0.63, 0.40, 1.00), byrow = T, ncol = q*waves)
+# corr_lagged contains the following (lagged) correlations:
+# r(Y1_T0, Y1_T0), r(Y1_T0, Y2_T0), r(Y1_T0, Y1_T1), r(Y1_T0, Y2_T1),
+# r(Y2_T0, Y1_T0), r(Y2_T0, Y2_T0), r(Y2_T0, Y1_T1), r(Y2_T0, Y2_T1),
+# r(Y1_T1, Y1_T0), r(Y1_T1, Y2_T0), r(Y1_T1, Y1_T1), r(Y1_T1, Y2_T1),
+# r(Y2_T1, Y1_T0), r(Y2_T1, Y2_T0), r(Y2_T1, Y1_T1), r(Y2_T1, Y2_T1),
+#
+# Run function
+TransPhi_Corr(DeltaTStar, DeltaT, N, corr_lagged = corr_lagged)
+
+
+# Example with full (lagged) correlation matrix corr_YXYX
 corr_YXYX <- matrix(c(1.00, 0.40, 0.63, 0.34,
 0.40, 1.00, 0.31, 0.63,
 0.63, 0.31, 1.00, 0.41,
 0.34, 0.63, 0.41, 1.00), byrow = T, ncol = 2*2)
 # Run function
-TransPhi_Corr(DeltaTStar, DeltaT, N, corr_YXYX)
+TransPhi_Corr(DeltaTStar, DeltaT, N, corr_YXYX = corr_YXYX)
 
 # Example with vector of lower triangular correlation matrix
 LT <- c(0.40, 0.63, 0.34, 0.31, 0.63, 0.41) # corr_YXYX[lower.tri(corr_YXYX,diag = F)]
-# Make full correlation matrix of size 2*q times 2*q, with q=2 and thus 2*q=4
+# Make full correlation matrix of size 2xq times 2xq, with q=2 and thus 2xq=4 (note: waves = 2).
 corr_YXYX <- diag(4) # As check: length(LT) = 4*(4-1)/2
 corr_YXYX[lower.tri(corr_YXYX,diag = F)] <- LT
 corr_YXYX[upper.tri(corr_YXYX,diag = F)] <- t(corr_YXYX)[upper.tri(t(corr_YXYX),diag = F)]
 # Run function
-TransPhi_Corr(DeltaTStar, DeltaT, N, corr_YXYX)
+TransPhi_Corr(DeltaTStar, DeltaT, N, corr_YXYX = corr_YXYX)
 
 # Example with vector of lower triangular correlation matrix including diagonals
 LTD <- c(1.00, 0.40, 0.63, 0.34, 1.00, 0.31, 0.63, 1.00, 0.41, 1.00) # corr_YXYX[lower.tri(corr_YXYX,diag = T)]
@@ -69,8 +88,51 @@ corr_YXYX <- matrix(NA, nrow=(4), ncol=(4))  # As check: length(LTD) = 4*(4+1)/2
 corr_YXYX[lower.tri(corr_YXYX,diag = T)] <- LTD
 corr_YXYX[upper.tri(corr_YXYX,diag = F)] <- t(corr_YXYX)[upper.tri(t(corr_YXYX),diag = F)]
 # Run function
-TransPhi_Corr(DeltaTStar, DeltaT, N, corr_YXYX)
+TransPhi_Corr(DeltaTStar, DeltaT, N, corr_YXYX = corr_YXYX)
 
-# The output (standPhi_DeltaTStar, standSigmaVAR_DeltaTStar, and standGamma) can be used to make stacked matrices or arrays which can serve as input for continuous-time meta-analysis CTmeta (using the function CTmeta; see ?CTmeta).
+
+# NOTE: The output (standPhi_DeltaTStar, standSigmaVAR_DeltaTStar, and standGamma) can be used to make stacked matrices or arrays which can serve as input for continuous-time meta-analysis CTmeta (using the function CTmeta; see ?CTmeta).
+
+
+## 3 waves ##
+
+# In case of waves > 2, then both the wave-independent and wave-specific parameter estimates are determined.
+
+# Example with full (lagged) correlation matrix corr_lagged
+q <- 2 # number of variables, so here we assume/use a bivariate process; say, Y1 and Y2.
+waves <- 3 # number of waves, that is, number of time points; say, T0, T1 and T2.
+corr_lagged <- matrix(c(
+1.00, 0.41, 0.63, 0.34, 0.55, 0.28,
+0.41, 1.00, 0.31, 0.63, 0.28, 0.60,
+0.63, 0.31, 1.00, 0.40, 0.38, 0.45,
+0.34, 0.63, 0.40, 1.00, 0.40, 0.66,
+0.55, 0.28, 0.38, 0.40, 1.00, 0.39,
+0.28, 0.60, 0.45, 0.66, 0.39, 1.00
+), byrow = T, ncol = q*waves)
+# corr_lagged contains the following (lagged) correlations:
+# r(Y1_T0, Y1_T0), r(Y1_T0, Y2_T0), r(Y1_T0, Y1_T1), r(Y1_T0, Y2_T1), r(Y1_T0, Y1_T2), r(Y1_T0, Y2_T2),
+# r(Y2_T0, Y1_T0), r(Y2_T0, Y2_T0), r(Y2_T0, Y1_T1), r(Y2_T0, Y2_T1), r(Y2_T0, Y1_T2), r(Y2_T0, Y2_T2),
+# r(Y1_T1, Y1_T0), r(Y1_T1, Y2_T0), r(Y1_T1, Y1_T1), r(Y1_T1, Y2_T1), r(Y1_T1, Y1_T2), r(Y1_T1, Y2_T2),
+# r(Y2_T1, Y1_T0), r(Y2_T1, Y2_T0), r(Y2_T1, Y1_T1), r(Y2_T1, Y2_T1), r(Y2_T1, Y1_T2), r(Y2_T1, Y2_T2),
+# r(Y1_T2, Y1_T0), ...
+#
+# Run function
+TransPhi_Corr(DeltaTStar, DeltaT, N, waves = waves, corr_lagged = corr_lagged)
+
+
+# Example with full (lagged) correlation matrix corr_lagged and multiple DeltaT
+q <- 2 # number of variables, so here we assume/use a bivariate process.
+waves <- 3 # number of waves, that is, number of time points.
+corr_lagged <- matrix(c(
+1.00, 0.41, 0.63, 0.34, 0.55, 0.28,
+0.41, 1.00, 0.31, 0.63, 0.28, 0.60,
+0.63, 0.31, 1.00, 0.40, 0.38, 0.45,
+0.34, 0.63, 0.40, 1.00, 0.40, 0.66,
+0.55, 0.28, 0.38, 0.40, 1.00, 0.39,
+0.28, 0.60, 0.45, 0.66, 0.39, 1.00
+), byrow = T, ncol = q*waves)
+# Run function
+DeltaT_2 <- c(24, 12)
+TransPhi_Corr(DeltaTStar, DeltaT = DeltaT_2, N, waves = waves, corr_lagged = corr_lagged)
 
 }
