@@ -137,10 +137,18 @@ TransPhi_Corr <- function(DeltaTStar, DeltaT = 1, N = NULL, waves = 2, corr_lagg
     stop(ErrorMessage)
   }
   # The length of DeltaT should be either 1 or (waves-1)
-  if(length(DeltaT) != 1 & length(DeltaT) != (waves-1)){
-    ErrorMessage <- (paste0("The argument 'DeltaT' should be a vector of length 1 or ('waves'-1). Currently, length(DeltaT) = ", length(DeltaT)))
-    return(ErrorMessage)
-    stop(ErrorMessage)
+  if(waves == 2){
+    if(length(DeltaT) != 1){
+      ErrorMessage <- (paste0("The argument 'DeltaT' should be a vector of length 1 (since 'waves' = 2). Currently, length(DeltaT) = ", length(DeltaT)))
+      return(ErrorMessage)
+      stop(ErrorMessage)
+    }
+  }else if(waves > 2){
+    if(length(DeltaT) != 1 & length(DeltaT) != (waves-1)){
+      ErrorMessage <- (paste0("The argument 'DeltaT' should be a vector of length 1 or ('waves'-1) = ", (waves-1), ". Currently, length(DeltaT) = ", length(DeltaT)))
+      return(ErrorMessage)
+      stop(ErrorMessage)
+    }
   }
   #
   if(!is.null(N) & length(N) != 1){
