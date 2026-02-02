@@ -156,9 +156,11 @@ StandTransPhi <- function(DeltaTStar, DeltaT = 1, N = NULL, Phi, SigmaVAR = NULL
   }
 
 
-
 ratioDeltaT <- DeltaTStar / DeltaT
 
+
+warning <- "No warnings (since there are no complex eigenvalues)"
+Warning <- 0
 if(ratioDeltaT != 1){
   if(q > 1){
     eigenPhi <- eigen(Phi)
@@ -181,9 +183,6 @@ if(ratioDeltaT != 1){
   }
 } else{
   Phi_DeltaT <- Phi
-  #
-  warning <- "No warnings (since there are no complex eigenvalues)"
-  Warning <- 0
 }
 
 

@@ -467,8 +467,7 @@ ggPhiPlot <- function(DeltaT = 1, Phi = NULL, Drift = NULL, Stand = 0, SigmaVAR 
     if(is.null(Phi)){
       Phi <- expm(Drift*DeltaT)
     }
-    MaxD <- MaxDeltaT(Phi = Phi)
-    #MaxD <- MaxDeltaT(DeltaT, Phi = Phi)
+    MaxD <- MaxDeltaT(DeltaT, Phi = Phi)
     #MaxD <- MaxDeltaT(DeltaT, Drift = Drift)
    if(is.null(MaxD$ErrorMessage)){ # TO DO werkt dit?
      # TO DO evt kijken naar alle oplossingen! Nu alleen eerste.
